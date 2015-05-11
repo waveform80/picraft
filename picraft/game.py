@@ -16,17 +16,17 @@ from collections import namedtuple
 class PiCraftError(Exception):
     "Base class for all PiCraft exceptions"
 
-class PiCraftBatchError(PiCraftError):
+class BatchError(PiCraftError):
     "Base class for PiCraft batch errors"
 
-class PiCraftBatchStarted(PiCraftBatchError):
+class BatchStarted(BatchError):
     "Exception raised when a batch is started before a prior one is complete"
 
-class PiCraftBatchNotStarted(PiCraftBatchError):
+class BatchNotStarted(BatchError):
     "Exception raised when a batch is terminated when none has been started"
 
 
-class PiCraftVector(namedtuple('PiCraftVector', ('x', 'y', 'z'))):
+class Vector(namedtuple('Vector', ('x', 'y', 'z'))):
     """
     Represents a 3-dimensional vector.
 
@@ -36,12 +36,12 @@ class PiCraftVector(namedtuple('PiCraftVector', ('x', 'y', 'z'))):
     division with scalars. Taking the absolute value of the vector will
     return its magnitude (according to `Pythagoras' theorem`_). For example::
 
-        >>> v1 = PiCraftVector(1, 1, 1)
-        >>> v2 = PiCraftVector(2, 2, 2)
+        >>> v1 = Vector(1, 1, 1)
+        >>> v2 = Vector(2, 2, 2)
         >>> v1 + v2
-        PiCraftVector(3, 3, 3)
+        Vector(3, 3, 3)
         >>> 2 * v2
-        PiCraftVector(4, 4, 4)
+        Vector(4, 4, 4)
         >>> abs(v1)
         1.0
 
@@ -63,24 +63,24 @@ class PiCraftVector(namedtuple('PiCraftVector', ('x', 'y', 'z'))):
 
     def __add__(self, other):
         try:
-            return PiCraftVector(self.x + other.x, self.y + other.y, self.z + other.z)
+            return Vector(self.x + other.x, self.y + other.y, self.z + other.z)
         except AttributeError:
             return NotImplemented
 
     def __sub__(self, other):
         try:
-            return PiCraftVector(self.x - other.x, self.y - other.y, self.z - other.z)
+            return Vector(self.x - other.x, self.y - other.y, self.z - other.z)
         except AttributeError:
             return NotImplemented
 
     def __mul__(self, other):
-        return PiCraftVector(self.x * other, self.y * other, self.z * other)
+        return Vector(self.x * other, self.y * other, self.z * other)
 
     def __div__(self, other):
-        return PiCraftVector(self.x / other, self.y / other, self.z / other)
+        return Vector(self.x / other, self.y / other, self.z / other)
 
     def __neg__(self):
-        return PiCraftVector(-self.x, -self.y, -self.z)
+        return Vector(-self.x, -self.y, -self.z)
 
     def __pos__(self):
         return self
@@ -89,7 +89,7 @@ class PiCraftVector(namedtuple('PiCraftVector', ('x', 'y', 'z'))):
         return math.sqrt(self.x ** 2 + self.y ** 2 + self.z ** 2)
 
 
-class PiCraftConnection(object):
+class Connection(object):
     """
     Represents the connection to the Minecraft server.
 
@@ -97,10 +97,10 @@ class PiCraftConnection(object):
     server, while the port specifies the port to connect to (these typically
     take the values "127.0.0.1" and 4711 respectively).
 
-    Users will rarely need to construct a :class:`PiCraftConnection` object
+    Users will rarely need to construct a :class:`Connection` object
     themselves. An instance of this class is constructed by
-    :class:`PiCraftGame` to handle communication with the game server
-    (:attr:`PiCraftGame.connection`).
+    :class:`Game` to handle communication with the game server
+    (:attr:`Game.connection`).
 
     The most important aspect of this class is its ability to "batch"
     transmissions together. Typically, the :meth:`send` method is used to
@@ -133,12 +133,12 @@ class PiCraftConnection(object):
         Closes the connection.
 
         This method can be used to close down the connection to the game
-        server. It is typically called from :meth:`PiCraftGame.close` rather
+        server. It is typically called from :meth:`Game.close` rather
         than being called directly.
         """
         try:
             self.batch_forget()
-        except PiCraftBatchNotStarted:
+        except BatchNotStarted:
             pass
         if self._rfile:
             self._rfile.close()
@@ -203,10 +203,10 @@ class PiCraftConnection(object):
 
         To terminate the batch transmission, call :meth:`batch_send` or
         :meth:`batch_forget`. If a batch has already been started, a
-        :exc:`PiCraftBatchStarted` exception is raised.
+        :exc:`BatchStarted` exception is raised.
         """
         if self._batch is not None:
-            raise PiCraftBatchStarted('batch already started')
+            raise BatchStarted('batch already started')
         self._batch = []
 
     def batch_send(self):
@@ -217,11 +217,11 @@ class PiCraftConnection(object):
         been used to build up a list of batch commands. All the commands will
         be combined and sent to the server as a single transmission.
 
-        If no batch is currently in progress, a :exc:`PiCraftBatchNotStarted`
+        If no batch is currently in progress, a :exc:`BatchNotStarted`
         exception will be raised.
         """
         if self._batch is None:
-            raise PiCraftBatchNotStarted('no batch in progress')
+            raise BatchNotStarted('no batch in progress')
         self._send(''.join(self._batch))
         self._batch = None
 
@@ -233,11 +233,11 @@ class PiCraftConnection(object):
         have been used to build up a list of batch commands. All commands in
         the batch will be cleared without sending anything to the server.
 
-        If no batch is currently in progress, a :exc:`PiCraftBatchNotStarted`
+        If no batch is currently in progress, a :exc:`BatchNotStarted`
         exception will be raised.
         """
         if self._batch is None:
-            raise PiCraftBatchNotStarted('no batch in progress')
+            raise BatchNotStarted('no batch in progress')
         self._batch = None
 
     def __enter__(self):
@@ -251,7 +251,7 @@ class PiCraftConnection(object):
             self.batch_forget()
 
 
-class PiCraftGame(object):
+class Game(object):
     """
     Represents a Minecraft game.
 
@@ -268,7 +268,7 @@ class PiCraftGame(object):
     be iterated over to discover entities).
     """
     def __init__(self, host='localhost', port=4711):
-        self.connection = PiCraftConnection(host, port)
+        self.connection = Connection(host, port)
 
     def close(self):
         """
