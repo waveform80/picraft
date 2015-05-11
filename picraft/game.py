@@ -85,6 +85,9 @@ class Vector(namedtuple('Vector', ('x', 'y', 'z'))):
         instances can be used in sets or as dictionary keys.
     """
 
+    def __new__(cls, x=0, y=0, z=0):
+        return super(Vector, cls).__new__(cls, x, y, z)
+
     @classmethod
     def from_string(cls, s):
         x, y, z = s.split(',', 2)
@@ -94,19 +97,41 @@ class Vector(namedtuple('Vector', ('x', 'y', 'z'))):
         try:
             return Vector(self.x + other.x, self.y + other.y, self.z + other.z)
         except AttributeError:
-            return NotImplemented
+            return Vector(self.x + other, self.y + other, self.z + other)
+
+    __radd__ = __add__
 
     def __sub__(self, other):
         try:
             return Vector(self.x - other.x, self.y - other.y, self.z - other.z)
         except AttributeError:
-            return NotImplemented
+            return Vector(self.x - other, self.y - other, self.z - other)
 
     def __mul__(self, other):
-        return Vector(self.x * other, self.y * other, self.z * other)
+        try:
+            return Vector(self.x * other.x, self.y * other.y, self.z * other.z)
+        except AttributeError:
+            return Vector(self.x * other, self.y * other, self.z * other)
 
-    def __div__(self, other):
-        return Vector(self.x / other, self.y / other, self.z / other)
+    __rmul__ = __mul__
+
+    def __truediv__(self, other):
+        try:
+            return Vector(self.x / other.x, self.y / other.y, self.z / other.z)
+        except AttributeError:
+            return Vector(self.x / other, self.y / other, self.z / other)
+
+    def __floordiv__(self, other):
+        try:
+            return Vector(self.x // other.x, self.y // other.y, self.z // other.z)
+        except AttributeError:
+            return Vector(self.x // other, self.y // other, self.z // other)
+
+    def __mod__(self, other):
+        try:
+            return Vector(self.x % other.x, self.y % other.y, self.z % other.z)
+        except AttributeError:
+            return Vector(self.x % other, self.y % other, self.z % other)
 
     def __neg__(self):
         return Vector(-self.x, -self.y, -self.z)
@@ -115,7 +140,40 @@ class Vector(namedtuple('Vector', ('x', 'y', 'z'))):
         return self
 
     def __abs__(self):
+        return Vector(abs(self.x), abs(self.y), abs(self.z))
+
+    def __bool__(self):
+        return self.x or self.y or self.z
+
+    # Py2 compat
+    __nonzero__ = __bool__
+    __div__ = __truediv__
+
+    def dot(self, other):
+        return self.x * other.x + self.y * other.y + self.z * other.z
+
+    def cross(self, other):
+        return Vector(
+                self.y * other.z - self.z * other.y,
+                self.z * other.x - self.x * other.z,
+                self.x * other.y - self.y * other.x)
+
+    def distance_to(self, other):
+        return math.sqrt(
+                (self.x - other.x) ** 2 +
+                (self.y - other.y) ** 2 +
+                (self.z - other.z) ** 2)
+
+    @property
+    def magnitude(self):
         return math.sqrt(self.x ** 2 + self.y ** 2 + self.z ** 2)
+
+    @property
+    def unit(self):
+        if self.magnitude > 0:
+            return self / self.magnitude
+        else:
+            return self
 
 
 class Connection(object):
@@ -140,13 +198,6 @@ class Connection(object):
     method can then be used to transmit all requests simultaneously (or
     alternatively, :meth:`batch_forget` can be used to discard the list). See
     the docs of these methods for more information.
-
-    .. note::
-
-        This class can be used as a context manager (:ref:`the-with-statement`)
-        which will cause a batch to be started, and terminated with
-        :meth:`batch_send` or :meth:`batch_forget` depending on whether an
-        exception is raised within the enclosed block.
     """
     encoding = 'ascii'
 
@@ -183,7 +234,7 @@ class Connection(object):
         if not isinstance(buf, bytes):
             buf = buf.encode(self.encoding)
         self._wfile.write(buf)
-        logging.debug('picraft >: %s' % buf)
+        logging.debug('picraft >: %r' % buf)
 
     def send(self, buf):
         """
@@ -220,23 +271,34 @@ class Connection(object):
             issue but it is worth bearing in mind.
         """
         self._send(buf)
-        return self._rfile.readline()
+        result = self._rfile.readline()
+        logging.debug('picraft <: %r' % result)
+        return result
 
     def batch_start(self):
         """
         Starts a new batch transmission.
 
-        When called, this method starts a new batch transmission. All subsequent
-        calls to :meth:`send` will append data to the batch buffer instead of
-        actually sending the data.
+        When called, this method starts a new batch transmission. All
+        subsequent calls to :meth:`send` will append data to the batch buffer
+        instead of actually sending the data.
 
         To terminate the batch transmission, call :meth:`batch_send` or
         :meth:`batch_forget`. If a batch has already been started, a
         :exc:`BatchStarted` exception is raised.
+
+        .. note::
+
+            This method can be used as a context manager
+            (:ref:`the-with-statement`) which will cause a batch to be started,
+            and implicitly terminated with :meth:`batch_send` or
+            :meth:`batch_forget` depending on whether an exception is raised
+            within the enclosed block.
         """
         if self._batch is not None:
             raise BatchStarted('batch already started')
         self._batch = []
+        return self
 
     def batch_send(self):
         """
@@ -270,7 +332,6 @@ class Connection(object):
         self._batch = None
 
     def __enter__(self):
-        self.batch_start()
         return self
 
     def __exit__(self, exc_type, exc_value, exc_tb):

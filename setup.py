@@ -82,7 +82,7 @@ __requires__ = [
 
 __extra_requires__ = {
     'doc':   ['sphinx'],
-    'test':  ['pytest', 'mock'],
+    'test':  ['pytest', 'coverage', 'mock'],
     }
 
 if sys.version_info[:2] == (3, 2):
