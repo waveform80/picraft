@@ -38,20 +38,21 @@ str = type('')
 
 import math
 import socket
+import select
 import logging
 from collections import namedtuple
 
 
-class PiCraftError(Exception):
+class Error(Exception):
     "Base class for all PiCraft exceptions"
 
-class BatchError(PiCraftError):
-    "Base class for PiCraft batch errors"
+class ConnectionError(Error):
+    "Base class for PiCraft errors relating to network communications"
 
-class BatchStarted(BatchError):
+class BatchStarted(ConnectionError):
     "Exception raised when a batch is started before a prior one is complete"
 
-class BatchNotStarted(BatchError):
+class BatchNotStarted(ConnectionError):
     "Exception raised when a batch is terminated when none has been started"
 
 
@@ -74,6 +75,9 @@ class Vector(namedtuple('Vector', ('x', 'y', 'z'))):
         >>> abs(v1)
         1.0
 
+    Within the Minecraft world, the X,Z plane represents the ground, while the
+    Y vector represents height.
+
     .. Pythagoras' theorem: https://en.wikipedia.org/wiki/Pythagorean_theorem
 
     .. note::
@@ -92,6 +96,9 @@ class Vector(namedtuple('Vector', ('x', 'y', 'z'))):
     def from_string(cls, s):
         x, y, z = s.split(',', 2)
         return cls(float(x), float(y), float(z))
+
+    def __str__(self):
+        return '%s,%s,%s' % (self.x, self.y, self.z)
 
     def __add__(self, other):
         try:
@@ -200,12 +207,13 @@ class Connection(object):
     the docs of these methods for more information.
     """
     encoding = 'ascii'
+    timeout = 0.2 # seconds
 
     def __init__(self, host, port):
         self._socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self._socket.connect((host, port))
-        self._rfile = self._socket.makefile('rb')
-        self._wfile = self._socket.makefile('wb')
+        self._rfile = self._socket.makefile('rb', -1)
+        self._wfile = self._socket.makefile('wb', 0) # no buffering for writes
         self._batch = None
 
     def close(self):
@@ -230,9 +238,20 @@ class Connection(object):
             self._socket.close()
             self._socket = None
 
+    def _drain(self):
+        while True:
+            readable, _, _ = select.select([self._socket], [], [], 0)
+            if not readable:
+                break
+            data = self._socket.recv(1500)
+            print(data)
+
     def _send(self, buf):
         if not isinstance(buf, bytes):
             buf = buf.encode(self.encoding)
+        # XXX Is this actually needed? Only seems to be when we've screwed up
+        # the protocol (such as it is...)
+        self._drain()
         self._wfile.write(buf)
         logging.debug('picraft >: %r' % buf)
 
@@ -271,8 +290,12 @@ class Connection(object):
             issue but it is worth bearing in mind.
         """
         self._send(buf)
-        result = self._rfile.readline()
-        logging.debug('picraft <: %r' % result)
+        readable, _, _ = select.select([self._socket], [], [], self.timeout)
+        if readable:
+            result = self._rfile.readline()
+            logging.debug('picraft <: %r' % result)
+        else:
+            raise ConnectionError('no response to "%s"' % buf.rstrip())
         return result
 
     def batch_start(self):
@@ -341,6 +364,44 @@ class Connection(object):
             self.batch_forget()
 
 
+class Player(object):
+    """
+    Represents the player character within the game world.
+
+    An instance of this class is accessible as the :attr:`Game.player`
+    attribute. It provides properties to query and manipulate the position
+    and settings of the player.
+    """
+    def __init__(self, game):
+        self._game = game
+
+    def _get_pos(self):
+        return Vector.from_string(self._game.connection.transact('player.getPos()\n'))
+    def _set_pos(self, value):
+        self._game.connection.send('player.setPos(%s)\n' % str(value))
+    pos = property(_get_pos, _set_pos,
+        doc="""
+        The position of the character within the world.
+
+        This property returns the position of the player character within the
+        Minecraft world, as a :class:`Vector` instance. You can assign to this
+        property to set the position of the player.
+        """)
+
+    def _get_tile_pos(self):
+        return Vector.from_string(self._game.connection.transact('player.getTile()\n'))
+    def _set_tile_pos(self, value):
+        self._game.connection.send('player.setTile(%s)\n' % str(value))
+    tile_pos = property(_get_tile_pos, _set_tile_pos,
+        doc="""
+        The position of the tile underneath the character within the world.
+
+        This property returns the position of the tile that the player
+        character is standing on in the Minecraft world, as a :class:`Vector`
+        instance. You can assign to this property to transport the player.
+        """)
+
+
 class Game(object):
     """
     Represents a Minecraft game.
@@ -358,7 +419,31 @@ class Game(object):
     be iterated over to discover entities).
     """
     def __init__(self, host='localhost', port=4711):
-        self.connection = Connection(host, port)
+        self._connection = Connection(host, port)
+        self._player = Player(self)
+
+    @property
+    def connection(self):
+        """
+        Represents the connection to the Minecraft server.
+
+        The :class:`Connection` instance contained in this attribute represents
+        the connection to the Minecraft server and provides various methods for
+        communicating with it. Users will very rarely need to access this
+        attribute unless they wish to manually manipulate the Minecraft Pi API.
+        """
+        return self._connection
+
+    @property
+    def player(self):
+        """
+        Represents the player character in the Minecraft world.
+
+        The :class:`Player` instance returned by this attribute provides
+        properties which can be used to query the status of, and manipulate
+        the state of, the player's character in the Minecraft world.
+        """
+        return self._player
 
     def close(self):
         """

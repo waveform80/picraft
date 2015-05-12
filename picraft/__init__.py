@@ -57,8 +57,8 @@ str = type('')
 
 
 from picraft.game import (
-    PiCraftError,
-    BatchError,
+    Error,
+    ConnectionError,
     BatchStarted,
     BatchNotStarted,
     Vector,
