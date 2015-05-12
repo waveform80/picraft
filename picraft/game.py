@@ -37,66 +37,7 @@ str = type('')
 
 
 from .connection import Connection
-from .vector import Vector
-
-
-class Entity(object):
-    """
-    Represents a player within the game world.
-
-    Players are uniquely identified by their :attr:`player_id`. Instances
-    of this class are available from the :attr:`Game.players` collection. It
-    provides properties to query and manipulate the position and settings of
-    the player.
-    """
-    def __init__(self, connection, player_id):
-        self._connection = connection
-        self._player_id = player_id
-
-
-class Player(object):
-    """
-    Represents the host player within the game world.
-
-    An instance of this class is accessible as the :attr:`Game.player`
-    attribute. It provides properties to query and manipulate the position
-    and settings of the host player.
-    """
-    def __init__(self, connection):
-        self._connection = connection
-
-    def _get_pos(self):
-        return Vector.from_string(
-            self._connection.transact('player.getPos()'),
-            type=float)
-    def _set_pos(self, value):
-        self._connection.send('player.setPos(%s)' % str(value))
-    pos = property(
-        lambda self: self._get_pos(),
-        lambda self: self._set_pos(),
-        doc="""
-        The precise position of the host player within the world.
-
-        This property returns the position of the host player within the
-        Minecraft world, as a :class:`Vector` instance. This is the *precise*
-        position of the player including decimal places (representing portions
-        of a tile). You can assign to this property to reposition the player.
-        """)
-
-    def _get_tile_pos(self):
-        return Vector.from_string(self._connection.transact('player.getTile()'))
-    def _set_tile_pos(self, value):
-        self._connection.send('player.setTile(%s)' % str(value))
-    tile_pos = property(
-        lambda self: self._get_tile_pos(),
-        lambda self: self._set_tile_pos(),
-        doc="""
-        The position of the host player within the world to the nearest block.
-
-        This property returns the position of the host player in the Minecraft
-        world to the nearest block, as a :class:`Vector` instance. You can
-        assign to this property to reposition the player.
-        """)
+from .player import Player, HostPlayer, Players
 
 
 class Game(object):
@@ -115,9 +56,11 @@ class Game(object):
     used to manipulate or query other objects within the game (this object can
     be iterated over to discover entities).
     """
+
     def __init__(self, host='localhost', port=4711):
         self._connection = Connection(host, port)
-        self._player = Player(self)
+        self._player = HostPlayer(self._connection)
+        self._players = Players(self._connection)
 
     @property
     def connection(self):
@@ -132,13 +75,25 @@ class Game(object):
         return self._connection
 
     @property
+    def players(self):
+        """
+        Represents all player entities in the Minecraft world.
+
+        The :class:`Players` instance returned by this attribute provides a
+        mapping which can be used to query the set of players currently in the
+        Minecraft world, and to obtain a :class:`Player` instance representing
+        any given player.
+        """
+        return self._players
+
+    @property
     def player(self):
         """
         Represents the host player in the Minecraft world.
 
-        The :class:`Player` instance returned by this attribute provides
-        properties which can be used to query the status of, and manipulate
-        the state of, the host player in the Minecraft world.
+        The :class:`HostPlayer` instance returned by this attribute provides
+        properties which can be used to query the status of, and manipulate the
+        state of, the host player in the Minecraft world.
         """
         return self._player
 

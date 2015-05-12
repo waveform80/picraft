@@ -124,6 +124,24 @@ class Vector(namedtuple('Vector', ('x', 'y', 'z'))):
         except AttributeError:
             return Vector(self.x % other, self.y % other, self.z % other)
 
+    def __pow__(self, other):
+        try:
+            return Vector(self.x ** other.x, self.y ** other.y, self.z ** other.z)
+        except AttributeError:
+            return Vector(self.x ** other, self.y ** other, self.z ** other)
+
+    def __lshift__(self, other):
+        try:
+            return Vector(self.x << other.x, self.y << other.y, self.z << other.z)
+        except AttributeError:
+            return Vector(self.x << other, self.y << other, self.z << other)
+
+    def __rshift__(self, other):
+        try:
+            return Vector(self.x >> other.x, self.y >> other.y, self.z >> other.z)
+        except AttributeError:
+            return Vector(self.x >> other, self.y >> other, self.z >> other)
+
     def __neg__(self):
         return Vector(-self.x, -self.y, -self.z)
 

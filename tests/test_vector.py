@@ -87,6 +87,24 @@ def test_vector_mod():
     with pytest.raises(TypeError):
         2 % Vector(1, 1, 1)
 
+def test_vector_pow():
+    assert Vector(1, 2, 3) ** Vector(2, 2, 2) == Vector(1, 4, 9)
+    assert Vector(1, 2, 3) ** 2 == Vector(1, 4, 9)
+    with pytest.raises(TypeError):
+        2 ** Vector(1, 2, 3)
+
+def test_vector_lshift():
+    assert Vector(1, 2, 3) << Vector(1, 2, 3) == Vector(2, 8, 24)
+    assert Vector(1, 2, 3) << 1 == Vector(2, 4, 6)
+    with pytest.raises(TypeError):
+        2 << Vector(1, 2, 3)
+
+def test_vector_rshift():
+    assert Vector(2, 8, 16) >> Vector(0, 1, 2) == Vector(2, 4, 4)
+    assert Vector(2, 8, 16) >> 1 == Vector(1, 4, 8)
+    with pytest.raises(TypeError):
+        2 >> Vector(1, 1, 1)
+
 def test_vector_neg():
     assert -Vector(1, 1, 1) == Vector(-1, -1, -1)
 
