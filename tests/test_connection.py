@@ -1,6 +1,6 @@
 # vim: set et sw=4 sts=4 fileencoding=utf-8:
 #
-# An alternate Python Minecraft lirbary for the Rasperry-Pi
+# An alternate Python Minecraft library for the Rasperry-Pi
 # Copyright (c) 2013-2015 Dave Jones <dave@waveform.org.uk>
 #
 # Redistribution and use in source and binary forms, with or without
@@ -38,11 +38,12 @@ str = type('')
 
 import pytest
 import socket
+import select
 try:
     from unittest import mock
 except ImportError:
     import mock
-from picraft import Connection, BatchStarted, BatchNotStarted
+from picraft import Connection, ConnectionError, BatchStarted, BatchNotStarted
 
 
 def test_connection_init():
@@ -60,35 +61,45 @@ def test_connection_close():
         assert s.close.called_once_with()
 
 def test_connection_send():
-    with mock.patch('socket.socket'):
+    with mock.patch('socket.socket'), mock.patch('select.select'):
+        select.select.return_value = [False]
         conn = Connection('myhost', 1234)
-        conn.send('foo()\n')
+        conn.send('foo()')
         assert conn._wfile.write.called_once_with(b'foo()\n')
+
+def test_connection_send_error():
+    with mock.patch('socket.socket'), mock.patch('select.select'):
+        select.select.return_value = [True]
+        conn = Connection('myhost', 1234)
+        conn._rfile.readline.return_value = b'Fail\n'
+        with pytest.raises(ConnectionError):
+            conn.send('foo()')
 
 def test_connection_transact():
     with mock.patch('socket.socket'):
         conn = Connection('myhost', 1234)
         conn._rfile.readline.return_value = 'bar\n'
-        result = conn.transact('foo()\n')
+        result = conn.transact('foo()')
         assert conn._wfile.write.called_once_with(b'foo()\n')
-        assert result == 'bar\n'
+        assert result == 'bar'
 
 def test_connection_batch_send():
-    with mock.patch('socket.socket'):
+    with mock.patch('socket.socket'), mock.patch('select.select'):
+        select.select.return_value = [False]
         conn = Connection('myhost', 1234)
         with conn.batch_start():
-            conn.send('foo()\n')
-            conn.send('bar()\n')
-            conn.send('baz()\n')
+            conn.send('foo()')
+            conn.send('bar()')
+            conn.send('baz()')
         assert conn._wfile.write.called_once_with(b'foo()\nbar()\nbaz()\n')
 
 def test_connection_batch_forget():
     with mock.patch('socket.socket'):
         conn = Connection('myhost', 1234)
         conn.batch_start()
-        conn.send('foo()\n')
-        conn.send('bar()\n')
-        conn.send('baz()\n')
+        conn.send('foo()')
+        conn.send('bar()')
+        conn.send('baz()')
         conn.batch_forget()
         assert not conn._wfile.write.called
 
@@ -97,9 +108,9 @@ def test_connection_batch_exception():
         conn = Connection('myhost', 1234)
         try:
             with conn.batch_start():
-                conn.send('foo()\n')
-                conn.send('bar()\n')
-                conn.send('baz()\n')
+                conn.send('foo()')
+                conn.send('bar()')
+                conn.send('baz()')
                 raise Exception('boo')
         except Exception:
             pass
@@ -117,4 +128,11 @@ def test_connection_batch_send_fail():
         conn = Connection('myhost', 1234)
         with pytest.raises(BatchNotStarted):
             conn.batch_send()
+
+def test_connection_ignore_errors():
+    with mock.patch('socket.socket'), mock.patch('select.select'):
+        select.select.side_effect = [[True], [False]]
+        conn = Connection('myhost', 1234, ignore_errors=True)
+        conn.send('foo()')
+        assert conn._socket.recv.called_once_with(1500)
 

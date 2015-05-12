@@ -1,6 +1,6 @@
 # vim: set et sw=4 sts=4 fileencoding=utf-8:
 #
-# An alternate Python Minecraft lirbary for the Rasperry-Pi
+# An alternate Python Minecraft library for the Rasperry-Pi
 # Copyright (c) 2013-2015 Dave Jones <dave@waveform.org.uk>
 #
 # Redistribution and use in source and binary forms, with or without

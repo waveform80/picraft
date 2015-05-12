@@ -1,6 +1,6 @@
 # vim: set et sw=4 sts=4 fileencoding=utf-8:
 #
-# An alternate Python Minecraft lirbary for the Rasperry-Pi
+# An alternate Python Minecraft library for the Rasperry-Pi
 # Copyright (c) 2013-2015 Dave Jones <dave@waveform.org.uk>
 #
 # Redistribution and use in source and binary forms, with or without
@@ -36,369 +36,66 @@ from __future__ import (
 str = type('')
 
 
-import math
-import socket
-import select
-import logging
-from collections import namedtuple
+from .connection import Connection
+from .vector import Vector
 
 
-class Error(Exception):
-    "Base class for all PiCraft exceptions"
-
-class ConnectionError(Error):
-    "Base class for PiCraft errors relating to network communications"
-
-class BatchStarted(ConnectionError):
-    "Exception raised when a batch is started before a prior one is complete"
-
-class BatchNotStarted(ConnectionError):
-    "Exception raised when a batch is terminated when none has been started"
-
-
-class Vector(namedtuple('Vector', ('x', 'y', 'z'))):
+class Entity(object):
     """
-    Represents a 3-dimensional vector.
+    Represents a player within the game world.
 
-    This tuple derivative represents a 3-dimensional vector with x, y, z
-    components. The class supports simple arithmetic operations with other
-    vectors such as addition and subtraction, along with multiplication and
-    division with scalars. Taking the absolute value of the vector will
-    return its magnitude (according to `Pythagoras' theorem`_). For example::
-
-        >>> v1 = Vector(1, 1, 1)
-        >>> v2 = Vector(2, 2, 2)
-        >>> v1 + v2
-        Vector(3, 3, 3)
-        >>> 2 * v2
-        Vector(4, 4, 4)
-        >>> abs(v1)
-        1.0
-
-    Within the Minecraft world, the X,Z plane represents the ground, while the
-    Y vector represents height.
-
-    .. Pythagoras' theorem: https://en.wikipedia.org/wiki/Pythagorean_theorem
-
-    .. note::
-
-        Note that, as a derivative of tuple, instances of this class are
-        immutable. That is, you cannot directly manipulate the x, y, and z
-        attributes; instead you must create a new vector (for example, by
-        adding two vectors together). The advantage of this is that vector
-        instances can be used in sets or as dictionary keys.
+    Players are uniquely identified by their :attr:`player_id`. Instances
+    of this class are available from the :attr:`Game.players` collection. It
+    provides properties to query and manipulate the position and settings of
+    the player.
     """
-
-    def __new__(cls, x=0, y=0, z=0):
-        return super(Vector, cls).__new__(cls, x, y, z)
-
-    @classmethod
-    def from_string(cls, s):
-        x, y, z = s.split(',', 2)
-        return cls(float(x), float(y), float(z))
-
-    def __str__(self):
-        return '%s,%s,%s' % (self.x, self.y, self.z)
-
-    def __add__(self, other):
-        try:
-            return Vector(self.x + other.x, self.y + other.y, self.z + other.z)
-        except AttributeError:
-            return Vector(self.x + other, self.y + other, self.z + other)
-
-    __radd__ = __add__
-
-    def __sub__(self, other):
-        try:
-            return Vector(self.x - other.x, self.y - other.y, self.z - other.z)
-        except AttributeError:
-            return Vector(self.x - other, self.y - other, self.z - other)
-
-    def __mul__(self, other):
-        try:
-            return Vector(self.x * other.x, self.y * other.y, self.z * other.z)
-        except AttributeError:
-            return Vector(self.x * other, self.y * other, self.z * other)
-
-    __rmul__ = __mul__
-
-    def __truediv__(self, other):
-        try:
-            return Vector(self.x / other.x, self.y / other.y, self.z / other.z)
-        except AttributeError:
-            return Vector(self.x / other, self.y / other, self.z / other)
-
-    def __floordiv__(self, other):
-        try:
-            return Vector(self.x // other.x, self.y // other.y, self.z // other.z)
-        except AttributeError:
-            return Vector(self.x // other, self.y // other, self.z // other)
-
-    def __mod__(self, other):
-        try:
-            return Vector(self.x % other.x, self.y % other.y, self.z % other.z)
-        except AttributeError:
-            return Vector(self.x % other, self.y % other, self.z % other)
-
-    def __neg__(self):
-        return Vector(-self.x, -self.y, -self.z)
-
-    def __pos__(self):
-        return self
-
-    def __abs__(self):
-        return Vector(abs(self.x), abs(self.y), abs(self.z))
-
-    def __bool__(self):
-        return self.x or self.y or self.z
-
-    # Py2 compat
-    __nonzero__ = __bool__
-    __div__ = __truediv__
-
-    def dot(self, other):
-        return self.x * other.x + self.y * other.y + self.z * other.z
-
-    def cross(self, other):
-        return Vector(
-                self.y * other.z - self.z * other.y,
-                self.z * other.x - self.x * other.z,
-                self.x * other.y - self.y * other.x)
-
-    def distance_to(self, other):
-        return math.sqrt(
-                (self.x - other.x) ** 2 +
-                (self.y - other.y) ** 2 +
-                (self.z - other.z) ** 2)
-
-    @property
-    def magnitude(self):
-        return math.sqrt(self.x ** 2 + self.y ** 2 + self.z ** 2)
-
-    @property
-    def unit(self):
-        if self.magnitude > 0:
-            return self / self.magnitude
-        else:
-            return self
-
-
-class Connection(object):
-    """
-    Represents the connection to the Minecraft server.
-
-    The *host* parameter specifies the hostname or IP address of the Minecraft
-    server, while the port specifies the port to connect to (these typically
-    take the values "127.0.0.1" and 4711 respectively).
-
-    Users will rarely need to construct a :class:`Connection` object
-    themselves. An instance of this class is constructed by
-    :class:`Game` to handle communication with the game server
-    (:attr:`Game.connection`).
-
-    The most important aspect of this class is its ability to "batch"
-    transmissions together. Typically, the :meth:`send` method is used to
-    transmit requests to the Minecraft server. When this is called normally
-    (outside of a batch), it immediately transmits the requested data. However,
-    if :meth:`batch_start` has been called first, the data is *not* sent
-    immediately, but merely appended to the batch. The :meth:`batch_send`
-    method can then be used to transmit all requests simultaneously (or
-    alternatively, :meth:`batch_forget` can be used to discard the list). See
-    the docs of these methods for more information.
-    """
-    encoding = 'ascii'
-    timeout = 0.2 # seconds
-
-    def __init__(self, host, port):
-        self._socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self._socket.connect((host, port))
-        self._rfile = self._socket.makefile('rb', -1)
-        self._wfile = self._socket.makefile('wb', 0) # no buffering for writes
-        self._batch = None
-
-    def close(self):
-        """
-        Closes the connection.
-
-        This method can be used to close down the connection to the game
-        server. It is typically called from :meth:`Game.close` rather
-        than being called directly.
-        """
-        try:
-            self.batch_forget()
-        except BatchNotStarted:
-            pass
-        if self._rfile:
-            self._rfile.close()
-            self._rfile = None
-        if self._wfile:
-            self._wfile.close()
-            self._wfile = None
-        if self._socket:
-            self._socket.close()
-            self._socket = None
-
-    def _drain(self):
-        while True:
-            readable, _, _ = select.select([self._socket], [], [], 0)
-            if not readable:
-                break
-            data = self._socket.recv(1500)
-            print(data)
-
-    def _send(self, buf):
-        if not isinstance(buf, bytes):
-            buf = buf.encode(self.encoding)
-        # XXX Is this actually needed? Only seems to be when we've screwed up
-        # the protocol (such as it is...)
-        self._drain()
-        self._wfile.write(buf)
-        logging.debug('picraft >: %r' % buf)
-
-    def send(self, buf):
-        """
-        Transmits the contents of *buf* to the connected server.
-
-        If no batch has been initiated (with :meth:`batch_start`), this method
-        immediately communicates the contents of *buf* to the connected
-        Minecraft server. If *buf* is a unicode string, the method attempts
-        to encode the content in a byte-encoding prior to transmission (the
-        encoding used is the :attr:`encoding` attribute of the class which
-        defaults to "ascii").
-
-        If a batch has been initiated, the contents of *buf* are appended to
-        the latest batch that was started (batches can be nested; see
-        :meth:`batch_start` for more information).
-        """
-        if self._batch is not None:
-            self._batch.append(buf)
-        else:
-            self._send(buf)
-
-    def transact(self, buf):
-        """
-        Transmits the contents of *buf*, and returns the reply string.
-
-        This method immediately communicates the contents of *buf* to the
-        connected server, then reads a line of data in reply and returns it.
-
-        .. note::
-
-            This method ignores the batch mechanism entirely as transmission
-            is required in order to obtain the response. As this method
-            is typically used to implement "getters", this is not usually an
-            issue but it is worth bearing in mind.
-        """
-        self._send(buf)
-        readable, _, _ = select.select([self._socket], [], [], self.timeout)
-        if readable:
-            result = self._rfile.readline()
-            logging.debug('picraft <: %r' % result)
-        else:
-            raise ConnectionError('no response to "%s"' % buf.rstrip())
-        return result
-
-    def batch_start(self):
-        """
-        Starts a new batch transmission.
-
-        When called, this method starts a new batch transmission. All
-        subsequent calls to :meth:`send` will append data to the batch buffer
-        instead of actually sending the data.
-
-        To terminate the batch transmission, call :meth:`batch_send` or
-        :meth:`batch_forget`. If a batch has already been started, a
-        :exc:`BatchStarted` exception is raised.
-
-        .. note::
-
-            This method can be used as a context manager
-            (:ref:`the-with-statement`) which will cause a batch to be started,
-            and implicitly terminated with :meth:`batch_send` or
-            :meth:`batch_forget` depending on whether an exception is raised
-            within the enclosed block.
-        """
-        if self._batch is not None:
-            raise BatchStarted('batch already started')
-        self._batch = []
-        return self
-
-    def batch_send(self):
-        """
-        Sends the batch transmission.
-
-        This method is called after :meth:`batch_start` and :meth:`send` have
-        been used to build up a list of batch commands. All the commands will
-        be combined and sent to the server as a single transmission.
-
-        If no batch is currently in progress, a :exc:`BatchNotStarted`
-        exception will be raised.
-        """
-        if self._batch is None:
-            raise BatchNotStarted('no batch in progress')
-        self._send(''.join(self._batch))
-        self._batch = None
-
-    def batch_forget(self):
-        """
-        Terminates a batch transmission without sending anything.
-
-        This method is called after :meth:`batch_start` and :meth:`send`
-        have been used to build up a list of batch commands. All commands in
-        the batch will be cleared without sending anything to the server.
-
-        If no batch is currently in progress, a :exc:`BatchNotStarted`
-        exception will be raised.
-        """
-        if self._batch is None:
-            raise BatchNotStarted('no batch in progress')
-        self._batch = None
-
-    def __enter__(self):
-        return self
-
-    def __exit__(self, exc_type, exc_value, exc_tb):
-        if exc_type is None:
-            self.batch_send()
-        else:
-            self.batch_forget()
+    def __init__(self, connection, player_id):
+        self._connection = connection
+        self._player_id = player_id
 
 
 class Player(object):
     """
-    Represents the player character within the game world.
+    Represents the host player within the game world.
 
     An instance of this class is accessible as the :attr:`Game.player`
     attribute. It provides properties to query and manipulate the position
-    and settings of the player.
+    and settings of the host player.
     """
-    def __init__(self, game):
-        self._game = game
+    def __init__(self, connection):
+        self._connection = connection
 
     def _get_pos(self):
-        return Vector.from_string(self._game.connection.transact('player.getPos()\n'))
+        return Vector.from_string(
+            self._connection.transact('player.getPos()'),
+            type=float)
     def _set_pos(self, value):
-        self._game.connection.send('player.setPos(%s)\n' % str(value))
-    pos = property(_get_pos, _set_pos,
+        self._connection.send('player.setPos(%s)' % str(value))
+    pos = property(
+        lambda self: self._get_pos(),
+        lambda self: self._set_pos(),
         doc="""
-        The position of the character within the world.
+        The precise position of the host player within the world.
 
-        This property returns the position of the player character within the
-        Minecraft world, as a :class:`Vector` instance. You can assign to this
-        property to set the position of the player.
+        This property returns the position of the host player within the
+        Minecraft world, as a :class:`Vector` instance. This is the *precise*
+        position of the player including decimal places (representing portions
+        of a tile). You can assign to this property to reposition the player.
         """)
 
     def _get_tile_pos(self):
-        return Vector.from_string(self._game.connection.transact('player.getTile()\n'))
+        return Vector.from_string(self._connection.transact('player.getTile()'))
     def _set_tile_pos(self, value):
-        self._game.connection.send('player.setTile(%s)\n' % str(value))
-    tile_pos = property(_get_tile_pos, _set_tile_pos,
+        self._connection.send('player.setTile(%s)' % str(value))
+    tile_pos = property(
+        lambda self: self._get_tile_pos(),
+        lambda self: self._set_tile_pos(),
         doc="""
-        The position of the tile underneath the character within the world.
+        The position of the host player within the world to the nearest block.
 
-        This property returns the position of the tile that the player
-        character is standing on in the Minecraft world, as a :class:`Vector`
-        instance. You can assign to this property to transport the player.
+        This property returns the position of the host player in the Minecraft
+        world to the nearest block, as a :class:`Vector` instance. You can
+        assign to this property to reposition the player.
         """)
 
 
@@ -437,11 +134,11 @@ class Game(object):
     @property
     def player(self):
         """
-        Represents the player character in the Minecraft world.
+        Represents the host player in the Minecraft world.
 
         The :class:`Player` instance returned by this attribute provides
         properties which can be used to query the status of, and manipulate
-        the state of, the player's character in the Minecraft world.
+        the state of, the host player in the Minecraft world.
         """
         return self._player
 
@@ -453,9 +150,7 @@ class Game(object):
         further requests can be made. This method is implicitly called when
         the class is used as a context manager.
         """
-        if self.connection:
-            self.connection.close()
-            self.connection = None
+        self.connection.close()
 
     def say(self, message):
         """
@@ -466,7 +161,7 @@ class Game(object):
         console and displayed immediately.
         """
         for line in message.splitlines():
-            self.connection.send('chat.post(%s)\n' % line)
+            self.connection.send('chat.post(%s)' % line)
 
     def __enter__(self):
         return self

@@ -27,42 +27,25 @@
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 
-"""
-The picraft package consists of several modules which permit access to and
-modification of a Minecraft world. The package is intended as an alternative
-Python API to the "official" Minecraft Python API (for reasons explained in the
-:ref:`faq`).
-
-The classes defined in most modules of this package are available directly
-from the :mod:`picraft` namespace. In other words, the following code is
-typically all that is required to access classes in this package::
-
-    import picraft
-
-The following sections document the various modules available within the
-package:
-
-* :mod:`picraft.game`
-"""
-
 from __future__ import (
     unicode_literals,
     absolute_import,
     print_function,
     division,
     )
-
-# Make Py2's str equivalent to Py3's
 str = type('')
 
 
-from .exc import (
-    Error,
-    ConnectionError,
-    BatchStarted,
-    BatchNotStarted,
-    )
-from .vector import Vector
-from .connection import Connection
-from .game import Player, Game
+class Error(Exception):
+    "Base class for all PiCraft exceptions"
+
+class ConnectionError(Error):
+    "Base class for PiCraft errors relating to network communications"
+
+class BatchStarted(ConnectionError):
+    "Exception raised when a batch is started before a prior one is complete"
+
+class BatchNotStarted(ConnectionError):
+    "Exception raised when a batch is terminated when none has been started"
+
 
