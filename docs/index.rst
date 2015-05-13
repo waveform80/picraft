@@ -17,6 +17,7 @@ Table of Contents
    faq
    api
    api_game
+   protocol
    changelog
    license
 
