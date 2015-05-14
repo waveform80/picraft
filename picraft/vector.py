@@ -195,7 +195,18 @@ def vector_range(start, stop=None, step=Vector(1, 1, 1), order='xyz'):
         start = Vector()
     if order not in ('xyz', 'xzy', 'zxy', 'yxz', 'yzx', 'zyx'):
         raise ValueError('invalid order: %s' % order)
-    ranges = [
+    order = ''.join(reversed(order))
+    irange, jrange, krange = [
         range(getattr(start, axis), getattr(stop, axis), getattr(step, axis))
         for axis in order
         ]
+    xindex, yindex, zindex = [
+        order.index(axis)
+        for axis in 'xyz'
+        ]
+    for i in irange:
+        for j in jrange:
+            for k in krange:
+                v = (i, j, k)
+                yield Vector(v[xindex], v[yindex], v[zindex])
+
