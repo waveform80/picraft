@@ -73,9 +73,9 @@ class World(object):
 
     The :meth:`say` method can be used to send commands to the console, while
     the :attr:`player` attribute can be used to manipulate or query the status
-    of the player character in the world. The :attr:`entities` attribute can be
-    used to manipulate or query other objects within the world (this object can
-    be iterated over to discover entities).
+    of the player character in the world. The :attr:`players` attribute can be
+    used to manipulate or query other players within the world (this object can
+    be iterated over to discover players).
     """
 
     def __init__(self, host='localhost', port=4711):
@@ -89,10 +89,11 @@ class World(object):
         """
         Represents the connection to the Minecraft server.
 
-        The :class:`Connection` instance contained in this attribute represents
-        the connection to the Minecraft server and provides various methods for
-        communicating with it. Users will very rarely need to access this
-        attribute unless they wish to manually manipulate the Minecraft Pi API.
+        The :class:`~picraft.connection.Connection` instance contained in this
+        attribute represents the connection to the Minecraft server and
+        provides various methods for communicating with it. Users will very
+        rarely need to access this attribute unless they wish to manually
+        manipulate the Minecraft Pi API.
         """
         return self._connection
 
@@ -101,10 +102,10 @@ class World(object):
         """
         Represents all player entities in the Minecraft world.
 
-        The :class:`Players` instance returned by this attribute provides a
-        mapping which can be used to query the set of players currently in the
-        Minecraft world, and to obtain a :class:`Player` instance representing
-        any given player.
+        The :class:`~picraft.player.Players` instance returned by this
+        attribute provides a mapping which can be used to query the set of
+        players currently in the Minecraft world, and to obtain a
+        :class:`~picraft.player.Player` instance representing any given player.
         """
         return self._players
 
@@ -113,9 +114,9 @@ class World(object):
         """
         Represents the host player in the Minecraft world.
 
-        The :class:`HostPlayer` instance returned by this attribute provides
-        properties which can be used to query the status of, and manipulate the
-        state of, the host player in the Minecraft world.
+        The :class:`~picraft.player.HostPlayer` instance returned by this
+        attribute provides properties which can be used to query the status of,
+        and manipulate the state of, the host player in the Minecraft world.
         """
         return self._player
 
@@ -124,9 +125,9 @@ class World(object):
         """
         Represents the blocks making up the Minecraft world.
 
-        The :class:`Blocks` instance returned by this attribute provides the
-        ability to manipulate and query blocks in the Minecraft world
-        individually or en masse.
+        The :class:`~picraft.block.Blocks` instance returned by this attribute
+        provides the ability to manipulate and query blocks in the Minecraft
+        world individually or en masse.
         """
         return self._blocks
 

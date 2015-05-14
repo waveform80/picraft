@@ -38,6 +38,9 @@ The exc module defines the various exception classes specific to picraft.
 The following items are defined in the module:
 
 
+Exceptions
+==========
+
 .. autoexception:: Error
 
 .. autoexception:: ConnectionError

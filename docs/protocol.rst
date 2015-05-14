@@ -29,7 +29,7 @@ Overall Operation
 The Minecraft protocol is a text-based "interactive" line oriented protocol.
 All communication is initiated by the client and consists of single lines of
 text which MAY generate a single line of text in response. Lines MUST terminate
-with ASCII character 10 (line feed, usually shortened to LF or \n).
+with ASCII character 10 (line feed, usually shortened to LF or \\n).
 
 Protocol implementations MUST use the ASCII encoding (non-ASCII characters are
 not ignored, or an error, but their effect is undefined).

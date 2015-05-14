@@ -130,9 +130,9 @@ class Player(object):
     """
     Represents a player within the game world.
 
-    Players are uniquely identified by their :attr:`player_id`. Instances
-    of this class are available from the :attr:`Game.players` mapping. It
-    provides properties to query and manipulate the position and settings of
+    Players are uniquely identified by their *player_id*. Instances of this
+    class are available from the :attr:`~picraft.world.World.players` mapping.
+    It provides properties to query and manipulate the position and settings of
     the player.
     """
 
