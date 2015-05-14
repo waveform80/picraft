@@ -27,6 +27,33 @@
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 
+"""
+The vector module defines the :class:`Vector` class, which is the usual method
+of represent coordinates or vectors when dealing with the Minecraft world. It
+also provides the :func:`vector_range` function for generating a sequence of
+vectors.
+
+.. note::
+
+    All items in this module are available from the :mod:`picraft` namespace
+    without having to import :mod:`picraft.vector` directly.
+
+The following items are defined in the module:
+
+
+Vector
+======
+
+.. autoclass: Vector(x, y, z)
+    :members:
+
+
+vector_range
+============
+
+.. autofunction:: vector_range
+"""
+
 from __future__ import (
     unicode_literals,
     absolute_import,

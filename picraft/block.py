@@ -27,6 +27,115 @@
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 
+"""
+The block module defines the :class:`Block` class, which is used to represent
+the type of a block and any associated data it may have, and the
+:class:`Blocks` class which is used to implement the
+:attr:`~picraft.world.World.blocks` attribute on the
+:class:`~picraft.world.World` class.
+
+.. note::
+
+    All items in this module are available from the :mod:`picraft` namespace
+    without having to import :mod:`picraft.block` directly.
+
+The following items are defined in the module:
+
+Block
+=====
+
+.. autoclass: Block(id, data)
+    :members:
+
+
+Blocks
+======
+
+.. autoclass: Blocks
+    :members:
+
+
+Compatibility
+=============
+
+Finally, the module also contains compatibility values equivalent to those
+in the mcpi.block module of the reference implementation. Each value represents
+the type of a block with no associated data:
+
+.. autodata:: AIR
+.. autodata:: STONE
+.. autodata:: GRASS
+.. autodata:: DIRT
+.. autodata:: COBBLESTONE
+.. autodata:: WOOD_PLANKS
+.. autodata:: SAPLING
+.. autodata:: BEDROCK
+.. autodata:: WATER_FLOWING
+.. autodata:: WATER
+.. autodata:: WATER_STATIONARY
+.. autodata:: LAVA_FLOWING
+.. autodata:: LAVA
+.. autodata:: LAVA_STATIONARY
+.. autodata:: SAND
+.. autodata:: GRAVEL
+.. autodata:: GOLD_ORE
+.. autodata:: IRON_ORE
+.. autodata:: COAL_ORE
+.. autodata:: WOOD
+.. autodata:: LEAVES
+.. autodata:: GLASS
+.. autodata:: LAPIS_LAZULI_ORE
+.. autodata:: LAPIS_LAZULI_BLOCK
+.. autodata:: SANDSTONE
+.. autodata:: BED
+.. autodata:: COBWEB
+.. autodata:: GRASS_TALL
+.. autodata:: WOOL
+.. autodata:: FLOWER_YELLOW
+.. autodata:: FLOWER_CYAN
+.. autodata:: MUSHROOM_BROWN
+.. autodata:: MUSHROOM_RED
+.. autodata:: GOLD_BLOCK
+.. autodata:: IRON_BLOCK
+.. autodata:: STONE_SLAB_DOUBLE
+.. autodata:: STONE_SLAB
+.. autodata:: BRICK_BLOCK
+.. autodata:: TNT
+.. autodata:: BOOKSHELF
+.. autodata:: MOSS_STONE
+.. autodata:: OBSIDIAN
+.. autodata:: TORCH
+.. autodata:: FIRE
+.. autodata:: STAIRS_WOOD
+.. autodata:: CHEST
+.. autodata:: DIAMOND_ORE
+.. autodata:: DIAMOND_BLOCK
+.. autodata:: CRAFTING_TABLE
+.. autodata:: FARMLAND
+.. autodata:: FURNACE_INACTIVE
+.. autodata:: FURNACE_ACTIVE
+.. autodata:: DOOR_WOOD
+.. autodata:: LADDER
+.. autodata:: STAIRS_COBBLESTONE
+.. autodata:: DOOR_IRON
+.. autodata:: REDSTONE_ORE
+.. autodata:: SNOW
+.. autodata:: ICE
+.. autodata:: SNOW_BLOCK
+.. autodata:: CACTUS
+.. autodata:: CLAY
+.. autodata:: SUGAR_CANE
+.. autodata:: FENCE
+.. autodata:: GLOWSTONE_BLOCK
+.. autodata:: BEDROCK_INVISIBLE
+.. autodata:: STONE_BRICK
+.. autodata:: GLASS_PANE
+.. autodata:: MELON
+.. autodata:: FENCE_GATE
+.. autodata:: GLOWING_OBSIDIAN
+.. autodata:: NETHER_REACTOR_CORE
+"""
+
 from __future__ import (
     unicode_literals,
     absolute_import,

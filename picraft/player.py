@@ -27,6 +27,42 @@
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 
+"""
+The player module defines the :class:`Players` class, which is available via
+the :attr:`~picraft.world.World.players` attribute, the :class:`Player` class,
+which represents an arbitrary player in the world, and the :class:`HostPlayer`
+class which represents the player on the host machine (accessible via the
+:attr:`~picraft.world.World.player` attribute).
+
+.. note::
+
+    All items in this module are available from the :mod:`picraft` namespace
+    without having to import :mod:`picraft.player` directly.
+
+The following items are defined in the module:
+
+
+Players
+=======
+
+.. autoclass: Players
+    :members:
+
+
+Player
+======
+
+.. autoclass:: Player
+    :members:
+
+
+HostPlayer
+==========
+
+.. autoclass:: HostPlayer
+    :members:
+"""
+
 from __future__ import (
     unicode_literals,
     absolute_import,

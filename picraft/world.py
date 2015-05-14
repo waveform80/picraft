@@ -27,6 +27,26 @@
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 
+"""
+The world module defines the :class:`World` class, which is the usual way of
+starting a connection to a Minecraft server and which then provides various
+attributes allowing the user to query and manipulate that world.
+
+.. note::
+
+    All items in this module are available from the :mod:`picraft` namespace
+    without having to import :mod:`picraft.world` directly.
+
+The following items are defined in the module:
+
+
+World
+=====
+
+.. autoclass: World
+    :members:
+"""
+
 from __future__ import (
     unicode_literals,
     absolute_import,

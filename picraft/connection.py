@@ -27,6 +27,27 @@
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 
+"""
+The connection module defines the :class:`Connection` class, which represents
+the network connection to the Minecraft server. Its primary purpose for users
+of the library is to initiate batch sending via the
+:meth:`Connection.batch_start` method.
+
+.. note::
+
+    All items in this module are available from the :mod:`picraft` namespace
+    without having to import :mod:`picraft.connection` directly.
+
+The following items are defined in the module:
+
+
+Connection
+==========
+
+.. autoclass: Connection
+    :members:
+"""
+
 from __future__ import (
     unicode_literals,
     absolute_import,
