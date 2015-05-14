@@ -18,6 +18,7 @@ Table of Contents
    api
    api_block
    api_connection
+   api_exc
    api_player
    api_vector
    api_world

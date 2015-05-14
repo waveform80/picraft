@@ -68,7 +68,7 @@ intersphinx_mapping = {
 
 # -- Options for HTML output ----------------------------------------------
 
-html_theme = 'default'
+html_theme = 'alabaster'
 #html_theme_options = {}
 #html_theme_path = []
 #html_title = None

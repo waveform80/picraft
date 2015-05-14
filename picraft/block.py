@@ -310,7 +310,7 @@ class Blocks(object):
     one. Hence, ``Vector():Vector(x=5,1,1)`` represents the coordinates (0,0,0)
     to (4,0,0).
 
-    .. half-open: http://python-history.blogspot.co.uk/2013/10/why-python-uses-0-based-indexing.html
+    .. _half-open: http://python-history.blogspot.co.uk/2013/10/why-python-uses-0-based-indexing.html
 
     .. warning:
 

@@ -27,6 +27,27 @@
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 
+"""
+The exc module defines the various exception classes specific to picraft.
+
+.. note::
+
+    All items in this module are available from the :mod:`picraft` namespace
+    without having to import :mod:`picraft.exc` directly.
+
+The following items are defined in the module:
+
+
+.. autoexception:: Error
+
+.. autoexception:: ConnectionError
+
+.. autoexception:: BatchStarted
+
+.. autoexception:: BatchNotStarted
+
+"""
+
 from __future__ import (
     unicode_literals,
     absolute_import,

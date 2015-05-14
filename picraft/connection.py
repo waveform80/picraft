@@ -79,8 +79,9 @@ class Connection(object):
     implementation and ignore all errors for commands which do not return data.
 
     Users will rarely need to construct a :class:`Connection` object
-    themselves. An instance of this class is constructed by :class:`Game` to
-    handle communication with the game server (:attr:`Game.connection`).
+    themselves. An instance of this class is constructed by
+    :class:`~picraft.world.World` to handle communication with the game server
+    (:attr:`~picraft.world.World.connection`).
 
     The most important aspect of this class is its ability to "batch"
     transmissions together. Typically, the :meth:`send` method is used to
@@ -113,8 +114,8 @@ class Connection(object):
         Closes the connection.
 
         This method can be used to close down the connection to the game
-        server. It is typically called from :meth:`Game.close` rather
-        than being called directly.
+        server. It is typically called from :meth:`~picraft.world.World.close`
+        rather than being called directly.
         """
         try:
             self.batch_forget()
@@ -162,9 +163,9 @@ class Connection(object):
 
     def _receive(self, required=False):
         """
-        Read a line from the socket. If required is True, block until a
-        line becomes available. Otherwise, return after the timeout. If the
-        line read is "Fail", raise a :exc:`ConnectionError` exception.
+        Read a line from the socket. If required is True, block until a line
+        becomes available. Otherwise, return after the timeout. If the line
+        read is "Fail", raise a :exc:`~picraft.exc.ConnectionError` exception.
         """
         if not required:
             if not self._readable(self.timeout):
@@ -225,7 +226,7 @@ class Connection(object):
 
         To terminate the batch transmission, call :meth:`batch_send` or
         :meth:`batch_forget`. If a batch has already been started, a
-        :exc:`BatchStarted` exception is raised.
+        :exc:`~picraft.exc.BatchStarted` exception is raised.
 
         .. note::
 
@@ -248,8 +249,8 @@ class Connection(object):
         been used to build up a list of batch commands. All the commands will
         be combined and sent to the server as a single transmission.
 
-        If no batch is currently in progress, a :exc:`BatchNotStarted`
-        exception will be raised.
+        If no batch is currently in progress, a
+        :exc:`~picraft.exc.BatchNotStarted` exception will be raised.
         """
         if self._batch is None:
             raise BatchNotStarted('no batch in progress')
@@ -270,8 +271,8 @@ class Connection(object):
         have been used to build up a list of batch commands. All commands in
         the batch will be cleared without sending anything to the server.
 
-        If no batch is currently in progress, a :exc:`BatchNotStarted`
-        exception will be raised.
+        If no batch is currently in progress, a
+        :exc:`~picraft.exc.BatchNotStarted` exception will be raised.
         """
         if self._batch is None:
             raise BatchNotStarted('no batch in progress')

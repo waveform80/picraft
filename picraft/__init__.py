@@ -42,7 +42,12 @@ typically all that is required to access classes in this package::
 The following sections document the various modules available within the
 package:
 
-* :mod:`picraft.game`
+* :mod:`picraft.block`
+* :mod:`picraft.connection`
+* :mod:`picraft.exc`
+* :mod:`picraft.player`
+* :mod:`picraft.vector`
+* :mod:`picraft.world`
 """
 
 from __future__ import (
