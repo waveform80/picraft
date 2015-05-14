@@ -41,9 +41,9 @@ from .player import Player, HostPlayer, Players
 from .block import Blocks
 
 
-class Game(object):
+class World(object):
     """
-    Represents a Minecraft game.
+    Represents a Minecraft world.
 
     This is the primary class that users interact with. Construct an instance
     of this class, optionally specifying the *host* and *port* of the server
@@ -53,8 +53,8 @@ class Game(object):
 
     The :meth:`say` method can be used to send commands to the console, while
     the :attr:`player` attribute can be used to manipulate or query the status
-    of the player character in the game. The :attr:`entities` attribute can be
-    used to manipulate or query other objects within the game (this object can
+    of the player character in the world. The :attr:`entities` attribute can be
+    used to manipulate or query other objects within the world (this object can
     be iterated over to discover entities).
     """
 
@@ -114,9 +114,9 @@ class Game(object):
         """
         Closes the connection to the game server.
 
-        After this method is called, the game connection is closed and no
-        further requests can be made. This method is implicitly called when
-        the class is used as a context manager.
+        After this method is called, the connection is closed and no further
+        requests can be made. This method is implicitly called when the class
+        is used as a context manager.
         """
         self.connection.close()
 

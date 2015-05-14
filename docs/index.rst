@@ -16,7 +16,11 @@ Table of Contents
    recipes
    faq
    api
-   api_game
+   api_block
+   api_connection
+   api_player
+   api_vector
+   api_world
    protocol
    changelog
    license
