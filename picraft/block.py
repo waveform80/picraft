@@ -38,7 +38,14 @@ str = type('')
 
 import io
 from collections import namedtuple
+try:
+    # Py2 compat
+    from itertools import izip_longest as zip_longest
+except ImportError:
+    from itertools import zip_longest
+
 from pkg_resources import resource_stream
+from .vector import vector_range
 
 
 def _read_blocks_db(filename_or_object):
@@ -185,13 +192,14 @@ class Blocks(object):
     :class:`Block` instances or a single :class:`Block` instance. The sequence
     must be equal to the number of blocks represented by the slice::
 
-        >>> game.blocks[Vector(0,0,0):Vector(1,0,0)]
+        >>> game.blocks[Vector(0,0,0):Vector(2,1,1)]
         [<Block "grass" id=2 data=0>,<Block "grass" id=2 data=0>]
-        >>> game.blocks[Vector(0,0,0):Vector(5,0,5)] = Block.from_name('grass')
+        >>> game.blocks[Vector(0,0,0):Vector(5,1,5)] = Block.from_name('grass')
 
     As with normal Python slices, the interval specified is `half-open`_.  That
-    is to say, it is inclusive of the lower vector, *not* the upper one. Hence,
-    ``Vector():Vector(x=5)`` represents the coordinates (0,0,0) to (4,0,0).
+    is to say, it is inclusive of the lower vector, *exclusive* of the upper
+    one. Hence, ``Vector():Vector(x=5,1,1)`` represents the coordinates (0,0,0)
+    to (4,0,0).
 
     .. half-open: http://python-history.blogspot.co.uk/2013/10/why-python-uses-0-based-indexing.html
 
@@ -210,7 +218,12 @@ class Blocks(object):
 
     def __getitem__(self, index):
         if isinstance(index, slice):
-            raise NotImplemented
+            return [
+                Block.from_string(
+                    self._connection.transact(
+                        'world.getBlockWithData(%d,%d,%d)' % (v.x, v.y, v.z)))
+                for v in vector_range(index.start, index.stop)
+                ]
         else:
             return Block.from_string(
                 self._connection.transact(
@@ -226,7 +239,14 @@ class Blocks(object):
                         index.stop.x - 1, index.stop.y - 1, index.stop.z - 1,
                         value.id, value.data))
             else:
-                raise NotImplemented
+                for v, b in zip_longest(vector_range(index.start, index.stop), value):
+                    if v is None:
+                        raise ValueError('too many blocks for vector range')
+                    if b is None:
+                        raise ValueError('not enough blocks for vector range')
+                    self._connection.send(
+                        'world.setBlock(%d,%d,%d,%d,%d)' % (
+                            v.x, v.y, v.z, b.id, b.data))
         else:
             self._connection.send(
                 'world.setBlock(%d,%d,%d,%d,%d)' % (
