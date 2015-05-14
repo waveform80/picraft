@@ -44,7 +44,7 @@ The following items are defined in the module:
 Connection
 ==========
 
-.. autoclass: Connection
+.. autoclass:: Connection
     :members:
 """
 

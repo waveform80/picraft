@@ -43,7 +43,7 @@ The following items are defined in the module:
 World
 =====
 
-.. autoclass: World
+.. autoclass:: World
     :members:
 """
 

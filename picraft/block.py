@@ -44,14 +44,14 @@ The following items are defined in the module:
 Block
 =====
 
-.. autoclass: Block(id, data)
+.. autoclass:: Block(id, data)
     :members:
 
 
 Blocks
 ======
 
-.. autoclass: Blocks
+.. autoclass:: Blocks
     :members:
 
 
@@ -62,78 +62,78 @@ Finally, the module also contains compatibility values equivalent to those
 in the mcpi.block module of the reference implementation. Each value represents
 the type of a block with no associated data:
 
-.. autodata:: AIR
-.. autodata:: STONE
-.. autodata:: GRASS
-.. autodata:: DIRT
-.. autodata:: COBBLESTONE
-.. autodata:: WOOD_PLANKS
-.. autodata:: SAPLING
-.. autodata:: BEDROCK
-.. autodata:: WATER_FLOWING
-.. autodata:: WATER
-.. autodata:: WATER_STATIONARY
-.. autodata:: LAVA_FLOWING
-.. autodata:: LAVA
-.. autodata:: LAVA_STATIONARY
-.. autodata:: SAND
-.. autodata:: GRAVEL
-.. autodata:: GOLD_ORE
-.. autodata:: IRON_ORE
-.. autodata:: COAL_ORE
-.. autodata:: WOOD
-.. autodata:: LEAVES
-.. autodata:: GLASS
-.. autodata:: LAPIS_LAZULI_ORE
-.. autodata:: LAPIS_LAZULI_BLOCK
-.. autodata:: SANDSTONE
-.. autodata:: BED
-.. autodata:: COBWEB
-.. autodata:: GRASS_TALL
-.. autodata:: WOOL
-.. autodata:: FLOWER_YELLOW
-.. autodata:: FLOWER_CYAN
-.. autodata:: MUSHROOM_BROWN
-.. autodata:: MUSHROOM_RED
-.. autodata:: GOLD_BLOCK
-.. autodata:: IRON_BLOCK
-.. autodata:: STONE_SLAB_DOUBLE
-.. autodata:: STONE_SLAB
-.. autodata:: BRICK_BLOCK
-.. autodata:: TNT
-.. autodata:: BOOKSHELF
-.. autodata:: MOSS_STONE
-.. autodata:: OBSIDIAN
-.. autodata:: TORCH
-.. autodata:: FIRE
-.. autodata:: STAIRS_WOOD
-.. autodata:: CHEST
-.. autodata:: DIAMOND_ORE
-.. autodata:: DIAMOND_BLOCK
-.. autodata:: CRAFTING_TABLE
-.. autodata:: FARMLAND
-.. autodata:: FURNACE_INACTIVE
-.. autodata:: FURNACE_ACTIVE
-.. autodata:: DOOR_WOOD
-.. autodata:: LADDER
-.. autodata:: STAIRS_COBBLESTONE
-.. autodata:: DOOR_IRON
-.. autodata:: REDSTONE_ORE
-.. autodata:: SNOW
-.. autodata:: ICE
-.. autodata:: SNOW_BLOCK
-.. autodata:: CACTUS
-.. autodata:: CLAY
-.. autodata:: SUGAR_CANE
-.. autodata:: FENCE
-.. autodata:: GLOWSTONE_BLOCK
-.. autodata:: BEDROCK_INVISIBLE
-.. autodata:: STONE_BRICK
-.. autodata:: GLASS_PANE
-.. autodata:: MELON
-.. autodata:: FENCE_GATE
-.. autodata:: GLOWING_OBSIDIAN
-.. autodata:: NETHER_REACTOR_CORE
+* AIR
+* BED
+* BEDROCK
+* BEDROCK_INVISIBLE
+* BOOKSHELF
+* BRICK_BLOCK
+* CACTUS
+* CHEST
+* CLAY
+* COAL_ORE
+* COBBLESTONE
+* COBWEB
+* CRAFTING_TABLE
+* DIAMOND_BLOCK
+* DIAMOND_ORE
+* DIRT
+* DOOR_IRON
+* DOOR_WOOD
+* FARMLAND
+* FENCE
+* FENCE_GATE
+* FIRE
+* FLOWER_CYAN
+* FLOWER_YELLOW
+* FURNACE_ACTIVE
+* FURNACE_INACTIVE
+* GLASS
+* GLASS_PANE
+* GLOWING_OBSIDIAN
+* GLOWSTONE_BLOCK
+* GOLD_BLOCK
+* GOLD_ORE
+* GRASS
+* GRASS_TALL
+* GRAVEL
+* ICE
+* IRON_BLOCK
+* IRON_ORE
+* LADDER
+* LAPIS_LAZULI_BLOCK
+* LAPIS_LAZULI_ORE
+* LAVA
+* LAVA_FLOWING
+* LAVA_STATIONARY
+* LEAVES
+* MELON
+* MOSS_STONE
+* MUSHROOM_BROWN
+* MUSHROOM_RED
+* NETHER_REACTOR_CORE
+* OBSIDIAN
+* REDSTONE_ORE
+* SAND
+* SANDSTONE
+* SAPLING
+* SNOW
+* SNOW_BLOCK
+* STAIRS_COBBLESTONE
+* STAIRS_WOOD
+* STONE
+* STONE_BRICK
+* STONE_SLAB
+* STONE_SLAB_DOUBLE
+* SUGAR_CANE
+* TNT
+* TORCH
+* WATER
+* WATER_FLOWING
+* WATER_STATIONARY
+* WOOD
+* WOOD_PLANKS
+* WOOL
 """
 
 from __future__ import (

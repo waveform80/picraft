@@ -45,7 +45,7 @@ The following items are defined in the module:
 Players
 =======
 
-.. autoclass: Players
+.. autoclass:: Players
     :members:
 
 

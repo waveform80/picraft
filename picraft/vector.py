@@ -44,7 +44,7 @@ The following items are defined in the module:
 Vector
 ======
 
-.. autoclass: Vector(x, y, z)
+.. autoclass:: Vector(x, y, z)
     :members:
 
 
