@@ -34,8 +34,10 @@ with ASCII character 10 (line feed, usually shortened to LF or \n).
 Protocol implementations MUST use the ASCII encoding (non-ASCII characters are
 not ignored, or an error, but their effect is undefined).
 
-A Minecraft network session begins by connecting a standard TCP stream socket
-to the server, which defaults to listening on port 4711. No "hello" message is
+A Minecraft network session begins by connecting a TCP stream socket to the
+server, which defaults to listening on port 4711. Protocol implementations
+SHOULD disable Nagle's algorithm (TCP_NODELAY) on the socket as the protocol is
+effectively interactive and relies on many small packets. No "hello" message is
 transmitted by the client, and no "banner" message is sent by the server. A
 Minecraft session ends simply by disconnecting the socket.
 
@@ -48,6 +50,7 @@ command, described in the augmented Backus-Naur Form (ABNF) defined by `RFC
     command-name = 1*ALPHA [ "." 1*ALPHA ]
     option = int-val / float-val / str-val
 
+    bool-val = "0" / "1"
     int-val = 1*DIGIT
     float-val = 1*DIGIT [ "." 1*DIGIT ]
     str-val = \*CHAR
@@ -103,9 +106,9 @@ produce no response (providing the best performance, but the least safety).
 The picraft implementation provides a configurable timeout (including the
 ability to ignore errors like the reference implementation).
 
-Clients have the option to either ignore errors (as the official API does) or
-implement some form or timeout to determine when operations are successful (as
-in this API by default).
+Clients MAY either ignore errors (as the official API does) or implement some
+form or timeout to determine when operations are successful (as in this API by
+default).
 
 Specific Commands
 -----------------
@@ -130,9 +133,21 @@ Syntax::
     player-get-pos-command = "player.getPos()" LF
     player-get-pos-response = float-vector
 
-The ``player.getPos`` command returns the current location of the player
-character in the game world as an X, Y, Z vector of floating point values.
-The coordinates 0, 0, 0 represent the spawn point within the world.
+The ``player.getPos`` command returns the current location of the host player
+in the game world as an X, Y, Z vector of floating point values.  The
+coordinates 0, 0, 0 represent the spawn point within the world.
+
+player.getTile
+--------------
+
+Syntax::
+
+    player-get-tile-command = "player.getTile()" LF
+    player-get-tile-response = int-vector
+
+The ``player.getTile`` command returns the current location of the host player
+in the game world, to the nearest block coordinates, as an X, Y, Z vector of
+integer values.
 
 player.setPos
 -------------
@@ -141,9 +156,100 @@ Syntax::
 
     player-set-pos-command = "player.setPos(" float-vector ")" LF
 
-The ``player.setPos`` command teleports the player character to the specified
-location in the game world. The floating point values given are the X, Y, and
-Z coordinates of the player's new position respectively.
+The ``player.setPos`` command teleports the host player to the specified
+location in the game world. The floating point values given are the X, Y, and Z
+coordinates of the player's new position respectively.
+
+player.setTile
+--------------
+
+Syntax::
+
+    player-set-tile-command = "player.setTile(" int-vector ")" LF
+
+The ``player.setTile`` command teleports the host player to the specified
+location in the game world. The integer values given are the X, Y, and Z
+coordinates of the player's new position respectively.
+
+player.setting
+--------------
+
+Syntax::
+
+    player-setting-command = "player.setting(" str-val "," bool-val ")" LF
+
+The ``player.setting`` command alters a property of the host player. The
+property to alter is given as the *str-val* (note: this is unquoted) and the
+new value is given as the *bool-val* (where 0 means "off" and 1 means "on").
+Valid properties are:
+
+* ``autojump`` - when enabled, causes the player to automatically jump onto
+  blocks that they run into.
+
+world.getBlock
+--------------
+
+Syntax::
+
+    world-get-block-command = "world.getBlock(" int-vector ")" LF
+    world-get-block-response = int-val
+
+The ``world.getBlock`` command can be used to retrieve the current type of a
+block within the world. The result consists of an integer representing the
+block type.
+
+See `Data Values (Pocket Edition)`_ for a list of block types.
+
+world.getBlockWithData
+----------------------
+
+Syntax::
+
+    world-get-blockdata-command = "world.getBlockWithData(" int-vector ")" LF
+    world-get-blockdata-response = int-val "," int-val
+
+The ``world.getBlockWithData`` command can be used to retrieve the current type
+and associated data of a block within the world. The result consists of two
+comma-separated integers which represent the block type and the associated data
+respectively.
+
+See `Data Values (Pocket Edition)`_ for further information.
+
+world.setBlock
+--------------
+
+Syntax::
+
+    world-set-block-command = "world.setBlock(" int-vector "," int-val [ "," int-val ] ")" LF
+
+The ``world.setBlock`` command can be used to alter the type and associated
+data of a block within the world. The first three integer values provide the X,
+Y, and Z coordinates of the block to alter. The fourth integer value provides
+the new type of the block. The optional fifth integer value provides the
+associated data of the block.
+
+See `Data Values (Pocket Edition)`_ for further information.
+
+world.setBlocks
+---------------
+
+Syntax::
+
+    world-set-blocks-command = "world.setBlock(" int-vector "," int-vector "," int-val [ "," int-val ] ")" LF
+
+The ``world.setBlocks`` command can be used to alter the type and associated
+data of a range of blocks within the world. The first three integer values
+provide the X, Y, and Z coordinates of the start of the range to alter. The
+next three integer values provide the X, Y, and Z coordinates of the end of the
+range to alter.
+
+The seventh integer value provides the new type of the block. The optional
+eighth integer value provides the associated data of the block.
+
+See `Data Values (Pocket Edition)`_ for further information.
+
+
+.. _Data Values (Pocket Edition): http://minecraft.gamepedia.com/Data_values_%28Pocket_Edition%29
 
 
 .. _protocol_critique:
@@ -152,15 +258,15 @@ Critique
 ========
 
 The Minecraft protocol is a text-based "interactive" line oriented protocol.
-By this I mean that a single connection is opened from the client to the server
-and all commands and responses are transmitted over this connection. The
+By this, I mean that a single connection is opened from the client to the
+server and all commands and responses are transmitted over this connection. The
 completion of a command does *not* close the connection.
 
 Despite text protocols being relatively inefficient compared to binary
 (non-human readable) protocols, a text-based protocol is an excellent choice in
-this case: the protocol isn't performance critical and this makes it extremely
-easy to experiment with and debug with nothing more than a standard telnet
-client.
+this case: the protocol isn't performance critical and besides, this makes it
+extremely easy to experiment with and debug using nothing more than a standard
+telnet client.
 
 Unfortunately, this is where the good news ends. The following is a telnet
 session in which I experimented with various possibilities to see how "liberal"
@@ -203,7 +309,7 @@ parenthesized arguments cause failure would indicate it's more likely an
 oversight in the (probably rather crude) command parser.
 
 A more serious issue is that in certain cases positive acknowledgement, and
-even negative acknowledgement, is lacking from the protocol. This is a major
+even negative acknowledgement, are lacking from the protocol. This is a major
 oversight as it means a client has no reliable means of deciding when a command
 has succeeded or failed:
 

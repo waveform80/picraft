@@ -64,5 +64,7 @@ from .exc import (
     )
 from .vector import Vector, vector_range
 from .block import Block
-from .game import Game
+from .connection import Connection
+from .player import Players, Player, HostPlayer
+from .world import World
 

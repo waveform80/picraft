@@ -115,10 +115,10 @@ class Block(namedtuple('Block', ('id', 'data'))):
         :attr:`name` property. This may be used to construct blocks in a more
         "friendly" way within code. For example::
 
-            >>> from picfraft import *
-            >>> g = Game()
-            >>> g.blocks[Vector(0,0,0):Vector(5,5,5)] = Block.from_name('stone')
-            >>> g.blocks[Vector(1,1,1):Vector(3,3,3)] = Block.from_name('air')
+            >>> from picraft import *
+            >>> w = World()
+            >>> w.blocks[Vector(0,0,0):Vector(5,5,5)] = Block.from_name('stone')
+            >>> w.blocks[Vector(1,1,1):Vector(3,3,3)] = Block.from_name('air')
 
         The optional *data* parameter can be used to specify the data component
         of the new :class:`Block` instance; it defaults to 0.
@@ -183,7 +183,7 @@ class Blocks(object):
     with a single :class:`Vector`, in which case the state of a single block is
     returned (or updated) as a :class:`Block` instance::
 
-        >>> game.blocks[g.player.tile_pos]
+        >>> world.blocks[g.player.tile_pos]
         <Block "grass" id=2 data=0>
 
     Alternatively, a slice of two vectors can be used. In this case, when
@@ -192,9 +192,9 @@ class Blocks(object):
     :class:`Block` instances or a single :class:`Block` instance. The sequence
     must be equal to the number of blocks represented by the slice::
 
-        >>> game.blocks[Vector(0,0,0):Vector(2,1,1)]
+        >>> world.blocks[Vector(0,0,0):Vector(2,1,1)]
         [<Block "grass" id=2 data=0>,<Block "grass" id=2 data=0>]
-        >>> game.blocks[Vector(0,0,0):Vector(5,1,5)] = Block.from_name('grass')
+        >>> world.blocks[Vector(0,0,0):Vector(5,1,5)] = Block.from_name('grass')
 
     As with normal Python slices, the interval specified is `half-open`_.  That
     is to say, it is inclusive of the lower vector, *exclusive* of the upper
@@ -233,6 +233,9 @@ class Blocks(object):
         pass
         if isinstance(index, slice):
             if hasattr(value, 'id') and hasattr(value, 'data'):
+                # XXX Server doesn't care if ranges are backwards; to make
+                # behaviour consistent with sequence setting we should detect
+                # empty/backward ranges here and do nothing
                 self._connection.send(
                     'world.setBlocks(%d,%d,%d,%d,%d,%d,%d,%d)' % (
                         index.start.x, index.start.y, index.start.z,

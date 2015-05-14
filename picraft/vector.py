@@ -51,17 +51,21 @@ class Vector(namedtuple('Vector', ('x', 'y', 'z'))):
     This tuple derivative represents a 3-dimensional vector with x, y, z
     components. The class supports simple arithmetic operations with other
     vectors such as addition and subtraction, along with multiplication and
-    division with scalars. Taking the absolute value of the vector will
-    return its magnitude (according to `Pythagoras' theorem`_). For example::
+    division with scalars, raising to powers, bit-shifting, and so on.
+    Attributes are provided for the :attr:`magnitude` of the vector, and a
+    :attr:`unit` vector equivalent, along with methods for taking the
+    :meth:`dot` and :meth:`cross` product with other vectors. For example::
 
         >>> v1 = Vector(1, 1, 1)
         >>> v2 = Vector(2, 2, 2)
         >>> v1 + v2
-        Vector(3, 3, 3)
+        Vector(x=3, y=3, z=3)
         >>> 2 * v2
-        Vector(4, 4, 4)
-        >>> abs(v1)
+        Vector(x=4, y=4, z=4)
+        >>> Vector(z=1).magnitude
         1.0
+        >>> Vector(x=1).cross(Vector(x=-1))
+        Vector(x=0, y=0, z=0)
 
     Within the Minecraft world, the X,Z plane represents the ground, while the
     Y vector represents height.
