@@ -76,6 +76,9 @@ class Connection(object):
             self, host, port, timeout=0.2, ignore_errors=False,
             encoding='ascii'):
         self._socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        # This is effectively an interactive protocol, so disable Nagle's
+        # algorithm for better performance
+        self._socket.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)
         self._socket.connect((host, port))
         self._rfile = self._socket.makefile('rb', -1)
         self._wfile = self._socket.makefile('wb', 0) # no buffering for writes
@@ -103,6 +106,7 @@ class Connection(object):
             self._wfile.close()
             self._wfile = None
         if self._socket:
+            self._socket.shutdown(socket.SHUT_RDWR)
             self._socket.close()
             self._socket = None
 
