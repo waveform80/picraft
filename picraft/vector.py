@@ -34,6 +34,10 @@ from __future__ import (
     division,
     )
 str = type('')
+try:
+    range = xrange
+except NameError:
+    pass
 
 
 import math
@@ -185,3 +189,13 @@ class Vector(namedtuple('Vector', ('x', 'y', 'z'))):
             return self
 
 
+def vector_range(start, stop=None, step=Vector(1, 1, 1), order='xyz'):
+    if stop is None:
+        stop = start
+        start = Vector()
+    if order not in ('xyz', 'xzy', 'zxy', 'yxz', 'yzx', 'zyx'):
+        raise ValueError('invalid order: %s' % order)
+    ranges = [
+        range(getattr(start, axis), getattr(stop, axis), getattr(step, axis))
+        for axis in order
+        ]

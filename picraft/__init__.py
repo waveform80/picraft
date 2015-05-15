@@ -62,7 +62,7 @@ from .exc import (
     BatchStarted,
     BatchNotStarted,
     )
-from .vector import Vector
+from .vector import Vector, vector_range
 from .block import Block
 from .game import Game
 
