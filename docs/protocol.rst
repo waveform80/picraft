@@ -45,7 +45,7 @@ Commands and responses MUST consist of a single line. The typical form of a
 command, described in the augmented Backus-Naur Form (ABNF) defined by `RFC
 5234`_ is as follows::
 
-    command = command-name "(" [ option \*( "," option ) ] ")" LF
+    command = command-name "(" [ option *( "," option ) ] ")" LF
 
     command-name = 1*ALPHA [ "." 1*ALPHA ]
     option = int-val / float-val / str-val
@@ -53,7 +53,7 @@ command, described in the augmented Backus-Naur Form (ABNF) defined by `RFC
     bool-val = "0" / "1"
     int-val = 1*DIGIT
     float-val = 1*DIGIT [ "." 1*DIGIT ]
-    str-val = \*CHAR
+    str-val = *CHAR
 
 .. note::
 
