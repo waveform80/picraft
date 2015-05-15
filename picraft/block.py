@@ -170,6 +170,41 @@ class Block(namedtuple('Block', ('id', 'data'))):
 
 
 class Blocks(object):
+    """
+    This property can be queried to determine the type of a block in the world,
+    or can be set to alter the type of a block. The property can be indexed
+    with a single :class:`Vector`, in which case the state of a single block is
+    returned (or updated) as a :class:`Block` instance::
+
+        >>> game.blocks[g.player.tile_pos]
+        <Block "grass" id=2 data=0>
+
+    Alternatively, a slice of two vectors can be used. In this case, when
+    querying the property, a sequence of :class:`Block` instances is returned,
+    When setting a slice of two vectors you can either pass a sequence of
+    :class:`Block` instances or a single :class:`Block` instance. The sequence
+    must be equal to the number of blocks represented by the slice::
+
+        >>> game.blocks[Vector(0,0,0):Vector(1,0,0)]
+        [<Block "grass" id=2 data=0>,<Block "grass" id=2 data=0>]
+        >>> game.blocks[Vector(0,0,0):Vector(5,0,5)] = Block.from_name('grass')
+
+    As with normal Python slices, the interval specified is `half-open`_.  That
+    is to say, it is inclusive of the lower vector, *not* the upper one. Hence,
+    ``Vector():Vector(x=5)`` represents the coordinates (0,0,0) to (4,0,0).
+
+    .. half-open: http://python-history.blogspot.co.uk/2013/10/why-python-uses-0-based-indexing.html
+
+    .. warning:
+
+        Querying or setting sequences of blocks is extremely slow as a network
+        transaction must be executed for each individual block.  When setting a
+        slice of blocks, this can be speeded up by specifying a single
+        :class:`Block` in which case one network transaction will occur to set
+        all blocks in the slice.  Additionally, a :meth:`connection batch
+        <picraft.connection.Connection.batch_start>` can be used to speed
+        things up.
+        """
     def __init__(self, connection):
         self._connection = connection
 
