@@ -1,0 +1,5 @@
+prune debian
+prune docs
+include picracft/block.data
+include README.rst
+include LICENSE.txt

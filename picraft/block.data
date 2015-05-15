@@ -1,0 +1,596 @@
+#  id   data  pi  pocket  name                            description
+
+   0    0     1   1       air                             Air
+   1    0     1   1       stone                           Stone
+   1    1     1   1       stone                           Granite
+   1    2     1   1       stone                           Polished Granite
+   1    3     1   1       stone                           Diorite
+   1    4     1   1       stone                           Polished Diorite
+   1    5     1   1       stone                           Andesite
+   1    6     1   1       stone                           Polished Andesite
+   2    0     1   1       grass                           Grass
+   3    0     1   1       dirt                            Dirt
+   3    1     1   1       dirt                            Coarse Dirt
+   3    2     1   1       dirt                            Podzol
+   4    0     1   1       cobblestone                     Cobblestone
+   5    0     1   1       planks                          Oak Wood Plank
+   5    1     1   1       planks                          Spruce Wood Plank
+   5    2     1   1       planks                          Birch Wood Plank
+   5    3     1   1       planks                          Jungle Wood Plank
+   5    4     1   1       planks                          Acacia Wood Plank
+   5    5     1   1       planks                          Dark Oak Wood Plank
+   6    0     1   1       sapling                         Oak Sapling
+   6    1     1   1       sapling                         Spruce Sapling
+   6    2     1   1       sapling                         Birch Sapling
+   6    3     1   1       sapling                         Jungle Sapling
+   6    4     1   1       sapling                         Acacia Sapling
+   6    5     1   1       sapling                         Dark Oak Sapling
+   7    0     1   1       bedrock                         Bedrock
+   8    0     1   1       flowing_water                   Flowing Water
+   9    0     1   1       water                           Still Water
+   10   0     1   1       flowing_lava                    Flowing Lava
+   11   0     1   1       lava                            Still Lava
+   12   0     1   1       sand                            Sand
+   12   1     1   1       sand                            Red Sand
+   13   0     1   1       gravel                          Gravel
+   14   0     1   1       gold_ore                        Gold Ore
+   15   0     1   1       iron_ore                        Iron Ore
+   16   0     1   1       coal_ore                        Coal Ore
+   17   0     1   1       log                             Oak Wood
+   17   1     1   1       log                             Spruce Wood
+   17   2     1   1       log                             Birch Wood
+   17   3     1   1       log                             Jungle Wood
+   18   0     1   1       leaves                          Oak Leaves
+   18   1     1   1       leaves                          Spruce Leaves
+   18   2     1   1       leaves                          Birch Leaves
+   18   3     1   1       leaves                          Jungle Leaves
+   19   0     0   1       sponge                          Sponge
+   19   1     0   1       sponge                          Wet Sponge
+   20   0     1   1       glass                           Glass
+   21   0     1   1       lapis_ore                       Lapis Lazuli Ore
+   22   0     1   1       lapis_block                     Lapis Lazuli Block
+   23   0     0   0       dispenser                       Dispenser
+   24   0     1   1       sandstone                       Sandstone
+   24   1     1   1       sandstone                       Chiseled Sandstone
+   24   2     1   1       sandstone                       Smooth Sandstone
+   25   0     0   0       noteblock                       Note Block
+   26   0     1   1       bed                             Bed
+   27   0     0   1       golden_rail                     Powered Rail
+   28   0     0   0       detector_rail                   Detector Rail
+   29   0     0   0       sticky_piston                   Sticky Piston
+   30   0     1   1       web                             Cobweb
+   31   0     1   1       tallgrass                       Dead Shrub
+   31   1     1   1       tallgrass                       Grass
+   31   2     1   1       tallgrass                       Fern
+   32   0     0   1       deadbush                        Dead Bush
+   33   0     0   0       piston                          Piston
+   34   0     0   0       piston_head                     Piston Head
+   35   0     1   1       wool                            White Wool
+   35   1     1   1       wool                            Orange Wool
+   35   2     1   1       wool                            Magenta Wool
+   35   3     1   1       wool                            Light Blue Wool
+   35   4     1   1       wool                            Yellow Wool
+   35   5     1   1       wool                            Lime Wool
+   35   6     1   1       wool                            Pink Wool
+   35   7     1   1       wool                            Gray Wool
+   35   8     1   1       wool                            Light Gray Wool
+   35   9     1   1       wool                            Cyan Wool
+   35   10    1   1       wool                            Purple Wool
+   35   11    1   1       wool                            Blue Wool
+   35   12    1   1       wool                            Brown Wool
+   35   13    1   1       wool                            Green Wool
+   35   14    1   1       wool                            Red Wool
+   35   15    1   1       wool                            Black Wool
+   37   0     1   1       yellow_flower                   Dandelion
+   38   0     1   1       red_flower                      Poppy
+   38   1     1   1       red_flower                      Blue Orchid
+   38   2     1   1       red_flower                      Allium
+   38   3     1   1       red_flower                      Azure Bluet
+   38   4     1   1       red_flower                      Red Tulip
+   38   5     1   1       red_flower                      Orange Tulip
+   38   6     1   1       red_flower                      White Tulip
+   38   7     1   1       red_flower                      Pink Tulip
+   38   8     1   1       red_flower                      Oxeye Daisy
+   39   0     1   1       brown_mushroom                  Brown Mushroom
+   40   0     1   1       red_mushroom                    Red Mushroom
+   41   0     1   1       gold_block                      Gold Block
+   42   0     1   1       iron_block                      Iron Block
+   43   0     1   1       double_stone_slab               Double Stone Slab
+   43   1     1   1       double_stone_slab               Double Sandstone Slab
+   43   2     1   1       double_stone_slab               Double Wooden Slab
+   43   3     1   1       double_stone_slab               Double Cobblestone Slab
+   43   4     1   1       double_stone_slab               Double Brick Slab
+   43   5     1   1       double_stone_slab               Double Stone Brick Slab
+   43   6     1   1       double_stone_slab               Double Nether Brick Slab
+   43   7     1   1       double_stone_slab               Double Quartz Slab
+   44   0     1   1       stone_slab                      Stone Slab
+   44   1     1   1       stone_slab                      Sandstone Slab
+   44   2     1   1       stone_slab                      Wooden Slab
+   44   3     1   1       stone_slab                      Cobblestone Slab
+   44   4     1   1       stone_slab                      Brick Slab
+   44   5     1   1       stone_slab                      Stone Brick Slab
+   44   6     1   1       stone_slab                      Nether Brick Slab
+   44   7     1   1       stone_slab                      Quartz Slab
+   45   0     1   1       brick_block                     Bricks
+   46   0     1   1       tnt                             TNT
+   47   0     1   1       bookshelf                       Bookshelf
+   48   0     1   1       mossy_cobblestone               Moss Stone
+   49   0     1   1       obsidian                        Obsidian
+   50   0     1   1       torch                           Torch
+   51   0     1   1       fire                            Fire
+   52   0     0   1       mob_spawner                     Monster Spawner
+   53   0     1   1       oak_stairs                      Oak Wood Stairs
+   54   0     1   1       chest                           Chest
+   55   0     0   0       redstone_wire                   Redstone Wire
+   56   0     1   1       diamond_ore                     Diamond Ore
+   57   0     1   1       diamond_block                   Diamond Block
+   58   0     1   1       crafting_table                  Crafting Table
+   59   0     0   1       wheat                           Wheat Crops
+   60   0     1   1       farmland                        Farmland
+   61   0     1   1       furnace                         Furnace
+   62   0     1   1       lit_furnace                     Burning Furnace
+   63   0     0   1       standing_sign                   Standing Sign Block
+   64   0     1   1       wooden_door                     Oak Door Block
+   65   0     1   1       ladder                          Ladder
+   66   0     0   1       rail                            Rail
+   67   0     1   1       stone_stairs                    Cobblestone Stairs
+   68   0     0   1       wall_sign                       Wall-mounted Sign Block
+   69   0     0   0       lever                           Lever
+   70   0     0   0       stone_pressure_plate            Stone Pressure Plate
+   71   0     1   1       iron_door                       Iron Door Block
+   72   0     0   0       wooden_pressure_plate           Wooden Pressure Plate
+   73   0     1   1       redstone_ore                    Redstone Ore
+   74   0     0   1       lit_redstone_ore                Glowing Redstone Ore
+   75   0     0   0       unlit_redstone_torch            Redstone Torch (off)
+   76   0     0   0       redstone_torch                  Redstone Torch (on)
+   77   0     0   0       stone_button                    Stone Button
+   78   0     1   1       snow_layer                      Snow
+   79   0     1   1       ice                             Ice
+   80   0     1   0       snow                            Snow Block
+   81   0     1   1       cactus                          Cactus
+   82   0     1   1       clay                            Clay
+   83   0     1   1       reeds                           Sugar Canes
+   84   0     0   0       jukebox                         Jukebox
+   85   0     1   1       fence                           Oak Fence
+   86   0     0   1       pumpkin                         Pumpkin
+   87   0     0   1       netherrack                      Netherrack
+   88   0     0   0       soul_sand                       Soul Sand
+   89   0     1   1       glowstone                       Glowstone
+   90   0     0   0       portal                          Nether Portal
+   91   0     0   1       lit_pumpkin                     Jack o\'Lantern
+   92   0     0   1       cake                            Cake Block
+   93   0     0   0       unpowered_repeater              Redstone Repeater Block (off)
+   94   0     0   0       powered_repeater                Redstone Repeater Block (on)
+   95   0     1   1       stained_glass                   White Stained Glass
+   95   1     1   1       stained_glass                   Orange Stained Glass
+   95   2     1   1       stained_glass                   Magenta Stained Glass
+   95   3     1   1       stained_glass                   Light Blue Stained Glass
+   95   4     1   1       stained_glass                   Yellow Stained Glass
+   95   5     1   1       stained_glass                   Lime Stained Glass
+   95   6     1   1       stained_glass                   Pink Stained Glass
+   95   7     1   1       stained_glass                   Gray Stained Glass
+   95   8     1   1       stained_glass                   Light Gray Stained Glass
+   95   9     1   1       stained_glass                   Cyan Stained Glass
+   95   10    1   1       stained_glass                   Purple Stained Glass
+   95   11    1   1       stained_glass                   Blue Stained Glass
+   95   12    1   1       stained_glass                   Brown Stained Glass
+   95   13    1   1       stained_glass                   Green Stained Glass
+   95   14    1   1       stained_glass                   Red Stained Glass
+   95   15    1   1       stained_glass                   Black Stained Glass
+   96   0     0   1       trapdoor                        Wooden Trapdoor
+   97   0     0   0       monster_egg                     Stone Monster Egg
+   97   1     0   0       monster_egg                     Cobblestone Monster Egg
+   97   2     0   0       monster_egg                     Stone Brick Monster Egg
+   97   3     0   0       monster_egg                     Mossy Stone Brick Monster Egg
+   97   4     0   0       monster_egg                     Cracked Stone Brick Monster Egg
+   97   5     0   0       monster_egg                     Chiseled Stone Brick Monster Egg
+   98   0     1   1       stonebrick                      Stone Bricks
+   98   1     1   1       stonebrick                      Mossy Stone Bricks
+   98   2     1   1       stonebrick                      Cracked Stone Bricks
+   98   3     1   1       stonebrick                      Chiseled Stone Bricks
+   99   0     0   1       brown_mushroom_block            Brown Mushroom Block
+   100  0     0   1       red_mushroom_block              Red Mushroom Block
+   101  0     0   1       iron_bars                       Iron Bars
+   102  0     1   1       glass_pane                      Glass Pane
+   103  0     1   1       melon_block                     Melon Block
+   104  0     0   1       pumpkin_stem                    Pumpkin Stem
+   105  0     0   1       melon_stem                      Melon Stem
+   106  0     0   1       vine                            Vines
+   107  0     1   1       fence_gate                      Oak Fence Gate
+   108  0     0   1       brick_stairs                    Brick Stairs
+   109  0     0   1       stone_brick_stairs              Stone Brick Stairs
+   110  0     0   1       mycelium                        Mycelium
+   111  0     0   1       waterlily                       Lily Pad
+   112  0     0   1       nether_brick                    Nether Brick
+   113  0     0   0       nether_brick_fence              Nether Brick Fence
+   114  0     0   1       nether_brick_stairs             Nether Brick Stairs
+   115  0     0   0       nether_wart                     Nether Wart
+   116  0     0   0       enchanting_table                Enchantment Table
+   117  0     0   0       brewing_stand                   Brewing Stand
+   118  0     0   0       cauldron                        Cauldron
+   119  0     0   0       end_portal                      End Portal
+   120  0     0   1       end_portal_frame                End Portal Frame
+   121  0     0   1       end_stone                       End Stone
+   122  0     0   0       dragon_egg                      Dragon Egg
+   123  0     0   0       redstone_lamp                   Redstone Lamp (inactive)
+   124  0     0   0       lit_redstone_lamp               Redstone Lamp (active)
+   125  0     0   0       double_wooden_slab              Double Oak Wood Slab
+   125  1     0   0       double_wooden_slab              Double Spruce Wood Slab
+   125  2     0   0       double_wooden_slab              Double Birch Wood Slab
+   125  3     0   0       double_wooden_slab              Double Jungle Wood Slab
+   125  4     0   0       double_wooden_slab              Double Acacia Wood Slab
+   125  5     0   0       double_wooden_slab              Double Dark Oak Wood Slab
+   126  0     0   0       wooden_slab                     Oak Wood Slab
+   126  1     0   0       wooden_slab                     Spruce Wood Slab
+   126  2     0   0       wooden_slab                     Birch Wood Slab
+   126  3     0   0       wooden_slab                     Jungle Wood Slab
+   126  4     0   0       wooden_slab                     Acacia Wood Slab
+   126  5     0   0       wooden_slab                     Dark Oak Wood Slab
+   127  0     0   1       cocoa                           Cocoa
+   128  0     0   1       sandstone_stairs                Sandstone Stairs
+   129  0     0   1       emerald_ore                     Emerald Ore
+   130  0     0   0       ender_chest                     Ender Chest
+   131  0     0   0       tripwire_hook                   Tripwire Hook
+   132  0     0   0       tripwire_hook                   Tripwire
+   133  0     0   1       emerald_block                   Emerald Block
+   134  0     0   1       spruce_stairs                   Spruce Wood Stairs
+   135  0     0   1       birch_stairs                    Birch Wood Stairs
+   136  0     0   1       jungle_stairs                   Jungle Wood Stairs
+   137  0     0   0       command_block                   Command Block
+   138  0     0   0       beacon                          Beacon
+   139  0     0   1       cobblestone_wall                Cobblestone Wall
+   139  1     0   1       cobblestone_wall                Mossy Cobblestone Wall
+   140  0     0   0       flower_pot                      Flower Pot
+   141  0     0   1       carrots                         Carrots
+   142  0     0   1       potatoes                        Potatoes
+   143  0     0   0       wooden_button                   Wooden Button
+   144  0     0   0       skull                           Mob Head
+   145  0     0   0       anvil                           Anvil
+   146  0     0   0       trapped_chest                   Trapped Chest
+   147  0     0   0       light_weighted_pressure_plate   Weighted Pressure Plate (light)
+   148  0     0   0       heavy_weighted_pressure_plate   Weighted Pressure Plate (heavy)
+   149  0     0   0       unpowered_comparator            Redstone Comparator (inactive)
+   150  0     0   0       powered_comparator              Redstone Comparator (active)
+   151  0     0   0       daylight_detector               Daylight Sensor
+   152  0     0   1       redstone_block                  Redstone Block
+   153  0     0   0       quartz_ore                      Nether Quartz Ore
+   154  0     0   0       hopper                          Hopper
+   155  0     0   1       quartz_block                    Quartz Block
+   155  1     0   1       quartz_block                    Chiseled Quartz Block
+   155  2     0   1       quartz_block                    Pillar Quartz Block
+   156  0     0   1       quartz_stairs                   Quartz Stairs
+   157  0     0   1       activator_rail                  Activator Rail
+   158  0     0   1       dropper                         Dropper
+   159  0     0   1       stained_hardened_clay           White Stained Clay
+   159  1     0   1       stained_hardened_clay           Orange Stained Clay
+   159  2     0   1       stained_hardened_clay           Magenta Stained Clay
+   159  3     0   1       stained_hardened_clay           Light Blue Stained Clay
+   159  4     0   1       stained_hardened_clay           Yellow Stained Clay
+   159  5     0   1       stained_hardened_clay           Lime Stained Clay
+   159  6     0   1       stained_hardened_clay           Pink Stained Clay
+   159  7     0   1       stained_hardened_clay           Gray Stained Clay
+   159  8     0   1       stained_hardened_clay           Light Gray Stained Clay
+   159  9     0   1       stained_hardened_clay           Cyan Stained Clay
+   159  10    0   1       stained_hardened_clay           Purple Stained Clay
+   159  11    0   1       stained_hardened_clay           Blue Stained Clay
+   159  12    0   1       stained_hardened_clay           Brown Stained Clay
+   159  13    0   1       stained_hardened_clay           Green Stained Clay
+   159  14    0   1       stained_hardened_clay           Red Stained Clay
+   159  15    0   1       stained_hardened_clay           Black Stained Clay
+   160  0     0   0       stained_glass_pane              White Stained Glass Pane
+   160  1     0   0       stained_glass_pane              Orange Stained Glass Pane
+   160  2     0   0       stained_glass_pane              Magenta Stained Glass Pane
+   160  3     0   0       stained_glass_pane              Light Blue Stained Glass Pane
+   160  4     0   0       stained_glass_pane              Yellow Stained Glass Pane
+   160  5     0   0       stained_glass_pane              Lime Stained Glass Pane
+   160  6     0   0       stained_glass_pane              Pink Stained Glass Pane
+   160  7     0   0       stained_glass_pane              Gray Stained Glass Pane
+   160  8     0   0       stained_glass_pane              Light Gray Stained Glass Pane
+   160  9     0   0       stained_glass_pane              Cyan Stained Glass Pane
+   160  10    0   0       stained_glass_pane              Purple Stained Glass Pane
+   160  11    0   0       stained_glass_pane              Blue Stained Glass Pane
+   160  12    0   0       stained_glass_pane              Brown Stained Glass Pane
+   160  13    0   0       stained_glass_pane              Green Stained Glass Pane
+   160  14    0   0       stained_glass_pane              Red Stained Glass Pane
+   160  15    0   0       stained_glass_pane              Black Stained Glass Pane
+   161  0     0   0       leaves2                         Acacia Leaves
+   161  1     0   0       leaves2                         Dark Oak Leaves
+   162  0     0   0       log2                            Acacia Wood
+   162  1     0   0       log2                            Dark Oak Wood
+   163  0     0   1       acacia_stairs                   Acacia Wood Stairs
+   164  0     0   1       dark_oak_stairs                 Dark Oak Wood Stairs
+   165  0     0   0       slime                           Slime Block
+   166  0     0   0       barrier                         Barrier
+   167  0     0   0       iron_trapdoor                   Iron Trapdoor
+   168  0     0   0       prismarine                      Prismarine
+   168  1     0   0       prismarine                      Prismarine Bricks
+   168  2     0   0       prismarine                      Dark Prismarine
+   169  0     0   0       sea_lantern                     Sea Lantern
+   170  0     0   1       hay_block                       Hay Bale
+   171  0     0   1       carpet                          White Carpet
+   171  1     0   1       carpet                          Orange Carpet
+   171  2     0   1       carpet                          Magenta Carpet
+   171  3     0   1       carpet                          Light Blue Carpet
+   171  4     0   1       carpet                          Yellow Carpet
+   171  5     0   1       carpet                          Lime Carpet
+   171  6     0   1       carpet                          Pink Carpet
+   171  7     0   1       carpet                          Gray Carpet
+   171  8     0   1       carpet                          Light Gray Carpet
+   171  9     0   1       carpet                          Cyan Carpet
+   171  10    0   1       carpet                          Purple Carpet
+   171  11    0   1       carpet                          Blue Carpet
+   171  12    0   1       carpet                          Brown Carpet
+   171  13    0   1       carpet                          Green Carpet
+   171  14    0   1       carpet                          Red Carpet
+   171  15    0   1       carpet                          Black Carpet
+   172  0     0   1       hardened_clay                   Hardened Clay
+   173  0     0   1       coal_block                      Block of Coal
+   174  0     0   1       packed_ice                      Packed Ice
+   175  0     0   1       double_plant                    Sunflower
+   175  1     0   1       double_plant                    Lilac
+   175  2     0   1       double_plant                    Double Tallgrass
+   175  3     0   1       double_plant                    Large Fern
+   175  4     0   1       double_plant                    Rose Bush
+   175  5     0   1       double_plant                    Peony
+   176  0     0   0       standing_banner                 Free-standing Banner
+   177  0     0   0       wall_banner                     Wall-mounted Banner
+   178  0     0   0       daylight_detector_inverted      Inverted Daylight Sensor
+   179  0     0   0       red_sandstone                   Red Sandstone
+   179  1     0   0       red_sandstone                   Smooth Red Sandstone
+   179  2     0   0       red_sandstone                   Chiseled Red Sandstone
+   180  0     0   0       red_sandstone_stairs            Red Sandstone Stairs
+   181  0     0   0       stone_slab2                     Double Red Sandstone Slab
+   182  0     0   0       double_stone_slab2              Red Sandstone Slab
+   183  0     0   0       spruce_fence_gate               Spruce Fence Gate
+   184  0     0   0       birch_fence_gate                Birch Fence Gate
+   185  0     0   0       jungle_fence_gate               Jungle Fence Gate
+   186  0     0   0       dark_oak_fence_gate             Dark Oak Fence Gate
+   187  0     0   0       acacia_fence_gate               Acacia Fence Gate
+   188  0     0   0       spruce_fence                    Spruce Fence
+   189  0     0   0       birch_fence                     Birch Fence
+   190  0     0   0       jungle_fence                    Jungle Fence
+   191  0     0   0       dark_oak_fence                  Dark Oak Fence
+   192  0     0   0       acacia_fence                    Acacia Fence
+   193  0     0   0       spruce_door                     Spruce Door Block
+   194  0     0   0       birch_door                      Birch Door Block
+   195  0     0   0       jungle_door                     Jungle Door Block
+   196  0     0   0       acacia_door                     Acacia Door Block
+   197  0     0   0       dark_oak_door                   Dark Oak Door Block
+   256  0     0   1       iron_shovel                     Iron Shovel
+   257  0     0   1       iron_pickaxe                    Iron Pickaxe
+   258  0     0   1       iron_axe                        Iron Axe
+   259  0     0   1       flint_and_steel                 Flint and Steel
+   260  0     0   1       apple                           Apple
+   261  0     0   1       bow                             Bow
+   262  0     0   1       arrow                           Arrow
+   263  0     0   1       coal                            Coal
+   263  1     0   1       coal                            Charcoal
+   264  0     0   1       diamond                         Diamond
+   265  0     0   1       iron_ingot                      Iron Ingot
+   266  0     0   1       gold_ingot                      Gold Ingot
+   267  0     0   1       iron_sword                      Iron Sword
+   268  0     0   1       wooden_sword                    Wooden Sword
+   269  0     0   1       wooden_shovel                   Wooden Shovel
+   270  0     0   1       wooden_pickaxe                  Wooden Pickaxe
+   271  0     0   1       wooden_axe                      Wooden Axe
+   272  0     0   1       stone_sword                     Stone Sword
+   273  0     0   1       stone_shovel                    Stone Shovel
+   274  0     0   1       stone_pickaxe                   Stone Pickaxe
+   275  0     0   1       stone_axe                       Stone Axe
+   276  0     0   1       diamond_sword                   Diamond Sword
+   277  0     0   1       diamond_shovel                  Diamond Shovel
+   278  0     0   1       diamond_pickaxe                 Diamond Pickaxe
+   279  0     0   1       diamond_axe                     Diamond Axe
+   280  0     0   1       stick                           Stick
+   281  0     0   1       bowl                            Bowl
+   282  0     0   1       mushroom_stew                   Mushroom Stew
+   283  0     0   1       golden_sword                    Golden Sword
+   284  0     0   1       golden_shovel                   Golden Shovel
+   285  0     0   1       golden_pickaxe                  Golden Pickaxe
+   286  0     0   1       golden_axe                      Golden Axe
+   287  0     0   1       string                          String
+   288  0     0   1       feather                         Feather
+   289  0     0   1       gunpowder                       Gunpowder
+   290  0     0   1       wooden_hoe                      Wooden Hoe
+   291  0     0   1       stone_hoe                       Stone Hoe
+   292  0     0   1       iron_hoe                        Iron Hoe
+   293  0     0   1       diamond_hoe                     Diamond Hoe
+   294  0     0   1       golden_hoe                      Golden Hoe
+   295  0     0   1       wheat_seeds                     Wheat Seeds
+   296  0     0   1       wheat                           Wheat
+   297  0     0   1       bread                           Bread
+   298  0     0   1       leather_helmet                  Leather Helmet
+   299  0     0   1       leather_chestplate              Leather Tunic
+   300  0     0   1       leather_leggings                Leather Pants
+   301  0     0   1       leather_boots                   Leather Boots
+   302  0     0   1       chainmail_helmet                Chainmail Helmet
+   303  0     0   1       chainmail_chestplate            Chainmail Chestplate
+   304  0     0   1       chainmail_leggings              Chainmail Leggings
+   305  0     0   1       chainmail_boots                 Chainmail Boots
+   306  0     0   1       iron_helmet                     Iron Helmet
+   307  0     0   1       iron_chestplate                 Iron Chestplate
+   308  0     0   1       iron_leggings                   Iron Leggings
+   309  0     0   1       iron_boots                      Iron Boots
+   310  0     0   1       diamond_helmet                  Diamond Helmet
+   311  0     0   1       diamond_chestplate              Diamond Chestplate
+   312  0     0   1       diamond_leggings                Diamond Leggings
+   313  0     0   1       diamond_boots                   Diamond Boots
+   314  0     0   1       golden_helmet                   Golden Helmet
+   315  0     0   1       golden_chestplate               Golden Chestplate
+   316  0     0   1       golden_leggings                 Golden Leggings
+   317  0     0   1       golden_boots                    Golden Boots
+   318  0     0   1       flint                           Flint
+   319  0     0   1       porkchop                        Raw Porkchop
+   320  0     0   1       cooked_porkchop                 Cooked Porkchop
+   321  0     0   1       painting                        Painting
+   322  0     0   0       golden_apple                    Golden Apple
+   322  1     0   0       golden_apple                    Enchanted Golden Apple
+   323  0     0   1       sign                            Sign
+   324  0     0   1       wooden_door                     Oak Door
+   325  0     0   1       bucket                          Bucket
+   326  0     0   0       water_bucket                    Water Bucket
+   327  0     0   0       lava_bucket                     Lava Bucket
+   328  0     0   1       minecart                        Minecart
+   329  0     0   1       saddle                          Saddle
+   330  0     0   1       iron_door                       Iron Door
+   331  0     0   1       redstone                        Redstone
+   332  0     0   1       snowball                        Snowball
+   333  0     0   1       boat                            Boat
+   334  0     0   0       leather                         Leather
+   335  0     0   1       milk_bucket                     Milk Bucket
+   336  0     0   1       brick                           Brick
+   337  0     0   1       clay_ball                       Clay
+   338  0     0   1       reeds                           Sugar Canes
+   339  0     0   1       paper                           Paper
+   340  0     0   1       book                            Book
+   341  0     0   0       slime_ball                      Slimeball
+   342  0     0   0       chest_minecart                  Minecart with Chest
+   343  0     0   0       furnace_minecart                Minecart with Furnace
+   344  0     0   1       egg                             Egg
+   345  0     0   1       compass                         Compass
+   346  0     0   1       fishing_rod                     Fishing Rod
+   347  0     0   1       clock                           Clock
+   348  0     0   1       glowstone_dust                  Glowstone Dust
+   349  0     0   0       fish                            Raw Fish
+   349  1     0   0       fish                            Raw Salmon
+   349  2     0   0       fish                            Clownfish
+   349  3     0   0       fish                            Pufferfish
+   350  0     0   0       cooked_fish                     Cooked Fish
+   350  1     0   0       cooked_fish                     Cooked Salmon
+   351  0     0   1       dye                             Ink Sack
+   351  1     0   1       dye                             Rose Red
+   351  2     0   1       dye                             Cactus Green
+   351  3     0   1       dye                             Coco Beans
+   351  4     0   1       dye                             Lapis Lazuli
+   351  5     0   1       dye                             Purple Dye
+   351  6     0   1       dye                             Cyan Dye
+   351  7     0   1       dye                             Light Gray Dye
+   351  8     0   1       dye                             Gray Dye
+   351  9     0   1       dye                             Pink Dye
+   351  10    0   1       dye                             Lime Dye
+   351  11    0   1       dye                             Dandelion Yellow
+   351  12    0   1       dye                             Light Blue Dye
+   351  13    0   1       dye                             Magenta Dye
+   351  14    0   1       dye                             Orange Dye
+   351  15    0   1       dye                             Bone Meal
+   352  0     0   1       bone                            Bone
+   353  0     0   1       sugar                           Sugar
+   354  0     0   1       cake                            Cake
+   355  0     0   1       bed                             Bed
+   356  0     0   0       repeater                        Redstone Repeater
+   357  0     0   1       cookie                          Cookie
+   358  0     0   0       filled_map                      Map
+   359  0     0   1       shears                          Shears
+   360  0     0   1       melon                           Melon
+   361  0     0   1       pumpkin_seeds                   Pumpkin Seeds
+   362  0     0   1       melon_seeds                     Melon Seeds
+   363  0     0   1       beef                            Raw Beef
+   364  0     0   1       cooked_beef                     Steak
+   365  0     0   1       chicken                         Raw Chicken
+   366  0     0   1       cooked_chicken                  Cooked Chicken
+   367  0     0   0       rotten_flesh                    Rotten Flesh
+   368  0     0   0       ender_pearl                     Ender Pearl
+   369  0     0   0       blaze_rod                       Blaze Rod
+   370  0     0   0       ghast_tear                      Ghast Tear
+   371  0     0   0       gold_nugget                     Gold Nugget
+   372  0     0   0       nether_wart                     Nether Wart
+   373  0     0   0       potion                          Potion
+   374  0     0   0       glass_bottle                    Glass Bottle
+   375  0     0   0       spider_eye                      Spider Eye
+   376  0     0   0       fermented_spider_eye            Fermented Spider Eye
+   377  0     0   0       blaze_powder                    Blaze Powder
+   378  0     0   0       magma_cream                     Magma Cream
+   379  0     0   0       brewing_stand                   Brewing Stand
+   380  0     0   0       cauldron                        Cauldron
+   381  0     0   0       ender_eye                       Eye of Ender
+   382  0     0   0       speckled_melon                  Glistering Melon
+   383  50    0   1       spawn_egg                       Spawn Creeper
+   383  51    0   1       spawn_egg                       Spawn Skeleton
+   383  52    0   1       spawn_egg                       Spawn Spider
+   383  54    0   1       spawn_egg                       Spawn Zombie
+   383  55    0   1       spawn_egg                       Spawn Slime
+   383  56    0   1       spawn_egg                       Spawn Ghast
+   383  57    0   1       spawn_egg                       Spawn Pigman
+   383  58    0   1       spawn_egg                       Spawn Enderman
+   383  59    0   1       spawn_egg                       Spawn Cave Spider
+   383  60    0   1       spawn_egg                       Spawn Silverfish
+   383  61    0   1       spawn_egg                       Spawn Blaze
+   383  62    0   1       spawn_egg                       Spawn Magma Cube
+   383  65    0   1       spawn_egg                       Spawn Bat
+   383  66    0   1       spawn_egg                       Spawn Witch
+   383  67    0   1       spawn_egg                       Spawn Endermite
+   383  68    0   1       spawn_egg                       Spawn Guardian
+   383  90    0   1       spawn_egg                       Spawn Pig
+   383  91    0   1       spawn_egg                       Spawn Sheep
+   383  92    0   1       spawn_egg                       Spawn Cow
+   383  93    0   1       spawn_egg                       Spawn Chicken
+   383  94    0   1       spawn_egg                       Spawn Squid
+   383  95    0   1       spawn_egg                       Spawn Wolf
+   383  96    0   1       spawn_egg                       Spawn Mooshroom
+   383  98    0   1       spawn_egg                       Spawn Ocelot
+   383  100   0   1       spawn_egg                       Spawn Horse
+   383  101   0   1       spawn_egg                       Spawn Rabbit
+   383  120   0   1       spawn_egg                       Spawn Villager
+   384  0     0   0       experience_bottle               Bottle o\' Enchanting
+   385  0     0   0       fire_charge                     Fire Charge
+   386  0     0   0       writable_book                   Book and Quill
+   387  0     0   0       written_book                    Written Book
+   388  0     0   1       emerald                         Emerald
+   389  0     0   0       item_frame                      Item Frame
+   390  0     0   0       flower_pot                      Flower Pot
+   391  0     0   1       carrot                          Carrot
+   392  0     0   1       potato                          Potato
+   393  0     0   1       baked_potato                    Baked Potato
+   394  0     0   0       poisonous_potato                Poisonous Potato
+   395  0     0   0       map                             Empty Map
+   396  0     0   0       golden_carrot                   Golden Carrot
+   397  0     0   0       skull                           Mob Head (Skeleton)
+   397  1     0   0       skull                           Mob Head (Wither Skeleton)
+   397  2     0   0       skull                           Mob Head (Zombie)
+   397  3     0   0       skull                           Mob Head (Human)
+   397  4     0   0       skull                           Mob Head (Creeper)
+   398  0     0   0       carrot_on_a_stick               Carrot on a Stick
+   399  0     0   0       nether_star                     Nether Star
+   400  0     0   0       pumpkin_pie                     Pumpkin Pie
+   401  0     0   0       fireworks                       Firework Rocket
+   402  0     0   0       firework_charge                 Firework Star
+   403  0     0   0       enchanted_book                  Enchanted Book
+   404  0     0   0       comparator                      Redstone Comparator
+   405  0     0   1       netherbrick                     Nether Brick
+   406  0     0   1       quartz                          Nether Quartz
+   407  0     0   0       tnt_minecart                    Minecart with TNT
+   408  0     0   0       hopper_minecart                 Minecart with Hopper
+   409  0     0   0       prismarine_shard                Prismarine Shard
+   410  0     0   0       prismarine_crystals             Prismarine Crystals
+   411  0     0   0       rabbit                          Raw Rabbit
+   412  0     0   0       cooked_rabbit                   Cooked Rabbit
+   413  0     0   0       rabbit_stew                     Rabbit Stew
+   414  0     0   0       rabbit_foot                     Rabbit\'s Foot
+   415  0     0   0       rabbit_hide                     Rabbit Hide
+   416  0     0   0       armor_stand                     Armor Stand
+   417  0     0   0       iron_horse_armor                Iron Horse Armor
+   418  0     0   0       golden_horse_armor              Golden Horse Armor
+   419  0     0   0       diamond_horse_armor             Diamond Horse Armor
+   420  0     0   0       lead                            Lead
+   421  0     0   0       name_tag                        Name Tag
+   422  0     0   0       command_block_minecart          Minecart with Command Block
+   423  0     0   0       mutton                          Raw Mutton
+   424  0     0   0       cooked_mutton                   Cooked Mutton
+   425  0     0   0       banner                          Banner
+   427  0     0   0       spruce_door                     Spruce Door
+   428  0     0   0       birch_door                      Birch Door
+   429  0     0   0       jungle_door                     Jungle Door
+   430  0     0   0       acacia_door                     Acacia Door
+   431  0     0   0       dark_oak_door                   Dark Oak Door
+   2256 0     0   0       record_13                       13 Disc
+   2257 0     0   0       record_cat                      Cat Disc
+   2258 0     0   0       record_blocks                   Blocks Disc
+   2259 0     0   0       record_chirp                    Chirp Disc
+   2260 0     0   0       record_far                      Far Disc
+   2261 0     0   0       record_mall                     Mall Disc
+   2262 0     0   0       record_mellohi                  Mellohi Disc
+   2263 0     0   0       record_stal                     Stal Disc
+   2264 0     0   0       record_strad                    Strad Disc
+   2265 0     0   0       record_ward                     Ward Disc
+   2266 0     0   0       record_11                       11 Disc
+   2267 0     0   0       record_wait                     Wait Disc

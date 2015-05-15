@@ -109,7 +109,8 @@ class Player(object):
             self._connection.transact('entity.getPos(%d)' % self._player_id),
             type=float)
     def _set_pos(self, value):
-        self._connection.send('entity.setPos(%d,%s)' % (self._player_id, value))
+        self._connection.send(
+            'entity.setPos(%d,%f,%f,%f)' % (self._player_id, value.x, value.y, value.z))
     pos = property(
         lambda self: self._get_pos(),
         lambda self, value: self._set_pos(value),
@@ -126,7 +127,8 @@ class Player(object):
         return Vector.from_string(
             self._connection.transact('entity.getTile(%d)' % self._player_id))
     def _set_tile_pos(self, value):
-        self._connection.send('entity.setTile(%d,%s)' % (self._player_id, value))
+        self._connection.send(
+            'entity.setTile(%d,%d,%d,%d)' % (self._player_id, value.x, value.y, value.z))
     tile_pos = property(
         lambda self: self._get_tile_pos(),
         lambda self, value: self._set_tile_pos(value),
@@ -156,7 +158,8 @@ class HostPlayer(object):
             self._connection.transact('player.getPos()'),
             type=float)
     def _set_pos(self, value):
-        self._connection.send('player.setPos(%s)' % str(value))
+        self._connection.send(
+            'player.setPos(%f,%f,%f)' % (value.x, value.y, value.z))
     pos = property(
         lambda self: self._get_pos(),
         lambda self, value: self._set_pos(value),
@@ -172,7 +175,8 @@ class HostPlayer(object):
     def _get_tile_pos(self):
         return Vector.from_string(self._connection.transact('player.getTile()'))
     def _set_tile_pos(self, value):
-        self._connection.send('player.setTile(%s)' % str(value))
+        self._connection.send(
+            'player.setTile(%d,%d,%d)' % (value.x, value.y, value.z))
     tile_pos = property(
         lambda self: self._get_tile_pos(),
         lambda self, value: self._set_tile_pos(value),

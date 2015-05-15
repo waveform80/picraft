@@ -63,7 +63,6 @@ from .exc import (
     BatchNotStarted,
     )
 from .vector import Vector
-from .connection import Connection
-from .player import Player, HostPlayer, Players
+from .block import Block
 from .game import Game
 
