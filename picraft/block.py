@@ -195,7 +195,17 @@ class Block(namedtuple('Block', ('id', 'data'))):
     :attr:`name` and :attr:`description` of the block from a database derived
     from the Minecraft wiki, and classmethods are defined to construct a block
     definition from alternate things like a :meth:`name <from_name>` or an
-    :meth:`RGB color <from_color>`.
+    :meth:`RGB color <from_color>`::
+
+        >>> Block(0, 0)
+        <Block "air" id=0 data=0>
+        >>> Block(2, 0)
+        <Block "grass" id=2 data=0>
+        >>> Block.from_name('stone')
+        <Block "stone" id=1 data=0>
+        >>> import picraft.block
+        >>> picraft.block.WATER
+        <Block "flowing_water" id=8 data=0>
 
     Aliases are provided for compatibility with the official reference
     implementation (AIR, GRASS, STONE, etc).

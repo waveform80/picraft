@@ -45,6 +45,13 @@ World
 
 .. autoclass:: World
     :members:
+
+
+Checkpoint
+==========
+
+.. autoclass:: Checkpoint
+    :members:
 """
 
 from __future__ import (
@@ -222,7 +229,7 @@ class World(object):
         console and displayed immediately. For example::
 
             >>> world.say('Hello, world!')
-            >>> world.say('The following player IDs exist:\n%s' %
+            >>> world.say('The following player IDs exist:\\n%s' %
             ...     '\n'.join(str(p) for p in world.players))
         """
         for line in message.splitlines():
