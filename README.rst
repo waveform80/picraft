@@ -4,7 +4,7 @@
 picraft
 =======
 
-This package provides an alternate Python API for Minecraft Pi edition
+This package provides an alternate Python API for `Minecraft Pi edition`_
 on the `Raspberry Pi`_ for Python 2.7 (or above), or Python 3.2 (or above).
 
 .. warning::
@@ -25,6 +25,7 @@ Links
   instructions is more likely to be useful
 
 
+.. _Minecraft Pi edition: https://www.raspberrypi.org/documentation/usage/minecraft/README.md
 .. _Raspberry Pi: http://www.raspberrypi.org/
 .. _PyPI: http://pypi.python.org/pypi/picraft/
 .. _documentation: http://picraft.readthedocs.org/

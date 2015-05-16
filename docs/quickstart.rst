@@ -4,7 +4,7 @@
 Quick Start
 ===========
 
-Firstly, ensure that you have a Minecraft game running on your Pi. Now start
+Firstly, ensure that you have a `Minecraft game`_ running on your Pi. Now start
 a terminal, start Python within the terminal, import the picraft library and
 start a connection to the Minecraft world::
 
@@ -148,5 +148,6 @@ This concludes the quick tour of the picraft library. Several recipes can be
 found in the next section followed by the API reference.
 
 
+.. _Minecraft game: https://www.raspberrypi.org/documentation/usage/minecraft/README.md
 .. _half-open: http://python-history.blogspot.co.uk/2013/10/why-python-uses-0-based-indexing.html
 
