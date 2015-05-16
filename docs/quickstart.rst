@@ -1,14 +1,13 @@
 .. _quickstart:
 
-==========
-Quickstart
-==========
+===========
+Quick Start
+===========
 
 Firstly, ensure that you have a Minecraft game running on your Pi. Now start
 a terminal, start Python within the terminal, import the picraft library and
 start a connection to the Minecraft world::
 
-    $ python
     >>> from picraft import *
     >>> world = World()
 
@@ -114,7 +113,7 @@ end is *exclusive*. You can see this explicitly with the
      Vector(x=-1, y=14, z=4)]
 
 We can change the state of many blocks at once similarly by assigning a new
-:class:`Block` object to a slice of blocks::
+:class:`~picraft.block.Block` object to a slice of blocks::
 
     >>> v = world.player.tile_pos - Vector(y=1)
     >>> world.blocks[v - Vector(1, 0, 1):v + Vector(2, 1, 2)] = Block.from_name('stone')
