@@ -42,13 +42,6 @@ class which represents the player on the host machine (accessible via the
 The following items are defined in the module:
 
 
-Players
-=======
-
-.. autoclass:: Players
-    :members:
-
-
 Player
 ======
 
@@ -77,11 +70,7 @@ from .vector import Vector
 
 class Players(object):
     """
-    Represents the players currently present in the game world.
-
-    This class presents a mapping of player-id to :class:`Player` instance.
-    The mapping is read-only, but supports many of the methods of a regular
-    dict.
+    Thie class implements the :attr:`~picraft.world.World.players` attribute.
     """
 
     def __init__(self, connection):
