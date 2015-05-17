@@ -48,13 +48,6 @@ Block
     :members:
 
 
-Blocks
-======
-
-.. autoclass:: Blocks
-    :members:
-
-
 Compatibility
 =============
 
@@ -142,11 +135,17 @@ from __future__ import (
     print_function,
     division,
     )
+try:
+    from itertools import izip as zip
+except ImportError:
+    pass
 str = type('')
 
 
 import io
+from math import sqrt
 from collections import namedtuple
+from operator import itemgetter
 try:
     # Py2 compat
     from itertools import izip_longest as zip_longest
@@ -157,7 +156,7 @@ from pkg_resources import resource_stream
 from .vector import vector_range
 
 
-def _read_blocks_db(filename_or_object):
+def _read_block_data(filename_or_object):
     if isinstance(filename_or_object, str):
         stream = io.open(filename_or_object, 'rb')
     else:
@@ -168,11 +167,23 @@ def _read_blocks_db(filename_or_object):
             id, data, pi, pocket, name, description = line.split(None, 5)
             yield int(id), int(data), bool(int(pi)), bool(int(pocket)), name, description
 
+def _read_block_color(filename_or_object):
+    if isinstance(filename_or_object, str):
+        stream = io.open(filename_or_object, 'rb')
+    else:
+        stream = filename_or_object
+    int2color = lambda n: ((n & 0xff0000) >> 16, (n & 0xff00) >> 8, n & 0xff)
+    for line in stream:
+        line = line.decode('utf-8').strip()
+        if line and not line.startswith('#'):
+            id, data, color = line.split(None, 2)
+            yield int(id), int(data), int2color(int(color, 16))
+
 
 _BLOCKS_DB = {
     (id, data): (pi, pocket, name, description)
     for (id, data, pi, pocket, name, description) in
-        _read_blocks_db(resource_stream(__name__, 'block.data'))
+        _read_block_data(resource_stream(__name__, 'block.data'))
     }
 
 _BLOCKS_BY_ID = {
@@ -185,6 +196,12 @@ _BLOCKS_BY_NAME = {
     name: id
     for (id, data), (pi, pocket, name, description) in _BLOCKS_DB.items()
     if data == 0
+    }
+
+_BLOCKS_BY_COLOR = {
+    color: (id, data)
+    for (id, data, color) in
+        _read_block_color(resource_stream(__name__, 'block.color'))
     }
 
 
@@ -202,7 +219,17 @@ class Block(namedtuple('Block', ('id', 'data'))):
     :attr:`name` and :attr:`description` of the block from a database derived
     from the Minecraft wiki, and classmethods are defined to construct a block
     definition from alternate things like a :meth:`name <from_name>` or an
-    :meth:`RGB color <from_color>`.
+    :meth:`RGB color <from_color>`::
+
+        >>> Block(0, 0)
+        <Block "air" id=0 data=0>
+        >>> Block(2, 0)
+        <Block "grass" id=2 data=0>
+        >>> Block.from_name('stone')
+        <Block "stone" id=1 data=0>
+        >>> import picraft.block
+        >>> picraft.block.WATER
+        <Block "flowing_water" id=8 data=0>
 
     Aliases are provided for compatibility with the official reference
     implementation (AIR, GRASS, STONE, etc).
@@ -239,8 +266,53 @@ class Block(namedtuple('Block', ('id', 'data'))):
         return cls(id, data)
 
     @classmethod
-    def from_color(cls, red, green, blue):
-        raise NotImplemented
+    def from_color(cls, color, exact=False):
+        """
+        Construct a :class:`Block` instance from a *color* which can be
+        represented as:
+
+        * A tuple of ``(red, green, blue)`` integer byte values between 0 and
+          255
+        * A tuple of ``(red, green, blue)`` float values between 0.0 and 1.0
+        * A string in the format '#rrggbb' where rr, gg, and bb are hexadecimal
+          representations of byte values.
+
+        If *exact* is ``False`` (the default), and an exact match for the
+        requested color cannot be found, the nearest color (determined simply
+        by Euclidian distance) is returned. If *exact* is ``True`` and an exact
+        match cannot be found, a :exc:`ValueError` will be raised.
+        """
+        if isinstance(color, bytes):
+            color = color.decode('utf-8')
+        if isinstance(color, str):
+            try:
+                if not (color.startswith('#') and len(color) == 7):
+                    raise ValueError()
+                color = (
+                        int(color[1:3], 16),
+                        int(color[3:5], 16),
+                        int(color[5:7], 16))
+            except ValueError:
+                raise ValueError('unrecognized color format: %s' % color)
+        else:
+            try:
+                r, g, b = color
+            except (TypeError, ValueError):
+                raise ValueError('expected three values in color')
+            if 0.0 <= r <= 1.0 and 0.0 <= g <= 1.0 and 0.0 <= b <= 1.0:
+                color = tuple(int(n * 255) for n in color)
+        try:
+            id, data = _BLOCKS_BY_COLOR[color]
+        except KeyError:
+            r, g, b = color
+            if exact:
+                raise ValueError(
+                    'no blocks match color #%06x' % (r << 16 | g << 8 | b))
+            diff = lambda block_color: sqrt(
+                    sum((c1 - c2) ** 2 for c1, c2 in zip(color, block_color)))
+            matched_color, (id, data) = sorted(
+                    _BLOCKS_BY_COLOR.items(), key=lambda i: diff(i[0]))[0]
+        return cls(id, data)
 
     def __repr__(self):
         try:
@@ -287,41 +359,8 @@ class Block(namedtuple('Block', ('id', 'data'))):
 
 class Blocks(object):
     """
-    This property can be queried to determine the type of a block in the world,
-    or can be set to alter the type of a block. The property can be indexed
-    with a single :class:`Vector`, in which case the state of a single block is
-    returned (or updated) as a :class:`Block` instance::
-
-        >>> world.blocks[g.player.tile_pos]
-        <Block "grass" id=2 data=0>
-
-    Alternatively, a slice of two vectors can be used. In this case, when
-    querying the property, a sequence of :class:`Block` instances is returned,
-    When setting a slice of two vectors you can either pass a sequence of
-    :class:`Block` instances or a single :class:`Block` instance. The sequence
-    must be equal to the number of blocks represented by the slice::
-
-        >>> world.blocks[Vector(0,0,0):Vector(2,1,1)]
-        [<Block "grass" id=2 data=0>,<Block "grass" id=2 data=0>]
-        >>> world.blocks[Vector(0,0,0):Vector(5,1,5)] = Block.from_name('grass')
-
-    As with normal Python slices, the interval specified is `half-open`_.  That
-    is to say, it is inclusive of the lower vector, *exclusive* of the upper
-    one. Hence, ``Vector():Vector(x=5,1,1)`` represents the coordinates (0,0,0)
-    to (4,0,0).
-
-    .. _half-open: http://python-history.blogspot.co.uk/2013/10/why-python-uses-0-based-indexing.html
-
-    .. warning:
-
-        Querying or setting sequences of blocks is extremely slow as a network
-        transaction must be executed for each individual block.  When setting a
-        slice of blocks, this can be speeded up by specifying a single
-        :class:`Block` in which case one network transaction will occur to set
-        all blocks in the slice.  Additionally, a :meth:`connection batch
-        <picraft.connection.Connection.batch_start>` can be used to speed
-        things up.
-        """
+    This class implements the :attr:`~picraft.world.World.blocks` attribute.
+    """
     def __init__(self, connection):
         self._connection = connection
 
