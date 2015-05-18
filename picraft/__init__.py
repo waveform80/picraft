@@ -68,7 +68,7 @@ from .exc import (
     BatchNotStarted,
     )
 from .vector import Vector, vector_range
-from .block import Block
+from .block import Block, BLOCK_COLORS
 from .connection import Connection
 from .player import Players, Player, HostPlayer
 from .world import World
