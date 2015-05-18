@@ -98,6 +98,7 @@ class World(object):
         self._player = HostPlayer(self._connection)
         self._players = Players(self._connection)
         self._blocks = Blocks(self._connection)
+        self._height = WorldHeights(self._connection)
 
     @property
     def connection(self):
@@ -156,6 +157,27 @@ class World(object):
         return self._player
 
     @property
+    def height(self):
+        """
+        Represents the height of the Minecraft world.
+
+        This property can be queried to determine the height of the world
+        at any location. The property can be indexed with a single
+        :class:`Vector`, in which case the height will be returned as a
+        vector with the same X and Z coordinates, but a Y coordinate adjusted
+        to the first non-air block from the top of the world::
+
+            >>> world.height[Vector(0, -10, 0)]
+            Vector(x=0, y=0, z=0)
+
+        Alternatively, a slice of two vectors can be used. In this case, the
+        property returns a sequence of :class:`Vector` objects each with their
+        Y coordinates adjusted to the height of the world at the respective
+        X and Z coordinates.
+        """
+        return self._height
+
+    @property
     def blocks(self):
         """
         Represents the state of blocks in the Minecraft world.
@@ -199,6 +221,7 @@ class World(object):
         """
         return self._blocks
 
+    @property
     def checkpoint(self):
         """
         Represents the Minecraft world checkpoint system.
@@ -232,7 +255,7 @@ class World(object):
 
             >>> world.say('Hello, world!')
             >>> world.say('The following player IDs exist:\\n%s' %
-            ...     '\n'.join(str(p) for p in world.players))
+            ...     '\\n'.join(str(p) for p in world.players))
         """
         for line in message.splitlines():
             self.connection.send('chat.post(%s)' % line)
@@ -308,4 +331,24 @@ class Checkpoint(object):
     def __exit__(self, exc_type, exc_value, exc_tb):
         if exc_type is not None:
             self.restore()
+
+
+class WorldHeight(object):
+    """
+    This class implements the :attr:`~picraft.world.World.heights` attribute.
+    """
+    def __init__(self, connection):
+        self._connection = connection
+
+    def __getitem__(self, index):
+        if isinstance(index, slice):
+            return [
+                Vector(v.x, int(self._connection.transact(
+                    'world.getHeight(%d,%d)' % (v.x, v.z))), v.z)
+                for v in vector_range(index.start, index.stop)
+                ]
+        else:
+            return Vector(index.x, int(self._connection.transact(
+                'world.getHeight(%d,%d)' % (index.x, index.z))), index.z)
+
 
