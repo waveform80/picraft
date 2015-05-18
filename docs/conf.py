@@ -69,7 +69,14 @@ intersphinx_mapping = {
 # -- Options for HTML output ----------------------------------------------
 
 html_theme = 'alabaster'
-#html_theme_options = {}
+html_theme_options = {
+        'github_user': 'waveform80',
+        'github_repo': 'picraft',
+        'logo': 'logo.png',
+        'logo_name': True,
+        'logo_text_align': 'center',
+        'description': 'The Pythonic Minecraft Library',
+        }
 #html_theme_path = []
 #html_title = None
 #html_short_title = None
@@ -79,7 +86,13 @@ html_static_path = ['_static']
 #html_extra_path = []
 #html_last_updated_fmt = '%b %d, %Y'
 #html_use_smartypants = True
-#html_sidebars = {}
+html_sidebars = {
+        '**': [
+            'about.html',
+            'navigation.html',
+            'searchbox.html',
+            ]
+        }
 #html_additional_pages = {}
 #html_domain_indices = True
 #html_use_index = True
