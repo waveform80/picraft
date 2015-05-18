@@ -13,6 +13,7 @@ Table of Contents
    install2
    install3
    quickstart
+   conversion
    recipes
    faq
    api

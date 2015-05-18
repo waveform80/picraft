@@ -8,7 +8,7 @@ Firstly, ensure that you have a `Minecraft game`_ running on your Pi. Now start
 a terminal, start Python within the terminal, import the picraft library and
 start a connection to the Minecraft world::
 
-    >>> from picraft import *
+    >>> from picraft import World, Vector, Block
     >>> world = World()
 
 The :class:`~picraft.world.World` class is the usual starting point for picraft
@@ -144,8 +144,10 @@ the :attr:`~picraft.world.World.checkpoint` object::
     >>> world.blocks[v - Vector(1, 0, 1):v + Vector(2, 1, 2)] = Block.from_name('stone')
     >>> world.checkpoint.restore()
 
-This concludes the quick tour of the picraft library. Several recipes can be
-found in the next section followed by the API reference.
+This concludes the quick tour of the picraft library. Conversion instructions
+from mcpi can be found in the next chapter, followed by picraft recipes in the
+chapter after that. Finally, the API reference can be found at the end of the
+manual.
 
 
 .. _Minecraft game: https://www.raspberrypi.org/documentation/usage/minecraft/README.md
