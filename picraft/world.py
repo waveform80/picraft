@@ -91,8 +91,10 @@ class World(object):
         >>> world.say('Hello, world!')
     """
 
-    def __init__(self, host='localhost', port=4711):
-        self._connection = Connection(host, port)
+    def __init__(
+            self, host='localhost', port=4711, timeout=0.2,
+            ignore_errors=False):
+        self._connection = Connection(host, port, timeout, ignore_errors)
         self._player = HostPlayer(self._connection)
         self._players = Players(self._connection)
         self._blocks = Blocks(self._connection)
