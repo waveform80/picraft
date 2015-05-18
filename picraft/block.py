@@ -48,6 +48,13 @@ Block
     :members:
 
 
+.. data:: BLOCK_COLORS
+
+    A set of the available colors that can be used with
+    :meth:`Block.from_color`.  Each color is represented as ``(red, green,
+    blue)`` tuple where each component is an integer between 0 and 255.
+
+
 Compatibility
 =============
 
@@ -203,6 +210,8 @@ _BLOCKS_BY_COLOR = {
     for (id, data, color) in
         _read_block_color(resource_stream(__name__, 'block.color'))
     }
+
+BLOCK_COLORS = _BLOCKS_BY_COLOR.keys()
 
 
 class Block(namedtuple('Block', ('id', 'data'))):
