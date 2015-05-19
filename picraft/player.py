@@ -213,3 +213,21 @@ class HostPlayer(object):
         assign to this property to reposition the player.
         """)
 
+    def _get_autojump(self):
+        raise NotImplementedError
+    def _set_autojump(self, value):
+        self._connection.send('player.setting(autojump,%d)' % bool(value))
+    autojump = property(_get_autojump, _set_autojump, doc="""\
+        Write-only property which sets whether the host player autojumps.
+
+        When this property is set to True (which is the default), the host
+        player will automatically jump onto blocks when it runs into them
+        (unless the blocks are too high to jump onto).
+
+        .. note::
+
+            Unfortunately, the underlying protocol provides no means of reading
+            a world setting, so this property is write-only (attempting to
+            query it will result in a :exc:`NotImplementedError` being raised).
+        """)
+

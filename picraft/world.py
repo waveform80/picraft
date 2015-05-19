@@ -266,6 +266,36 @@ class World(object):
     def __exit__(self, exc_type, exc_value, exc_tb):
         self.close()
 
+    def _get_immutable(self):
+        raise NotImplementedError
+    def _set_immutable(self, value):
+        self._connection.send('world.setting(world_immutable,%d)' % bool(value))
+    immutable = property(_get_immutable, _set_immutable,
+        doc="""\
+        Write-only property which sets whether the world is changeable.
+
+        .. note::
+
+            Unfortunately, the underlying protocol provides no means of reading
+            a world setting, so this property is write-only (attempting to
+            query it will result in a :exc:`NotImplementedError` being raised).
+        """)
+
+    def _get_nametags_visible(self):
+        raise NotImplementedError
+    def _set_nametags_visible(self, value):
+        self._connection.send('world.setting(nametags_visible,%d)' % bool(value))
+    nametags_visible = property(_get_nametags_visible, _set_nametags_visible,
+        doc="""\
+        Write-only property which sets whether players' nametags are visible.
+
+        .. note::
+
+            Unfortunately, the underlying protocol provides no means of reading
+            a world setting, so this property is write-only (attempting to
+            query it will result in a :exc:`NotImplementedError` being raised).
+        """)
+
 
 class Checkpoint(object):
     """

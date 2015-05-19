@@ -235,3 +235,189 @@ correctly recognizes line breaks in the message::
     >>> w = World()
     >>> w.say('Hello world!')
 
+
+Minecraft.setting
+=================
+
+Equivalent: :attr:`~picraft.world.World.immutable` and :attr:`~picraft.world.World.nametags_visible`
+
+The ``setting`` method is replaced with (write-only) properties with the
+equivalent names to the settings that can be used::
+
+    >>> import mcpi.minecraft as minecraft
+    >>> mc = minecraft.create()
+    >>> mc.setting('world_immutable', True)
+    >>> mc.setting('nametags_visible', True)
+
+    >>> from picraft import World
+    >>> w = World()
+    >>> w.immutable = True
+    >>> w.nametags_visible = True
+
+
+Minecraft.player.getPos
+=======================
+
+Equivalent: :attr:`~picraft.player.HostPlayer.pos`
+
+The ``player.getPos`` and ``player.setPos`` methods are replaced with the
+:attr:`~picraft.player.HostPlayer.pos` attribute which returns a
+:class:`~picraft.vector.Vector` of floats and accepts the same to move the host
+player::
+
+    >>> import mcpi.minecraft as minecraft
+    >>> mc = minecraft.create()
+    >>> mc.player.getPos()
+    Vec3(12.7743,12.0,-8.39158)
+    >>> mc.player.setPos(12,12,-8)
+
+    >>> from picraft import World, Vector
+    >>> w = World()
+    >>> w.player.pos
+    Vector(x=12.7743, y=12.0, z=-8.39158)
+    >>> w.player.pos = Vector(12, 12, -8)
+
+One advantage of this implementation is that adjusting the player's position
+relatively to their current one becomes simple::
+
+    >>> w.player.pos += Vector(y=20)
+
+
+Minecraft.player.setPos
+=======================
+
+See ``Minecraft.player.getPos`` above.
+
+
+Minecraft.player.getTilePos
+===========================
+
+Equivalent: :attr:`~picraft.player.HostPlayer.tile_pos`
+
+The ``player.getTilePos`` and ``player.setTilePos`` methods are replaced with
+the :attr:`~picraft.player.HostPlayer.tile_pos` attribute which returns a
+:class:`~picraft.vector.Vector` of ints, and accepts the same to move the
+host player::
+
+    >>> import mcpi.minecraft as minecraft
+    >>> mc = minecraft.create()
+    >>> mc.player.getTilePos()
+    Vec3(12,12,-9)
+    >>> mc.player.setTilePos(12, 12, -8)
+
+    >>> from picraft import World, Vector
+    >>> w = World()
+    >>> w.player.tile_pos
+    Vector(x=12, y=12, z=-9)
+    >>> w.player.tile_pos += Vector(y=20)
+
+
+Minecraft.player.setTilePos
+===========================
+
+See ``Minecraft.player.getTilePos`` above.
+
+
+Minecraft.player.setting
+========================
+
+Equivalent: :attr:`~picraft.player.HostPlayer.autojump`
+
+The ``player.setting`` method is replaced with the write-only
+:attr:`~picraft.player.HostPlayer.autojump` attribute::
+
+    >>> import mcpi.minecraft as minecraft
+    >>> mc = minecraft.create()
+    >>> mc.player.setting('autojump', False)
+
+    >>> from picraft import World
+    >>> w = World()
+    >>> w.player.autojump = False
+
+
+Minecraft.entity.getPos
+=======================
+
+Equivalent: :attr:`~picraft.player.Player.pos`
+
+The ``entity.getPos`` and ``entity.setPos`` methods are replaced with the
+:attr:`~picraft.player.Player.pos` attribute. Access the relevant
+:class:`~picraft.player.Player` instance by indexing the
+:attr:`~picraft.world.World.players` attribute::
+
+    >>> import mcpi.minecraft as minecraft
+    >>> mc = minecraft.create()
+    >>> mc.entity.getPos(1)
+    Vec3(12.7743,12.0,-8.39158)
+    >>> mc.entity.setPos(1, 12, 12, -8)
+
+    >>> from picraft import World, Vector
+    >>> w = World()
+    >>> w.players[1].pos
+    Vector(x=12.7743, y=12.0, z=-8.39158)
+    >>> w.players[1].pos = Vector(12, 12, -8)
+
+
+Minecraft.entity.setPos
+=======================
+
+See ``Minecraft.entity.getPos`` above.
+
+
+Minecraft.entity.getTilePos
+===========================
+
+Equivalent: :attr:`~picraft.player.Player.tile_pos`
+
+The ``entity.getTilePos`` and ``entity.setTilePos`` methods are replaced with
+the :attr:`~picraft.player.Player.tile_pos` attribute. Access the relevant
+:class:`~picraft.player.Player` instance by indexing the
+:attr:`~picraft.world.World.players` attribute::
+
+    >>> import mcpi.minecraft as minecraft
+    >>> mc = minecraft.create()
+    >>> mc.entity.getTilePos(1)
+    Vec3(12,12,-9)
+    >>> mc.entity.setTilePos(1, 12, 12, -8)
+
+    >>> from picraft import World, Vector
+    >>> w = World()
+    >>> w.players[1].tile_pos
+    Vector(x=12, y=12, z=-9)
+    >>> w.players[1].tile_pos += Vector(y=20)
+
+
+Minecraft.entity.setTilePos
+===========================
+
+See ``Minecraft.entity.setTilePos`` above.
+
+
+Minecraft.block.Block
+=====================
+
+Equivalent: :class:`~picraft.block.Block`
+
+The :class:`~picraft.block.Block` class in picraft is similar to the ``Block``
+class in mcpi but with one major difference: in picraft a ``Block`` instance
+is a tuple descendent and therefore immutable (you cannot change the id or
+data attributes of a ``Block`` instance).
+
+This may seem like an arbitrary barrier, but firstly its quite rare to
+adjust the the id or data attribute (it's rather more common to just overwrite
+a block in the world with an entirely new type), and secondly this change
+permits blocks to be used as keys in a Python dictionary, or to be stored
+in a set.
+
+The :class:`~picraft.block.Block` class also provides several means of
+construction, and additional properties::
+
+    >>> from picraft import Block
+    >>> Block(1, 0)
+    <Block "stone" id=1 data=0>
+    >>> Block(35, 1)
+    <Block "wool" id=35 data=1>
+    >>> Block.from_name('wool', data=1).description
+    u'Orange Wool'
+    >>> Block.from_color('#ffffff').description
+    u'White Wool'
