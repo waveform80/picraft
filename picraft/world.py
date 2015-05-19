@@ -98,7 +98,7 @@ class World(object):
         self._player = HostPlayer(self._connection)
         self._players = Players(self._connection)
         self._blocks = Blocks(self._connection)
-        self._height = WorldHeights(self._connection)
+        self._height = WorldHeight(self._connection)
 
     @property
     def connection(self):
