@@ -65,6 +65,7 @@ from __future__ import (
 str = type('')
 
 
+from .exc import ConnectionError
 from .vector import Vector
 
 
@@ -100,7 +101,19 @@ class Players(object):
 
     def __getitem__(self, key):
         self._refresh()
-        return self._cache[key]
+        try:
+            return self._cache[key]
+        except KeyError as e:
+            if self._connection.server_version == 'raspberry-juice':
+                name = key
+                try:
+                    key = int(self._connection.transact('world.getPlayerId(%s)' % key))
+                except ConnectionError:
+                    # Ignore failed lookups and fall-through to the re-raise
+                    pass
+                else:
+                    return self._cache[key]
+            raise e
 
     def keys(self):
         self._refresh()
@@ -245,4 +258,63 @@ class HostPlayer(object):
             a world setting, so this property is write-only (attempting to
             query it will result in a :exc:`NotImplementedError` being raised).
         """)
+
+    @property
+    def heading(self):
+        """
+        The direction the player is facing in clockwise degrees from South.
+
+        This property can be queried to determine the direction that the player
+        is facing. The value is returned as a floating-point number of degrees
+        from North (i.e. 180 is North, 270 is East, 0 is South, and 90 is
+        West).
+
+        .. warning::
+
+            Player heading is only supported on Raspberry Juice.
+        """
+        if self._connection.server_version != 'raspberry-juice':
+            raise NotSupported(
+                'cannot query heading on server version: %s' %
+                    self._connection.server_version)
+        return float(self._connection.transact('player.getRotation()'))
+
+    @property
+    def pitch(self):
+        """
+        The elevation of the player's view in degrees from the horizontal.
+
+        This property can be queried to determine whether the player is looking
+        up (values from 0 to 90) or down (values from 0 down to -90). The value
+        is returned as floating-point number of degrees from the horizontal.
+
+        .. warning::
+
+            Player pitch is only supported on Raspberry Juice.
+        """
+        if self._connection.server_version != 'raspberry-juice':
+            raise NotSupported(
+                'cannot query pitch on server version: %s' %
+                    self._connection.server_version)
+        return float(self._connection.transact('player.getPitch()'))
+
+    @property
+    def direction(self):
+        """
+        The direction the player is facing as a unit vector.
+
+        This property can be queried to retrieve a unit
+        :class:`~picraft.vector.Vector` pointing in the direction of the
+        player's view.
+
+        .. warning::
+
+            Player direction is only supported on Raspberry Juice.
+        """
+        if self._connection.server_version != 'raspberry-juice':
+            raise NotSupported(
+                'cannot query direction on server version: %s' %
+                    self._connection.server_version)
+        return Vector.from_string(
+            self._connection.transact('player.getDirection()'), type=float)
 

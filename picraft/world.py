@@ -139,6 +139,8 @@ class World(object):
             [1]
             >>> world.players.keys()
             [1]
+            >>> world.players[1]
+            <picraft.player.Player at 0x7f2f91f38cd0>
             >>> world.players.values()
             [<picraft.player.Player at 0x7f2f91f38cd0>]
             >>> world.players.items()
@@ -147,6 +149,12 @@ class World(object):
             ...     print(player.tile_pos)
             ...
             -3,18,-5
+
+        On the Raspberry Juice platform, you can also use player name to
+        reference players::
+
+            >>> world.players['my_player']
+            <picraft.player.Player at 0x7f2f91f38cd0>
         """
         return self._players
 
