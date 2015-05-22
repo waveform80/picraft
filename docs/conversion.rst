@@ -460,6 +460,12 @@ position and will not move to follow any entity::
     >>> w.camera.pos = Vector(0, 20, 0)
 
 
+Minecraft.camera.setPos
+=======================
+
+See ``Minecraft.camera.setFixed`` above.
+
+
 Minecraft.block.Block
 =====================
 
