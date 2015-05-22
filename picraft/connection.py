@@ -61,7 +61,7 @@ import socket
 import logging
 import select
 
-from .exc import ConnectionError, BatchStarted, BatchNotStarted
+from .exc import CommandError, NoResponse, BatchStarted, BatchNotStarted
 
 
 class Connection(object):
@@ -75,8 +75,8 @@ class Connection(object):
     The *timeout* parameter specifies the maximum time that the client will
     wait after sending a command before assuming that the command has succeeded
     (see the :ref:`protocol` section for more information). If *ignore_errors*
-    is ``True`` (the default is ``False``), act like the official reference
-    implementation and ignore all errors for commands which do not return data.
+    is ``True``, act like the official reference implementation and ignore all
+    errors for commands which do not return data.
 
     Users will rarely need to construct a :class:`Connection` object
     themselves. An instance of this class is constructed by
@@ -92,6 +92,23 @@ class Connection(object):
     method can then be used to transmit all requests simultaneously (or
     alternatively, :meth:`batch_forget` can be used to discard the list). See
     the docs of these methods for more information.
+
+    .. attribute:: ignore_errors
+
+        If ``False`` (the default), use the :attr:`timeout` to determine when
+        responses have been successful. If ``True`` assume any response without
+        an expected reply is successful (this is the behaviour of the reference
+        implementation; it is faster but less "safe").
+
+    .. attribute:: timeout
+
+        The length of time in seconds to wait for a response (positive or
+        negative) from the server when :attr:`ignore_errors` is ``False``.
+
+    .. attribute:: encoding
+
+        The encoding that will be used for messages transmitted to, and
+        received from the server. Defaults to ``'ascii'``.
     """
 
     def __init__(
@@ -105,8 +122,31 @@ class Connection(object):
         self._wfile = self._socket.makefile('wb', 0) # no buffering for writes
         self._batch = None
         self.timeout = timeout
-        self.ignore_errors = ignore_errors
         self.encoding = encoding
+        # Determine what version of Minecraft we're talking to. Sadly, nobody
+        # seems to have thought about implementating an explicit means of
+        # doing this (a connection message, a getVersion() call, etc.) so
+        # we're relying on observed differences in implementation here...
+        self.ignore_errors = False
+        try:
+            test_result = self.transact('foo()')
+        except CommandError:
+            self._server_version = 'raspberry-juice'
+        except NoResponse:
+            self._server_version = 'minecraft-pi'
+        else:
+            raise CommandError('unexpected response to foo() test: %s' %
+                    test_result)
+        self.ignore_errors = ignore_errors
+
+    @property
+    def server_version(self):
+        """
+        Returns an object (currently just a string) representing the version
+        of the Minecraft server we're talking to. Presently this is just
+        ``'minecraft-pi'`` or ``'raspberry-juice'``.
+        """
+        return self._server_version
 
     def close(self):
         """
@@ -162,18 +202,26 @@ class Connection(object):
 
     def _receive(self, required=False):
         """
-        Read a line from the socket. If required is True, block until a line
-        becomes available. Otherwise, return after the timeout. If the line
-        read is "Fail", raise a :exc:`~picraft.exc.ConnectionError` exception.
+        Read a line from the socket. If *required* is ``True``, raise a
+        :exc:`~picraft.exc.NoResponse` error if a response is not received
+        before :attr:`timeout`. If *required* is ``False`` or
+        :attr:`ignore_errors` is True, raise a :exc:`~picraft.exc.NoResponse`
+        exception.
+
+        If a "Fail" response is recevied, raise a
+        :exc:`~picraft.exc.CommandError` exception (this is raised even if
+        :attr:`ignore_errors` is ``True`` to maintain compatibility with the
+        reference implementation).
         """
-        if not required:
-            if not self._readable(self.timeout):
-                return
-        result = self._rfile.readline().decode(self.encoding)
+        if not self._readable(self.timeout):
+            if required and not self.ignore_errors:
+                raise NoResponse('no response received')
+            return
+        result = self._rfile.readline()
         logging.debug('picraft <: %r' % result)
-        result = result.rstrip('\n')
+        result = result.decode(self.encoding).rstrip('\n')
         if result == 'Fail':
-            raise ConnectionError('an error occurred')
+            raise CommandError('an error occurred')
         return result
 
     def send(self, buf):

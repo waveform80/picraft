@@ -59,12 +59,23 @@ from __future__ import (
     )
 str = type('')
 
+import socket
+
 
 class Error(Exception):
     "Base class for all PiCraft exceptions"
 
-class ConnectionError(Error):
+class NotSupported(Error, NotImplementedError):
+    "Exception raised for unimplemented methods / properties"
+
+class ConnectionError(Error, socket.error):
     "Base class for PiCraft errors relating to network communications"
+
+class CommandError(ConnectionError):
+    "Exception raised when a network command fails"
+
+class NoResponse(ConnectionError):
+    "Exception raised when a network command expects a response but gets none"
 
 class BatchStarted(ConnectionError):
     "Exception raised when a batch is started before a prior one is complete"

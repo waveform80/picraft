@@ -129,6 +129,13 @@ class Player(object):
         self._connection = connection
         self._player_id = player_id
 
+    @property
+    def player_id(self):
+        """
+        Returns the integer ID of the player on the server.
+        """
+        return self._player_id
+
     def _get_pos(self):
         return Vector.from_string(
             self._connection.transact('entity.getPos(%d)' % self._player_id),
@@ -216,6 +223,10 @@ class HostPlayer(object):
     def _get_autojump(self):
         raise NotImplementedError
     def _set_autojump(self, value):
+        if self._connection.server_version != 'minecraft-pi':
+            raise NotSupported(
+                'cannot change player settings on server version: %s' %
+                    self._connection.server_version)
         self._connection.send('player.setting(autojump,%d)' % bool(value))
     autojump = property(_get_autojump, _set_autojump, doc="""\
         Write-only property which sets whether the host player autojumps.
@@ -223,6 +234,10 @@ class HostPlayer(object):
         When this property is set to True (which is the default), the host
         player will automatically jump onto blocks when it runs into them
         (unless the blocks are too high to jump onto).
+
+        .. warning::
+
+            Player settings are only supported on Minecraft Pi edition.
 
         .. note::
 

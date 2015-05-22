@@ -52,6 +52,13 @@ Checkpoint
 
 .. autoclass:: Checkpoint
     :members:
+
+
+Camera
+======
+
+.. autoclass:: Camera
+    :members:
 """
 
 from __future__ import (
@@ -63,6 +70,7 @@ from __future__ import (
 str = type('')
 
 
+from .exc import NotSupported
 from .connection import Connection
 from .player import Player, HostPlayer, Players
 from .block import Blocks
@@ -99,6 +107,7 @@ class World(object):
         self._players = Players(self._connection)
         self._blocks = Blocks(self._connection)
         self._height = WorldHeight(self._connection)
+        self._camera = Camera(self._connection)
 
     @property
     def connection(self):
@@ -176,6 +185,27 @@ class World(object):
         X and Z coordinates.
         """
         return self._height
+
+    @property
+    def camera(self):
+        """
+        Represents the camera of the Minecraft world.
+
+        This property has several methods and attributes to control the
+        position of the virtual camera in the Minecraft world. For example,
+        to position the camera directly above the host player::
+
+            >>> world.camera.third_person(world.player)
+
+        Alternatively, to see through the eyes of a specific player::
+
+            >>> world.camera.first_person(world.players[2])
+
+        .. warning::
+
+            Camera control is only supported on Minecraft Pi edition.
+        """
+        return self._camera
 
     @property
     def blocks(self):
@@ -269,10 +299,18 @@ class World(object):
     def _get_immutable(self):
         raise NotImplementedError
     def _set_immutable(self, value):
+        if self._connection.server_version != 'minecraft-pi':
+            raise NotSupported(
+                'cannot change world settings on server version: %s' %
+                    self._connection.server_version)
         self._connection.send('world.setting(world_immutable,%d)' % bool(value))
     immutable = property(_get_immutable, _set_immutable,
         doc="""\
         Write-only property which sets whether the world is changeable.
+
+        .. warning::
+
+            World settings are only supported on Minecraft Pi edition.
 
         .. note::
 
@@ -284,10 +322,18 @@ class World(object):
     def _get_nametags_visible(self):
         raise NotImplementedError
     def _set_nametags_visible(self, value):
+        if self._connection.server_version != 'minecraft-pi':
+            raise NotSupported(
+                'cannot change world settings on server version: %s' %
+                    self._connection.server_version)
         self._connection.send('world.setting(nametags_visible,%d)' % bool(value))
     nametags_visible = property(_get_nametags_visible, _set_nametags_visible,
         doc="""\
         Write-only property which sets whether players' nametags are visible.
+
+        .. warning::
+
+            World settings are only supported on Minecraft Pi edition.
 
         .. note::
 
@@ -295,6 +341,26 @@ class World(object):
             a world setting, so this property is write-only (attempting to
             query it will result in a :exc:`NotImplementedError` being raised).
         """)
+
+
+class WorldHeight(object):
+    """
+    This class implements the :attr:`~picraft.world.World.heights` attribute.
+    """
+
+    def __init__(self, connection):
+        self._connection = connection
+
+    def __getitem__(self, index):
+        if isinstance(index, slice):
+            return [
+                Vector(v.x, int(self._connection.transact(
+                    'world.getHeight(%d,%d)' % (v.x, v.z))), v.z)
+                for v in vector_range(index.start, index.stop)
+                ]
+        else:
+            return Vector(index.x, int(self._connection.transact(
+                'world.getHeight(%d,%d)' % (index.x, index.z))), index.z)
 
 
 class Checkpoint(object):
@@ -316,6 +382,10 @@ class Checkpoint(object):
         >>> with w.checkpoint:
         ...     w.blocks[w.player.tile_pos - Vector(y=1)] = Block.from_name('stone')
         ...     raise Exception()
+
+    .. warning::
+
+        Checkpoints are only supported on Minecraft Pi edition.
 
     .. warning::
 
@@ -344,6 +414,10 @@ class Checkpoint(object):
         Save the state of the Minecraft world, overwriting any prior checkpoint
         state.
         """
+        if self._connection.server_version != 'minecraft-pi':
+            raise NotSupported(
+                'cannot save checkpoint on server version: %s' %
+                    self._connection.server_version)
         self._connection.send('world.checkpoint.save()')
 
     def restore(self):
@@ -353,6 +427,10 @@ class Checkpoint(object):
         checkpoint is available (the underlying network protocol doesn't permit
         this).
         """
+        if self._connection.server_version != 'minecraft-pi':
+            raise NotSupported(
+                'cannot restore checkpoint on server version: %s' %
+                    self._connection.server_version)
         self._connection.send('world.checkpoint.restore()')
 
     def __enter__(self):
@@ -363,22 +441,73 @@ class Checkpoint(object):
             self.restore()
 
 
-class WorldHeight(object):
+class Camera(object):
     """
-    This class implements the :attr:`~picraft.world.World.heights` attribute.
+    This class implements the :attr:`~picraft.world.World.camera` attribute.
     """
+
     def __init__(self, connection):
         self._connection = connection
 
-    def __getitem__(self, index):
-        if isinstance(index, slice):
-            return [
-                Vector(v.x, int(self._connection.transact(
-                    'world.getHeight(%d,%d)' % (v.x, v.z))), v.z)
-                for v in vector_range(index.start, index.stop)
-                ]
-        else:
-            return Vector(index.x, int(self._connection.transact(
-                'world.getHeight(%d,%d)' % (index.x, index.z))), index.z)
+    def _get_pos(self):
+        raise NotImplementedError
+    def _set_pos(self, value):
+        if self._connection.server_version != 'minecraft-pi':
+            raise NotSupported(
+                'cannot position camera on server version: %s' %
+                    self._connection.server_version)
+        self._connection.send('camera.mode.setFixed()')
+        self._connection.send('camera.setPos(%d,%d,%d)' % (value.x, value.y, value.z))
+    pos = property(_get_pos, _set_pos, doc="""\
+        Write-only property which sets the camera's absolute position in the
+        world.
 
+        .. note::
+
+            Unfortunately, the underlying protocol provides no means of reading
+            this setting, so this property is write-only (attempting to query
+            it will result in a :exc:`NotImplementedError` being raised).
+        """)
+
+    def third_person(self, player):
+        """
+        Causes the camera to follow the specified player from above. The
+        *player* can be the :attr:`~World.player` attribute (representing the
+        host player) or an attribute retrieved from the :attr:`~World.players`
+        list. For example::
+
+            >>> from picraft import World
+            >>> w = World()
+            >>> w.camera.third_person(w.player)
+            >>> w.camera.third_person(w.players[1])
+        """
+        if self._connection.server_version != 'minecraft-pi':
+            raise NotSupported(
+                'cannot position camera on server version: %s' %
+                    self._connection.server_version)
+        if isinstance(player, HostPlayer):
+            self._connection.send('camera.mode.setFollow()')
+        else:
+            self._connection.send('camera.mode.setFollow(%d)' % player.player_id)
+
+    def first_person(self, player):
+        """
+        Causes the camera to view the world through the eyes of the specified
+        player. The *player* can be the :attr:`~World.player` attribute
+        (representing the host player) or an attribute retrieved from the
+        :attr:`~World.players` list. For example::
+
+            >>> from picraft import World
+            >>> w = World()
+            >>> w.camera.first_person(w.player)
+            >>> w.camera.first_person(w.players[1])
+        """
+        if self._connection.server_version != 'minecraft-pi':
+            raise NotSupported(
+                'cannot position camera on server version: %s' %
+                    self._connection.server_version)
+        if isinstance(player, HostPlayer):
+            self._connection.send('camera.mode.setNormal()')
+        else:
+            self._connection.send('camera.mode.setNormal(%d)' % player.player_id)
 

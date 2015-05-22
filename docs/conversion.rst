@@ -393,6 +393,73 @@ Minecraft.entity.setTilePos
 See ``Minecraft.entity.setTilePos`` above.
 
 
+Minecraft.camera.setNormal
+==========================
+
+Equivalent: :meth:`~picraft.world.Camera.first_person`
+
+The :attr:`~picraft.world.World.camera` attribute in picraft holds a
+:class:`~picraft.world.Camera` instance which controls the camera in the
+Minecraft world. The :meth:`~picraft.world.Camera.first_person` method can be
+used to set the camera to view the world through the eyes of the specified
+player. The player is specified as the world's
+:attr:`~picraft.world.World.player` attribute, or as a player retrieved from
+the :attr:`~picraft.world.World.players` attribute::
+
+    >>> import mcpi.minecraft as minecraft
+    >>> mc = minecraft.create()
+    >>> mc.camera.setNormal()
+    >>> mc.camera.setNormal(2)
+
+    >>> from picraft import World
+    >>> w = World()
+    >>> w.camera.first_person(w.player)
+    >>> w.camera.first_person(w.players[2])
+
+
+Minecraft.camera.setFollow
+==========================
+
+Equivalent: :meth:`~picraft.world.Camera.third_person`
+
+The :attr:`~picraft.world.World.camera` attribute in picraft holds a
+:class:`~picraft.world.Camera` instance which controls the camera in the
+Minecraft world. The :meth:`~picraft.world.Camera.third_person` method can be
+used to set the camera to view the specified player from above.  The player is
+specified as the world's :attr:`~picraft.world.World.player` attribute, or as a
+player retrieved from the :attr:`~picraft.world.World.players` attribute::
+
+    >>> import mcpi.minecraft as minecraft
+    >>> mc = minecraft.create()
+    >>> mc.camera.setFollow()
+    >>> mc.camera.setNormal(1)
+
+    >>> from picraft import World
+    >>> w = World()
+    >>> w.camera.third_person(w.player)
+    >>> w.camera.third_person(w.players[1])
+
+
+Minecraft.camera.setFixed
+=========================
+
+Equivalent: :attr:`~picraft.world.Camera.pos`
+
+The :attr:`~picraft.world.Camera.pos` attribute can be passed a
+:class:`~picraft.vector.Vector` instance to specify the absolute position of
+the camera. The camera will be pointing straight down (y=-1) from the given
+position and will not move to follow any entity::
+
+    >>> import mcpi.minecraft as minecraft
+    >>> mc = minecraft.create()
+    >>> mc.camera.setFixed()
+    >>> mc.camera.setPos(0,20,0)
+
+    >>> from picraft import World, Vector
+    >>> w = World()
+    >>> w.camera.pos = Vector(0, 20, 0)
+
+
 Minecraft.block.Block
 =====================
 
