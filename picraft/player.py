@@ -46,6 +46,7 @@ Player
 ======
 
 .. autoclass:: Player
+    :inherited-members:
     :members:
 
 
@@ -53,6 +54,7 @@ HostPlayer
 ==========
 
 .. autoclass:: HostPlayer
+    :inherited-members:
     :members:
 """
 
@@ -128,38 +130,30 @@ class Players(object):
         return self._cache.items()
 
 
-class Player(object):
+class BasePlayer(object):
     """
-    Represents a player within the game world.
-
-    Players are uniquely identified by their *player_id*. Instances of this
-    class are available from the :attr:`~picraft.world.World.players` mapping.
-    It provides properties to query and manipulate the position and settings of
-    the player.
+    Base class for players.
     """
 
-    def __init__(self, connection, player_id):
+    def __init__(self, connection, prefix, player_id):
         self._connection = connection
         self._player_id = player_id
+        self._prefix = prefix
 
-    @property
-    def player_id(self):
-        """
-        Returns the integer ID of the player on the server.
-        """
-        return self._player_id
+    def _cmd(self, command, *args):
+        args = ','.join(str(arg) for arg in args)
+        if self._player_id is None:
+            return '%s.%s(%s)' % (self._prefix, command, args)
+        else:
+            return '%s.%s(%d,%s)' % (self._prefix, command, self._player_id, args)
 
     def _get_pos(self):
         return Vector.from_string(
-            self._connection.transact('entity.getPos(%d)' % self._player_id),
-            type=float)
+            self._connection.transact(self._cmd('getPos')), type=float)
     def _set_pos(self, value):
         self._connection.send(
-            'entity.setPos(%d,%f,%f,%f)' % (self._player_id, value.x, value.y, value.z))
-    pos = property(
-        lambda self: self._get_pos(),
-        lambda self, value: self._set_pos(value),
-        doc="""
+            self._cmd('setPos', value.x, value.y, value.z))
+    pos = property(_get_pos, _set_pos, doc="""\
         The precise position of the player within the world.
 
         This property returns the position of the selected player within the
@@ -170,14 +164,11 @@ class Player(object):
 
     def _get_tile_pos(self):
         return Vector.from_string(
-            self._connection.transact('entity.getTile(%d)' % self._player_id))
+            self._connection.transact(self._cmd('getTile')))
     def _set_tile_pos(self, value):
         self._connection.send(
-            'entity.setTile(%d,%d,%d,%d)' % (self._player_id, value.x, value.y, value.z))
-    tile_pos = property(
-        lambda self: self._get_tile_pos(),
-        lambda self, value: self._set_tile_pos(value),
-        doc="""
+            self._cmd('setTile', value.x, value.y, value.z))
+    tile_pos = property(_get_tile_pos, _set_tile_pos, doc="""\
         The position of the player within the world to the nearest block.
 
         This property returns the position of the selected player in the
@@ -185,8 +176,92 @@ class Player(object):
         You can assign to this property to reposition the player.
         """)
 
+    @property
+    def heading(self):
+        """
+        The direction the player is facing in clockwise degrees from South.
 
-class HostPlayer(object):
+        This property can be queried to determine the direction that the player
+        is facing. The value is returned as a floating-point number of degrees
+        from North (i.e. 180 is North, 270 is East, 0 is South, and 90 is
+        West).
+
+        .. warning::
+
+            Player heading is only supported on Raspberry Juice.
+        """
+        if self._connection.server_version != 'raspberry-juice':
+            raise NotSupported(
+                'cannot query heading on server version: %s' %
+                    self._connection.server_version)
+        return float(
+            self._connection.transact(self._cmd('getRotation')))
+
+    @property
+    def pitch(self):
+        """
+        The elevation of the player's view in degrees from the horizontal.
+
+        This property can be queried to determine whether the player is looking
+        up (values from 0 to 90) or down (values from 0 down to -90). The value
+        is returned as floating-point number of degrees from the horizontal.
+
+        .. warning::
+
+            Player pitch is only supported on Raspberry Juice.
+        """
+        if self._connection.server_version != 'raspberry-juice':
+            raise NotSupported(
+                'cannot query pitch on server version: %s' %
+                    self._connection.server_version)
+        return float(
+            self._connection.transact(self._cmd('getPitch')))
+
+    @property
+    def direction(self):
+        """
+        The direction the player is facing as a unit vector.
+
+        This property can be queried to retrieve a unit
+        :class:`~picraft.vector.Vector` pointing in the direction of the
+        player's view.
+
+        .. warning::
+
+            Player direction is only supported on Raspberry Juice.
+        """
+        if self._connection.server_version != 'raspberry-juice':
+            raise NotSupported(
+                'cannot query direction on server version: %s' %
+                    self._connection.server_version)
+        return Vector.from_string(
+            self._connection.transact(self._cmd('getDirection')),
+            type=float)
+
+
+class Player(BasePlayer):
+    """
+    Represents a player within the game world.
+
+    Players are uniquely identified by their *player_id*. Instances of this
+    class are available from the :attr:`~picraft.world.World.players` mapping.
+    It provides properties to query and manipulate the position and settings of
+    the player.
+    """
+
+    def __init__(self, connection, player_id):
+        super(Player, self).__init__(connection, 'entity', player_id)
+
+    @property
+    def player_id(self):
+        """
+        Returns the integer ID of the player on the server.
+        """
+        return self._player_id
+
+
+
+class HostPlayer(BasePlayer):
     """
     Represents the host player within the game world.
 
@@ -196,42 +271,7 @@ class HostPlayer(object):
     """
 
     def __init__(self, connection):
-        self._connection = connection
-
-    def _get_pos(self):
-        return Vector.from_string(
-            self._connection.transact('player.getPos()'),
-            type=float)
-    def _set_pos(self, value):
-        self._connection.send(
-            'player.setPos(%f,%f,%f)' % (value.x, value.y, value.z))
-    pos = property(
-        lambda self: self._get_pos(),
-        lambda self, value: self._set_pos(value),
-        doc="""
-        The precise position of the host player within the world.
-
-        This property returns the position of the host player within the
-        Minecraft world, as a :class:`Vector` instance. This is the *precise*
-        position of the player including decimal places (representing portions
-        of a tile). You can assign to this property to reposition the player.
-        """)
-
-    def _get_tile_pos(self):
-        return Vector.from_string(self._connection.transact('player.getTile()'))
-    def _set_tile_pos(self, value):
-        self._connection.send(
-            'player.setTile(%d,%d,%d)' % (value.x, value.y, value.z))
-    tile_pos = property(
-        lambda self: self._get_tile_pos(),
-        lambda self, value: self._set_tile_pos(value),
-        doc="""
-        The position of the host player within the world to the nearest block.
-
-        This property returns the position of the host player in the Minecraft
-        world to the nearest block, as a :class:`Vector` instance. You can
-        assign to this property to reposition the player.
-        """)
+        super(HostPlayer, self).__init__(connection, 'player', None)
 
     def _get_autojump(self):
         raise NotImplementedError
@@ -258,63 +298,4 @@ class HostPlayer(object):
             a world setting, so this property is write-only (attempting to
             query it will result in a :exc:`NotImplementedError` being raised).
         """)
-
-    @property
-    def heading(self):
-        """
-        The direction the player is facing in clockwise degrees from South.
-
-        This property can be queried to determine the direction that the player
-        is facing. The value is returned as a floating-point number of degrees
-        from North (i.e. 180 is North, 270 is East, 0 is South, and 90 is
-        West).
-
-        .. warning::
-
-            Player heading is only supported on Raspberry Juice.
-        """
-        if self._connection.server_version != 'raspberry-juice':
-            raise NotSupported(
-                'cannot query heading on server version: %s' %
-                    self._connection.server_version)
-        return float(self._connection.transact('player.getRotation()'))
-
-    @property
-    def pitch(self):
-        """
-        The elevation of the player's view in degrees from the horizontal.
-
-        This property can be queried to determine whether the player is looking
-        up (values from 0 to 90) or down (values from 0 down to -90). The value
-        is returned as floating-point number of degrees from the horizontal.
-
-        .. warning::
-
-            Player pitch is only supported on Raspberry Juice.
-        """
-        if self._connection.server_version != 'raspberry-juice':
-            raise NotSupported(
-                'cannot query pitch on server version: %s' %
-                    self._connection.server_version)
-        return float(self._connection.transact('player.getPitch()'))
-
-    @property
-    def direction(self):
-        """
-        The direction the player is facing as a unit vector.
-
-        This property can be queried to retrieve a unit
-        :class:`~picraft.vector.Vector` pointing in the direction of the
-        player's view.
-
-        .. warning::
-
-            Player direction is only supported on Raspberry Juice.
-        """
-        if self._connection.server_version != 'raspberry-juice':
-            raise NotSupported(
-                'cannot query direction on server version: %s' %
-                    self._connection.server_version)
-        return Vector.from_string(
-            self._connection.transact('player.getDirection()'), type=float)
 
