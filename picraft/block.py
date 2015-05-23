@@ -390,7 +390,6 @@ class Blocks(object):
                     'world.getBlockWithData(%d,%d,%d)' % (index.x, index.y, index.z)))
 
     def __setitem__(self, index, value):
-        pass
         if isinstance(index, slice):
             if hasattr(value, 'id') and hasattr(value, 'data'):
                 # XXX Server doesn't care if ranges are backwards; to make

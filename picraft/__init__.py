@@ -64,6 +64,8 @@ str = type('')
 from .exc import (
     Error,
     ConnectionError,
+    CommandError,
+    NoResponse,
     BatchStarted,
     BatchNotStarted,
     )

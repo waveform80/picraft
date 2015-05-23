@@ -39,6 +39,7 @@ str = type('')
 import pytest
 from picraft import Vector
 
+
 def test_vector_init():
     assert Vector() == (0, 0, 0)
     assert Vector(1) == (1, 0, 0)

@@ -43,59 +43,87 @@ try:
     from unittest import mock
 except ImportError:
     import mock
-from picraft import Connection, ConnectionError, BatchStarted, BatchNotStarted
+from picraft import Connection, ConnectionError, CommandError, BatchStarted, BatchNotStarted
 
 
-def test_connection_init():
-    with mock.patch('socket.socket'):
+def test_connection_init_pi():
+    with mock.patch('socket.socket'), mock.patch('select.select'):
+        select.select.return_value = [False]
         conn = Connection('myhost', 1234)
-        assert conn._socket.connect.called_once_with(('myhost', 1234))
+        conn._socket.connect.assert_called_once_with(('myhost', 1234))
+        assert conn.server_version == 'minecraft-pi'
+
+def test_connection_init_juice():
+    with mock.patch('socket.socket'), mock.patch('select.select'):
+        select.select.return_value = [True]
+        mock_sock = socket.socket()
+        mock_file = mock_sock.makefile()
+        mock_file.readline.return_value = 'Fail\n'
+        conn = Connection('myhost', 1234)
+        conn._socket.connect.assert_called_once_with(('myhost', 1234))
+        assert conn.server_version == 'raspberry-juice'
+
+def test_connection_init_unknown():
+    with mock.patch('socket.socket'), mock.patch('select.select'):
+        select.select.return_value = [True]
+        mock_sock = socket.socket()
+        mock_file = mock_sock.makefile()
+        mock_file.readline.return_value = 'bar\n'
+        with pytest.raises(CommandError):
+            conn = Connection('myhost', 1234)
 
 def test_connection_close():
-    with mock.patch('socket.socket'):
+    with mock.patch('socket.socket'), mock.patch('select.select'):
+        select.select.return_value = [False]
         conn = Connection('myhost', 1234)
         s = conn._socket
         conn.close()
         # Repeated attempts shouldn't fail
         conn.close()
-        assert s.close.called_once_with()
+        s.close.assert_called_once_with()
 
 def test_connection_send():
     with mock.patch('socket.socket'), mock.patch('select.select'):
         select.select.return_value = [False]
         conn = Connection('myhost', 1234)
+        conn._wfile.write.reset_mock()
         conn.send('foo()')
-        assert conn._wfile.write.called_once_with(b'foo()\n')
+        conn._wfile.write.assert_called_once_with(b'foo()\n')
 
 def test_connection_send_error():
     with mock.patch('socket.socket'), mock.patch('select.select'):
-        select.select.return_value = [True]
+        select.select.side_effect = [[False], [True]]
         conn = Connection('myhost', 1234)
         conn._rfile.readline.return_value = b'Fail\n'
         with pytest.raises(ConnectionError):
             conn.send('foo()')
 
 def test_connection_transact():
-    with mock.patch('socket.socket'):
+    with mock.patch('socket.socket'), mock.patch('select.select'):
+        select.select.side_effect = [[False], [True]]
         conn = Connection('myhost', 1234)
+        conn._wfile.write.reset_mock()
         conn._rfile.readline.return_value = 'bar\n'
         result = conn.transact('foo()')
-        assert conn._wfile.write.called_once_with(b'foo()\n')
+        conn._wfile.write.assert_called_once_with(b'foo()\n')
         assert result == 'bar'
 
 def test_connection_batch_send():
     with mock.patch('socket.socket'), mock.patch('select.select'):
         select.select.return_value = [False]
         conn = Connection('myhost', 1234)
+        conn._wfile.write.reset_mock()
         with conn.batch_start():
             conn.send('foo()')
             conn.send('bar()')
             conn.send('baz()')
-        assert conn._wfile.write.called_once_with(b'foo()\nbar()\nbaz()\n')
+        conn._wfile.write.assert_called_once_with(b'foo()\nbar()\nbaz()\n')
 
 def test_connection_batch_forget():
-    with mock.patch('socket.socket'):
+    with mock.patch('socket.socket'), mock.patch('select.select'):
+        select.select.return_value = [False]
         conn = Connection('myhost', 1234)
+        conn._wfile.write.reset_mock()
         conn.batch_start()
         conn.send('foo()')
         conn.send('bar()')
@@ -104,8 +132,10 @@ def test_connection_batch_forget():
         assert not conn._wfile.write.called
 
 def test_connection_batch_exception():
-    with mock.patch('socket.socket'):
+    with mock.patch('socket.socket'), mock.patch('select.select'):
+        select.select.return_value = [False]
         conn = Connection('myhost', 1234)
+        conn._wfile.write.reset_mock()
         try:
             with conn.batch_start():
                 conn.send('foo()')
@@ -117,22 +147,24 @@ def test_connection_batch_exception():
         assert not conn._wfile.write.called
 
 def test_connection_batch_start_fail():
-    with mock.patch('socket.socket'):
+    with mock.patch('socket.socket'), mock.patch('select.select'):
+        select.select.return_value = [False]
         conn = Connection('myhost', 1234)
         with pytest.raises(BatchStarted):
             conn.batch_start()
             conn.batch_start()
 
 def test_connection_batch_send_fail():
-    with mock.patch('socket.socket'):
+    with mock.patch('socket.socket'), mock.patch('select.select'):
+        select.select.return_value = [False]
         conn = Connection('myhost', 1234)
         with pytest.raises(BatchNotStarted):
             conn.batch_send()
 
 def test_connection_ignore_errors():
     with mock.patch('socket.socket'), mock.patch('select.select'):
-        select.select.side_effect = [[True], [False]]
+        select.select.side_effect = [[False], [True], [False]]
         conn = Connection('myhost', 1234, ignore_errors=True)
         conn.send('foo()')
-        assert conn._socket.recv.called_once_with(1500)
+        conn._socket.recv.assert_called_once_with(1500)
 

@@ -112,7 +112,8 @@ class Connection(object):
     """
 
     def __init__(
-            self, host, port, timeout, ignore_errors, encoding='ascii'):
+            self, host, port, timeout=0.2, ignore_errors=False,
+            encoding='ascii'):
         self._socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         # This is effectively an interactive protocol, so disable Nagle's
         # algorithm for better performance
