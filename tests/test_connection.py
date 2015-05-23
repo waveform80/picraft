@@ -58,7 +58,7 @@ def test_connection_init_juice():
         select.select.return_value = [True]
         mock_sock = socket.socket()
         mock_file = mock_sock.makefile()
-        mock_file.readline.return_value = 'Fail\n'
+        mock_file.readline.return_value = b'Fail\n'
         conn = Connection('myhost', 1234)
         conn._socket.connect.assert_called_once_with(('myhost', 1234))
         assert conn.server_version == 'raspberry-juice'
@@ -68,7 +68,7 @@ def test_connection_init_unknown():
         select.select.return_value = [True]
         mock_sock = socket.socket()
         mock_file = mock_sock.makefile()
-        mock_file.readline.return_value = 'bar\n'
+        mock_file.readline.return_value = b'bar\n'
         with pytest.raises(CommandError):
             conn = Connection('myhost', 1234)
 
@@ -103,7 +103,7 @@ def test_connection_transact():
         select.select.side_effect = [[False], [True]]
         conn = Connection('myhost', 1234)
         conn._wfile.write.reset_mock()
-        conn._rfile.readline.return_value = 'bar\n'
+        conn._rfile.readline.return_value = b'bar\n'
         result = conn.transact('foo()')
         conn._wfile.write.assert_called_once_with(b'foo()\n')
         assert result == 'bar'
