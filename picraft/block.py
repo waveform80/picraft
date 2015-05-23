@@ -373,6 +373,9 @@ class Blocks(object):
     def __init__(self, connection):
         self._connection = connection
 
+    def __repr__(self):
+        return '<Blocks>'
+
     def __getitem__(self, index):
         if isinstance(index, slice):
             return [

@@ -107,7 +107,11 @@ class World(object):
         self._players = Players(self._connection)
         self._blocks = Blocks(self._connection)
         self._height = WorldHeight(self._connection)
+        self._checkpoint = Checkpoint(self._connection)
         self._camera = Camera(self._connection)
+
+    def __repr__(self):
+        return '<World players=%d>' % len(self.players)
 
     @property
     def connection(self):
@@ -359,6 +363,9 @@ class WorldHeight(object):
     def __init__(self, connection):
         self._connection = connection
 
+    def __repr__(self):
+        return '<WorldHeight>'
+
     def __getitem__(self, index):
         if isinstance(index, slice):
             return [
@@ -417,6 +424,9 @@ class Checkpoint(object):
     def __init__(self, connection):
         self._connection = connection
 
+    def __repr__(self):
+        return '<Checkpoint>'
+
     def save(self):
         """
         Save the state of the Minecraft world, overwriting any prior checkpoint
@@ -456,6 +466,9 @@ class Camera(object):
 
     def __init__(self, connection):
         self._connection = connection
+
+    def __repr__(self):
+        return '<Camera>'
 
     def _get_pos(self):
         raise NotImplementedError

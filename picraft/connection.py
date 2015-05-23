@@ -139,6 +139,11 @@ class Connection(object):
                     test_result)
         self.ignore_errors = ignore_errors
 
+    def __repr__(self):
+        host, port = self._socket.getpeername()
+        return '<Connection host="%s", port=%d, server_version="%s">' % (
+                host, port, self._server_version)
+
     @property
     def server_version(self):
         """

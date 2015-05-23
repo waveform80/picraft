@@ -80,6 +80,10 @@ class Players(object):
         self._connection = connection
         self._cache = {}
 
+    def __repr__(self):
+        self._refresh()
+        return '<Players keys={%s}>' % (', '.join(str(i) for i in self._cache))
+
     def _refresh(self):
         self._cache = {
             pid: self._cache.get(pid, Player(self._connection, pid))
@@ -203,7 +207,7 @@ class BasePlayer(object):
         The elevation of the player's view in degrees from the horizontal.
 
         This property can be queried to determine whether the player is looking
-        up (values from 0 to 90) or down (values from 0 down to -90). The value
+        up (values from 0 to -90) or down (values from 0 down to 90). The value
         is returned as floating-point number of degrees from the horizontal.
 
         .. warning::
@@ -252,6 +256,9 @@ class Player(BasePlayer):
     def __init__(self, connection, player_id):
         super(Player, self).__init__(connection, 'entity', player_id)
 
+    def __repr__(self):
+        return '<Player player_id=%d>' % self._player_id
+
     @property
     def player_id(self):
         """
@@ -272,6 +279,9 @@ class HostPlayer(BasePlayer):
 
     def __init__(self, connection):
         super(HostPlayer, self).__init__(connection, 'player', None)
+
+    def __repr__(self):
+        return '<HostPlayer>'
 
     def _get_autojump(self):
         raise NotImplementedError
