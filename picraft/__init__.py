@@ -68,6 +68,7 @@ from .exc import (
     NoResponse,
     BatchStarted,
     BatchNotStarted,
+    NotSupported,
     )
 from .vector import Vector, vector_range
 from .block import Block, BLOCK_COLORS

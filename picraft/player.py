@@ -67,7 +67,7 @@ from __future__ import (
 str = type('')
 
 
-from .exc import ConnectionError
+from .exc import ConnectionError, NotSupported
 from .vector import Vector
 
 
@@ -145,11 +145,10 @@ class BasePlayer(object):
         self._prefix = prefix
 
     def _cmd(self, command, *args):
+        if self._player_id is not None:
+            args = (self._player_id,) + args
         args = ','.join(str(arg) for arg in args)
-        if self._player_id is None:
-            return '%s.%s(%s)' % (self._prefix, command, args)
-        else:
-            return '%s.%s(%d,%s)' % (self._prefix, command, self._player_id, args)
+        return '%s.%s(%s)' % (self._prefix, command, args)
 
     def _get_pos(self):
         return Vector.from_string(
