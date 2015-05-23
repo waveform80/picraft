@@ -187,7 +187,7 @@ class Vector(namedtuple('Vector', ('x', 'y', 'z'))):
         return Vector(abs(self.x), abs(self.y), abs(self.z))
 
     def __bool__(self):
-        return self.x or self.y or self.z
+        return bool(self.x or self.y or self.z)
 
     # Py2 compat
     __nonzero__ = __bool__
