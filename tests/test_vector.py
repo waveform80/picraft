@@ -54,6 +54,11 @@ def test_vector_from_string():
     with pytest.raises(ValueError):
         Vector.from_string('(1,2,3)')
 
+def test_vector_str():
+    assert str(Vector()) == '0,0,0'
+    assert str(Vector(1, 2, 3)) == '1,2,3'
+    assert str(Vector(0.1, 0.2, 0.3)) == '0.1,0.2,0.3'
+
 def test_vector_add():
     assert Vector() + Vector(1, 2, 3) == Vector(1,2, 3)
     assert Vector() + 1 == Vector(1, 1, 1)

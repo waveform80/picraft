@@ -220,24 +220,45 @@ class Vector(namedtuple('Vector', ('x', 'y', 'z'))):
             return self
 
 
-def vector_range(start, stop=None, step=Vector(1, 1, 1), order='xyz'):
-    if stop is None:
-        stop = start
-        start = Vector()
-    if order not in ('xyz', 'xzy', 'zxy', 'yxz', 'yzx', 'zyx'):
-        raise ValueError('invalid order: %s' % order)
-    order = ''.join(reversed(order))
-    irange, jrange, krange = [
-        range(getattr(start, axis), getattr(stop, axis), getattr(step, axis))
-        for axis in order
-        ]
-    xindex, yindex, zindex = [
-        order.index(axis)
-        for axis in 'xyz'
-        ]
-    for i in irange:
-        for j in jrange:
-            for k in krange:
-                v = (i, j, k)
-                yield Vector(v[xindex], v[yindex], v[zindex])
+class vector_range(object):
+    def __init__(self, start, stop=None, step=Vector(1, 1, 1), order='xyz'):
+        if stop is None:
+            self.start = Vector()
+            self.stop = start
+        else:
+            self.start = start
+            self.stop = stop
+        self.step = step
+        self.order = order
+        self._xrange = range(start.x, stop.x, step.x)
+        self._yrange = range(start.y, stop.y, step.y)
+        self._zrange = range(start.z, stop.z, step.z)
+
+    def __repr__(self):
+        return '[%s]' % ', '.join(repr(v) for v in self)
+
+    def __len__(self):
+        return len(self._xrange) * len(self._yrange) * len(self._zrange)
+
+    def __iter__(self):
+        for i in range(len(self)):
+            yield self[i]
+
+    def __contains__(self, value):
+        return all((
+                value.x in self._xrange,
+                value.y in self._yrange,
+                value.z in self._zrange))
+
+    def __bool__(self):
+        return len(self) > 0
+
+    def __getitem__(self, index):
+        x = self._xrange[index % len(self._xrange)]
+        y = self._yrange[(index // len(self._xrange)) % len(self._yrange)]
+        z = self._zrange[index // (len(self._xrange) * len(self._yrange))]
+        return Vector(x, y, z)
+
+    # Py2 compat
+    __nonzero__ = __bool__
 
