@@ -18,7 +18,7 @@ Equivalent: :class:`~picraft.world.World`
 To create a connection using default settings is similar in both libraries::
 
     >>> import mcpi.minecraft as minecraft
-    >>> mc = minecraft.create()
+    >>> mc = minecraft.Minecraft.create()
 
     >>> from picraft import World
     >>> w = World()
@@ -26,7 +26,7 @@ To create a connection using default settings is similar in both libraries::
 Creating a connection with an explicit hostname and port is also similar::
 
     >>> import mcpi.minecraft as minecraft
-    >>> mc = minecraft.create('localhost', 4711)
+    >>> mc = minecraft.Minecraft.create('localhost', 4711)
 
     >>> from picraft import World
     >>> w = World('localhost', 4711)
@@ -50,7 +50,7 @@ data). In mcpi this is done by executing a method; in picraft this is done by
 querying an attribute with a :class:`~picraft.vector.Vector`::
 
     >>> import mcpi.minecraft as minecraft
-    >>> mc = minecraft.create()
+    >>> mc = minecraft.Minecraft.create()
     >>> mc.getBlock(0, -1, 0)
     2
     >>> mc.getBlockWithData(0, -1, 0)
@@ -81,7 +81,7 @@ picraft the same attribute is used as for accessing block ids; just *assign* a
 it::
 
     >>> import mcpi.minecraft as minecraft
-    >>> mc = minecraft.create()
+    >>> mc = minecraft.Minecraft.create()
     >>> mc.getBlock(0, -1, 0)
     2
     >>> mc.setBlock(0, -1, 0, 1, 0)
@@ -104,7 +104,7 @@ vector (the example below shows an easy method of generating such a slice by
 adding two vectors together for the upper end of the slice)::
 
     >>> import mcpi.minecraft as minecraft
-    >>> mc = minecraft.create()
+    >>> mc = minecraft.Minecraft.create()
     >>> mc.getBlock(0, -1, 0)
     2
     >>> mc.setBlocks(0, -1, 0, 0, 5, 0, 1, 0)
@@ -129,7 +129,7 @@ returns a full vector with the same X- and Z-coordinates, but the Y-coordinate
 of the first non-air block from the top of the world::
 
     >>> import mcpi.minecraft as minecraft
-    >>> mc = minecraft.create()
+    >>> mc = minecraft.Minecraft.create()
     >>> mc.getHeight(0, 0)
     0
 
@@ -149,7 +149,7 @@ The connected player's entity ids can be retrieved by iterating over the
 player id to :class:`~picraft.player.Player` instances::
 
     >>> import mcpi.minecraft as minecraft
-    >>> mc = minecraft.create()
+    >>> mc = minecraft.Minecraft.create()
     >>> mc.getPlayerEntityIds()
     [1]
 
@@ -170,7 +170,7 @@ can use the :attr:`~picraft.world.World.checkpoint` attribute as a context
 manager::
 
     >>> import mcpi.minecraft as minecraft
-    >>> mc = minecraft.create()
+    >>> mc = minecraft.Minecraft.create()
     >>> mc.saveCheckpoint()
 
     >>> from picraft import World
@@ -196,7 +196,7 @@ As with saving a checkpoint, either you can call
 :meth:`~picraft.world.Checkpoint.restore` directly::
 
     >>> import mcpi.minecraft as minecraft
-    >>> mc = minecraft.create()
+    >>> mc = minecraft.Minecraft.create()
     >>> mc.saveCheckpoint()
     >>> mc.restoreCheckpoint()
 
@@ -228,7 +228,7 @@ The ``postToChat`` method is simply replaced with the
 correctly recognizes line breaks in the message::
 
     >>> import mcpi.minecraft as minecraft
-    >>> mc = minecraft.create()
+    >>> mc = minecraft.Minecraft.create()
     >>> mc.postToChat('Hello world!')
 
     >>> from picraft import World
@@ -245,7 +245,7 @@ The ``setting`` method is replaced with (write-only) properties with the
 equivalent names to the settings that can be used::
 
     >>> import mcpi.minecraft as minecraft
-    >>> mc = minecraft.create()
+    >>> mc = minecraft.Minecraft.create()
     >>> mc.setting('world_immutable', True)
     >>> mc.setting('nametags_visible', True)
 
@@ -266,7 +266,7 @@ The ``player.getPos`` and ``player.setPos`` methods are replaced with the
 player::
 
     >>> import mcpi.minecraft as minecraft
-    >>> mc = minecraft.create()
+    >>> mc = minecraft.Minecraft.create()
     >>> mc.player.getPos()
     Vec3(12.7743,12.0,-8.39158)
     >>> mc.player.setPos(12,12,-8)
@@ -300,7 +300,7 @@ the :attr:`~picraft.player.HostPlayer.tile_pos` attribute which returns a
 host player::
 
     >>> import mcpi.minecraft as minecraft
-    >>> mc = minecraft.create()
+    >>> mc = minecraft.Minecraft.create()
     >>> mc.player.getTilePos()
     Vec3(12,12,-9)
     >>> mc.player.setTilePos(12, 12, -8)
@@ -327,12 +327,69 @@ The ``player.setting`` method is replaced with the write-only
 :attr:`~picraft.player.HostPlayer.autojump` attribute::
 
     >>> import mcpi.minecraft as minecraft
-    >>> mc = minecraft.create()
+    >>> mc = minecraft.Minecraft.create()
     >>> mc.player.setting('autojump', False)
 
     >>> from picraft import World
     >>> w = World()
     >>> w.player.autojump = False
+
+
+Minecraft.player.getRotation
+============================
+
+Equivalent: :attr:`~picraft.player.HostPlayer.heading`
+
+The ``player.getRotation`` method is replaced with the read-only
+:attr:`~picraft.player.HostPlayer.heading` attribute::
+
+    >>> import mcpi.minecraft as minecraft
+    >>> mc = minecraft.Minecraft.create()
+    >>> mc.player.getRotation()
+    49.048615
+
+    >>> from picraft import World
+    >>> w = World()
+    >>> w.player.heading
+    49.048615
+
+
+Minecraft.player.getPitch
+=========================
+
+Equivalent: :attr:`~picraft.player.HostPlayer.pitch`
+
+The ``player.getPitch`` method is replaced with the read-only
+:attr:`~picraft.player.HostPlayer.pitch` attribute::
+
+    >>> import mcpi.minecraft as minecraft
+    >>> mc = minecraft.Minecraft.create()
+    >>> mc.player.getPitch()
+    4.3500223
+
+    >>> from picraft import World
+    >>> w = World()
+    >>> w.player.pitch
+    4.3500223
+
+
+Minecraft.player.getDirection
+=============================
+
+Equivalent: :attr:`~picraft.player.HostPlayer.direction`
+
+The ``player.getDuration`` method is replaced with the read-only
+:attr:`~picraft.player.HostPlayer.duration` attribute::
+
+    >>> import mcpi.minecraft as minecraft
+    >>> mc = minecraft.Minecraft.create()
+    >>> mc.player.getDirection()
+    Vec3(0.1429840348766887,-0.3263934845430674,0.934356922711132)
+
+    >>> from picraft import World
+    >>> w = World()
+    >>> w.player.direction
+    Vector(x=0.1429840348766887, y=-0.3263934845430674, z=0.934356922711132)
 
 
 Minecraft.entity.getPos
@@ -346,7 +403,7 @@ The ``entity.getPos`` and ``entity.setPos`` methods are replaced with the
 :attr:`~picraft.world.World.players` attribute::
 
     >>> import mcpi.minecraft as minecraft
-    >>> mc = minecraft.create()
+    >>> mc = minecraft.Minecraft.create()
     >>> mc.entity.getPos(1)
     Vec3(12.7743,12.0,-8.39158)
     >>> mc.entity.setPos(1, 12, 12, -8)
@@ -375,7 +432,7 @@ the :attr:`~picraft.player.Player.tile_pos` attribute. Access the relevant
 :attr:`~picraft.world.World.players` attribute::
 
     >>> import mcpi.minecraft as minecraft
-    >>> mc = minecraft.create()
+    >>> mc = minecraft.Minecraft.create()
     >>> mc.entity.getTilePos(1)
     Vec3(12,12,-9)
     >>> mc.entity.setTilePos(1, 12, 12, -8)
@@ -393,6 +450,63 @@ Minecraft.entity.setTilePos
 See ``Minecraft.entity.setTilePos`` above.
 
 
+Minecraft.entity.getRotation
+============================
+
+Equivalent: :attr:`~picraft.player.Player.heading`
+
+The ``entity.getRotation`` method is replaced with the read-only
+:attr:`~picraft.player.Player.heading` attribute::
+
+    >>> import mcpi.minecraft as minecraft
+    >>> mc = minecraft.Minecraft.create()
+    >>> mc.entity.getRotation(213)
+    49.048615
+
+    >>> from picraft import World
+    >>> w = World()
+    >>> w.players[213].heading
+    49.048615
+
+
+Minecraft.entity.getPitch
+=========================
+
+Equivalent: :attr:`~picraft.player.Player.pitch`
+
+The ``entity.getPitch`` method is replaced with the read-only
+:attr:`~picraft.player.Player.pitch` attribute::
+
+    >>> import mcpi.minecraft as minecraft
+    >>> mc = minecraft.Minecraft.create()
+    >>> mc.entity.getPitch(213)
+    4.3500223
+
+    >>> from picraft import World
+    >>> w = World()
+    >>> w.players[213].pitch
+    4.3500223
+
+
+Minecraft.entity.getDirection
+=============================
+
+Equivalent: :attr:`~picraft.player.Player.direction`
+
+The ``entity.getDuration`` method is replaced with the read-only
+:attr:`~picraft.player.Player.duration` attribute::
+
+    >>> import mcpi.minecraft as minecraft
+    >>> mc = minecraft.Minecraft.create()
+    >>> mc.entity.getDirection(213)
+    Vec3(0.1429840348766887,-0.3263934845430674,0.934356922711132)
+
+    >>> from picraft import World
+    >>> w = World()
+    >>> w.players[213].direction
+    Vector(x=0.1429840348766887, y=-0.3263934845430674, z=0.934356922711132)
+
+
 Minecraft.camera.setNormal
 ==========================
 
@@ -407,7 +521,7 @@ player. The player is specified as the world's
 the :attr:`~picraft.world.World.players` attribute::
 
     >>> import mcpi.minecraft as minecraft
-    >>> mc = minecraft.create()
+    >>> mc = minecraft.Minecraft.create()
     >>> mc.camera.setNormal()
     >>> mc.camera.setNormal(2)
 
@@ -430,7 +544,7 @@ specified as the world's :attr:`~picraft.world.World.player` attribute, or as a
 player retrieved from the :attr:`~picraft.world.World.players` attribute::
 
     >>> import mcpi.minecraft as minecraft
-    >>> mc = minecraft.create()
+    >>> mc = minecraft.Minecraft.create()
     >>> mc.camera.setFollow()
     >>> mc.camera.setNormal(1)
 
@@ -451,7 +565,7 @@ the camera. The camera will be pointing straight down (y=-1) from the given
 position and will not move to follow any entity::
 
     >>> import mcpi.minecraft as minecraft
-    >>> mc = minecraft.create()
+    >>> mc = minecraft.Minecraft.create()
     >>> mc.camera.setFixed()
     >>> mc.camera.setPos(0,20,0)
 

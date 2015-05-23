@@ -4,8 +4,9 @@
 picraft
 =======
 
-This package provides an alternate Python API for `Minecraft Pi edition`_
-on the `Raspberry Pi`_ for Python 2.7 (or above), or Python 3.2 (or above).
+This package provides an alternate Python API for `Minecraft Pi edition`_ on
+the `Raspberry Pi`_, or `Raspberry Juice`_ on the PC for Python 2.7 (or above),
+or Python 3.2 (or above).
 
 .. warning::
 
@@ -27,6 +28,7 @@ Links
 
 .. _Minecraft Pi edition: https://www.raspberrypi.org/documentation/usage/minecraft/README.md
 .. _Raspberry Pi: http://www.raspberrypi.org/
+.. _Raspberry Juice: http://www.stuffaboutcode.com/2014/10/minecraft-raspberryjuice-and-canarymod.html
 .. _PyPI: http://pypi.python.org/pypi/picraft/
 .. _documentation: http://picraft.readthedocs.org/
 .. _source code: https://github.com/waveform80/picraft
