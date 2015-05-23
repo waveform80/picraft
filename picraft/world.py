@@ -74,6 +74,7 @@ from .exc import NotSupported
 from .connection import Connection
 from .player import Player, HostPlayer, Players
 from .block import Blocks
+from .vector import Vector, vector_range
 
 
 class World(object):
