@@ -51,7 +51,9 @@ Vector
 vector_range
 ============
 
-.. autofunction:: vector_range
+.. autoclass:: vector_range(stop)
+               vector_range(start, stop[, step])
+    :members:
 """
 
 from __future__ import (
@@ -68,7 +70,19 @@ except NameError:
 
 
 import math
+import operator as op
+from functools import reduce, total_ordering
 from collections import namedtuple
+try:
+    from itertools import zip_longest
+except ImportError:
+    # Py2 compat
+    from itertools import izip_longest as zip_longest
+try:
+    from collections.abc import Sequence
+except ImportError:
+    # Py2 compat
+    from collections import Sequence
 
 
 class Vector(namedtuple('Vector', ('x', 'y', 'z'))):
@@ -220,44 +234,237 @@ class Vector(namedtuple('Vector', ('x', 'y', 'z'))):
             return self
 
 
-class vector_range(object):
-    def __init__(self, start, stop=None, step=Vector(1, 1, 1), order='xyz'):
+product = lambda l: reduce(op.mul, l)
+
+# TODO Yes, I'm being lazy with total_ordering ... probably ought to define all
+# six comparison methods but I haven't got time right now ...
+
+@total_ordering
+class vector_range(Sequence):
+    """
+    Like :func:`range`, :class:`vector_range` is actually a type which
+    efficiently represents a range of vectors. The arguments to the constructor
+    must be :class:`Vector` instances (or objects which have integer ``x``,
+    ``y``, and ``z`` attributes).
+
+    If *step* is omitted, it defaults to ``Vector(1, 1, 1)``. If the *start*
+    argument is omitted, it defaults to ``Vector(0, 0, 0)``. If any element
+    of the *step* vector is zero, :exc:`ValueError` is raised.
+
+    The contents of the range are largely determined by the *step* and *order*
+    which specifies the order in which the axis of the range will be
+    incremented.  For example, with the order ``'xyz'``, the X-axis will be
+    incremented first, followed by the Y-axis, and finally the Z-axis. So, for
+    a range with the default *start*, *step*, and *stop* set to ``Vector(3, 3,
+    3)``, the contents of the range will be::
+
+        >>> vector_range(Vector(3, 3, 3), order='xyz')
+        [Vector(0, 0, 0), Vector(1, 0, 0), Vector(2, 0, 0),
+         Vector(0, 1, 0), Vector(1, 1, 0), Vector(2, 1, 0),
+         Vector(0, 2, 0), Vector(1, 2, 0), Vector(2, 2, 0),
+         Vector(0, 0, 1), Vector(1, 0, 1), Vector(2, 0, 1),
+         Vector(0, 1, 1), Vector(1, 1, 1), Vector(2, 1, 1),
+         Vector(0, 2, 1), Vector(1, 2, 1), Vector(2, 2, 1),
+         Vector(0, 0, 2), Vector(1, 0, 2), Vector(2, 0, 2),
+         Vector(0, 1, 2), Vector(1, 1, 2), Vector(2, 1, 2),
+         Vector(0, 2, 2), Vector(1, 2, 2), Vector(2, 2, 2)]
+
+    Vector ranges implemented all common sequence operations except
+    concatenation and repetition (due to the fact that range objects can only
+    represent sequences that follow a strict pattern and repetition and
+    concatenation usually cause the resulting sequence to violate that
+    pattern).
+
+    Vector ranges are extremely efficient compared to an equivalent
+    :class:`list` or :class:`tuple` as they take a small (fixed) amount of
+    memory, storing only the arguments passed in its construction and
+    calculating individual items and sub-ranges as requested. All such
+    calculations are done in fixed (O(1)) time.
+
+    Vector range objects implement the :class:`collections.abc.Sequence` ABC,
+    and provide features such as containment tests, element index lookup,
+    slicing and support for negative indices.
+
+    The default order (``'zxy'``) may seem an odd choice. This is primarily
+    used as it's the order used by the Raspberry Juice server when returning
+    results from the ``getBlocks`` call. In turn, Raspberry Juice probably uses
+    this order as it results in returning a horizontal layer of vectors at a
+    time (the Y-axis is used for height in the Minecraft world).
+
+    .. warning::
+
+        Bear in mind that the ordering of a vector range may have a bearing on
+        tests for its ordering and equality. Two ranges with different orders
+        are unlikely to test equal even though they may have the same *start*,
+        *stop*, and *step* attributes (and thus contain the same vectors, but
+        in a different order).
+    """
+
+    def __init__(
+            self, start, stop=None, step=Vector(1, 1, 1), order='zxy',
+            _slice=None):
         if stop is None:
-            self.start = Vector()
-            self.stop = start
+            self._start = Vector()
+            self._stop = start
         else:
-            self.start = start
-            self.stop = stop
-        self.step = step
-        self.order = order
-        self._xrange = range(start.x, stop.x, step.x)
-        self._yrange = range(start.y, stop.y, step.y)
-        self._zrange = range(start.z, stop.z, step.z)
+            self._start = start
+            self._stop = stop
+        if order not in ('xyz', 'xzy', 'yxz', 'yzx', 'zxy', 'zyx'):
+            raise ValueError('invalid order: %s' % order)
+        self._step = step
+        self._order = order
+        self._ranges = [
+            range(
+                getattr(self.start, axis),
+                getattr(self.stop, axis),
+                getattr(self.step, axis))
+            for axis in order
+            ]
+        self._indexes = [
+            order.index(axis)
+            for axis in 'xyz'
+            ]
+        self._slice = None
+        if _slice:
+            assert len(_slice) <= len(self)
+        self._slice = _slice
+
+    @property
+    def start(self):
+        return self._start
+
+    @property
+    def stop(self):
+        return self._stop
+
+    @property
+    def step(self):
+        return self._step
+
+    @property
+    def order(self):
+        return self._order
+
+    def index(self, value):
+        # XXX Do we need to support i and j arguments here? Python 3 defines
+        # these in "common sequence operations" but ranges don't include them
+        # TODO This is horrid (O(n)) - there must be a better way to do this
+        # (O(1) maybe, but there's definitely an O(log(n)) way given that the
+        # range output is effectively sorted). Unfortunatey I haven't got time
+        # to explore it right now (ideally it'll involve reversing the divs and
+        # mods in __getitem__, and I'd assume reversing the mods is vaguely
+        # non-trivial in that it'll involve a set result)
+        for result, v in enumerate(self):
+            if v == value:
+                return result
+        raise ValueError('%r is not in range' % (value,))
+
+    def count(self, value):
+        # count is provided by the ABC but inefficiently; given no vectors in
+        # the range can be duplicated we provide a more efficient version here
+        if value in self:
+            return 1
+        else:
+            return 0
 
     def __repr__(self):
-        return '[%s]' % ', '.join(repr(v) for v in self)
+        result = 'vector_range(%r, %r, %r, %r)' % (
+                self.start, self.stop, self.step, self.order)
+        if self._slice is not None:
+            result += '[%d:%d:%d]' % (self._slice[0], self._slice[-1], self._slice.step)
+        return result
 
     def __len__(self):
-        return len(self._xrange) * len(self._yrange) * len(self._zrange)
+        if self._slice is None:
+            return product(len(r) for r in self._ranges)
+        else:
+            return len(self._slice)
+
+    def __lt__(self, other):
+        for v1, v2 in zip_longest(self, other):
+            if v1 < v2:
+                return True
+            elif v1 > v2:
+                return False
+        return False
+
+    def __eq__(self, other):
+        # Fast-path: if the other object is an identical vector_range we
+        # can quickly test whether we're equal
+        if isinstance(other, vector_range):
+            if (
+                    self.start == other.start and
+                    self.stop == other.stop and
+                    self.step == other.step and
+                    self.order == other.order and
+                    self._slice == other._slice):
+                return True
+        # TODO Any other fast-paths we can use here? E.g. what if item[0],
+        # item[-1], step, and order are all equal; is that enough?
+        # Fast path: if the other object has a len() we can quickly determine
+        # whether we're not equal
+        try:
+            len(other)
+        except TypeError:
+            pass
+        else:
+            if len(self) != len(other):
+                return False
+        # Normal case: test every element in each sequence
+        for v1, v2 in zip_longest(self, other):
+            if v1 != v2:
+                return False
+        return True
+
+    def __ne__(self, other):
+        return not self.__eq__(other)
 
     def __iter__(self):
         for i in range(len(self)):
             yield self[i]
 
+    def __reversed__(self):
+        for i in reversed(range(len(self))):
+            yield self[i]
+
     def __contains__(self, value):
-        return all((
-                value.x in self._xrange,
-                value.y in self._yrange,
-                value.z in self._zrange))
+        try:
+            self.index(value)
+        except ValueError:
+            return False
+        else:
+            return True
 
     def __bool__(self):
         return len(self) > 0
 
     def __getitem__(self, index):
-        x = self._xrange[index % len(self._xrange)]
-        y = self._yrange[(index // len(self._xrange)) % len(self._yrange)]
-        z = self._zrange[index // (len(self._xrange) * len(self._yrange))]
-        return Vector(x, y, z)
+        if isinstance(index, slice):
+            # XXX What about a slice of a slice?
+            # Calculate the start and stop indexes
+            start = index.start
+            start = min(len(self), max(0, 0 if start is None else start + len(self) if start < 0 else start))
+            stop = index.stop
+            stop = min(len(self), max(0, len(self) if stop is None else stop + len(self) if stop < 0 else stop))
+            step = 1 if index.step is None else index.step
+            # If step is negative, flip the start and end
+            if step < 0:
+                start, stop = stop, start
+                step = -step
+            return vector_range(self.start, self.stop, self.step, self.order, range(start, stop, step))
+        else:
+            if index < 0:
+                index += len(self)
+            if not (0 <= index < len(self)):
+                raise IndexError('list index out of range')
+            if self._slice is not None:
+                index = self._slice[index]
+            v = (
+                self._ranges[0][index % len(self._ranges[0])],
+                self._ranges[1][(index // len(self._ranges[0])) % len(self._ranges[1])],
+                self._ranges[2][index // (len(self._ranges[0]) * len(self._ranges[1]))],
+                )
+            return Vector(*(v[i] for i in self._indexes))
 
     # Py2 compat
     __nonzero__ = __bool__

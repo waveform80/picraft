@@ -37,7 +37,7 @@ str = type('')
 
 
 import pytest
-from picraft import Vector
+from picraft import Vector, vector_range
 
 
 def test_vector_init():
@@ -152,4 +152,105 @@ def test_vector_unit():
     assert Vector(x=1).unit == Vector(1, 0, 0)
     assert Vector().unit == Vector()
     assert Vector(2, 4, 4).unit == Vector(1/3, 2/3, 2/3)
+
+def test_vector_range_init():
+    v = vector_range(Vector() + 2)
+    assert v.start == Vector()
+    assert v.stop == Vector(2, 2, 2)
+    assert v.step == Vector(1, 1, 1)
+
+def test_vector_range_start():
+    assert vector_range(Vector() + 1).start == Vector()
+    assert vector_range(Vector(), Vector() + 1).start == Vector()
+    assert vector_range(Vector(1, 0, 1), Vector() + 1).start == Vector(1, 0, 1)
+
+def test_vector_range_stop():
+    assert vector_range(Vector() + 1).stop == Vector(1, 1, 1)
+    assert vector_range(Vector(1, 1, 0)).stop == Vector(1, 1, 0)
+    assert vector_range(Vector(1, 0, 1), Vector() + 1).stop == Vector(1, 1, 1)
+
+def test_vector_range_step():
+    assert vector_range(Vector() + 1, step=Vector() + 2).step == Vector(2, 2, 2)
+    assert vector_range(Vector(), Vector() + 1, Vector() + 1).step == Vector(1, 1, 1)
+    with pytest.raises(ValueError):
+        vector_range(Vector() + 1, step=Vector(1, 1, 0))
+
+def test_vector_range_order():
+    assert vector_range(Vector() + 1).order == 'zxy'
+    assert vector_range(Vector() + 1, order='xyz').order == 'xyz'
+    with pytest.raises(ValueError):
+        vector_range(Vector() + 2, order='abc')
+
+def test_vector_range_index():
+    assert vector_range(Vector() + 2).index(Vector()) == 0
+    assert vector_range(Vector() + 2).index(Vector(1, 1, 1)) == 7
+    assert vector_range(Vector() + 2, order='xyz').index(Vector(1, 0, 0)) == 1
+    with pytest.raises(ValueError):
+        vector_range(Vector() + 2).index(Vector(2, 2, 2))
+
+def test_vector_range_contains():
+    assert Vector() in vector_range(Vector() + 2)
+    assert Vector(1, 1, 1) in vector_range(Vector() + 2)
+    assert Vector(x=1) in vector_range(Vector() + 2, order='xyz')
+    assert Vector() + 2 not in vector_range(Vector() + 2)
+
+def test_vector_range_count():
+    assert vector_range(Vector() + 2).count(Vector()) == 1
+    assert vector_range(Vector() + 2).count(Vector(1, 1, 1)) == 1
+    assert vector_range(Vector() + 2, order='xyz').count(Vector(1, 0, 0)) == 1
+    assert vector_range(Vector() + 2).count(Vector(2, 2, 2)) == 0
+
+def test_vector_range_len():
+    assert len(vector_range(Vector())) == 0
+    assert len(vector_range(Vector() + 1)) == 1
+    assert len(vector_range(Vector() + 2)) == 8
+    assert len(vector_range(Vector() + 3)) == 27
+    assert len(vector_range(Vector() + 3)[1:]) == 26
+    assert len(vector_range(Vector() + 3)[:-2]) == 25
+
+def test_vector_range_ordering():
+    assert vector_range(Vector() + 2, order='xyz') == vector_range(Vector(2, 2, 2), order='xyz')
+    assert vector_range(Vector() + 2, order='xyz') == list(vector_range(Vector(2, 2, 2), order='xyz'))
+
+    assert vector_range(Vector() + 2, order='zxy') <= vector_range(Vector() + 2, order='xyz')
+    assert vector_range(Vector() + 2, order='zxy') <= vector_range(Vector() + 2, order='zxy')
+    assert vector_range(Vector() + 2, order='zxy') < vector_range(Vector() + 2, order='xyz')
+    assert not (vector_range(Vector() + 2, order='zxy') < vector_range(Vector() + 2, order='zxy'))
+
+    assert vector_range(Vector() + 2, order='xyz') > vector_range(Vector() + 2, order='zxy')
+    assert vector_range(Vector() + 2, order='xyz') >= vector_range(Vector() + 2, order='zxy')
+    assert vector_range(Vector() + 2, order='xyz') != vector_range(Vector() + 2, order='zxy')
+
+    assert vector_range(Vector() + 2, order='xyz') == [
+            Vector(0, 0, 0), Vector(1, 0, 0), Vector(0, 1, 0), Vector(1, 1, 0),
+            Vector(0, 0, 1), Vector(1, 0, 1), Vector(0, 1, 1), Vector(1, 1, 1),
+            ]
+    assert vector_range(Vector() + 2, order='zxy') == [
+            Vector(0, 0, 0), Vector(0, 0, 1), Vector(1, 0, 0), Vector(1, 0, 1),
+            Vector(0, 1, 0), Vector(0, 1, 1), Vector(1, 1, 0), Vector(1, 1, 1),
+            ]
+    assert vector_range(Vector() + 2, order='zyx') == [
+            Vector(0, 0, 0), Vector(0, 0, 1), Vector(0, 1, 0), Vector(0, 1, 1),
+            Vector(1, 0, 0), Vector(1, 0, 1), Vector(1, 1, 0), Vector(1, 1, 1),
+            ]
+
+    assert iter(vector_range(Vector() + 2, order='zxy')) < vector_range(Vector() + 2, order='xyz')
+    assert iter(vector_range(Vector() + 2, order='zxy')) <= vector_range(Vector() + 2, order='xyz')
+    assert iter(vector_range(Vector() + 2, order='xyz')) > vector_range(Vector() + 2, order='zxy')
+    assert iter(vector_range(Vector() + 2, order='xyz')) >= vector_range(Vector() + 2, order='zxy')
+    assert iter(vector_range(Vector() + 2, order='xyz')) != vector_range(Vector() + 2, order='zxy')
+
+    assert vector_range(Vector() + 2) != list(vector_range(Vector() + 2)[:-1])
+    assert vector_range(Vector() + 2)[:-1] == list(vector_range(Vector() + 2)[:-1])
+
+@pytest.mark.xfail()
+def test_vector_range_reversed():
+    assert list(reversed(vector_range(Vector() + 2))) == list(reversed(list(vector_range(Vector() + 2))))
+    assert list(reversed(vector_range(Vector() + 2, order='xyz'))) == vector_range(Vector() + 1, Vector() - 1, Vector() - 1, order='xyz')
+    assert list(reversed(vector_range(Vector() + 2, order='xyz'))) == vector_range(Vector() + 2, order='xyz')[::-1]
+
+def test_vector_range_bool():
+    assert not vector_range(Vector())
+    assert vector_range(Vector() + 1)
+    assert not vector_range(Vector() + 1)[1:]
 
