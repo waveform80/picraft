@@ -243,7 +243,6 @@ def test_vector_range_ordering():
     assert vector_range(Vector() + 2) != list(vector_range(Vector() + 2)[:-1])
     assert vector_range(Vector() + 2)[:-1] == list(vector_range(Vector() + 2)[:-1])
 
-@pytest.mark.xfail()
 def test_vector_range_reversed():
     assert list(reversed(vector_range(Vector() + 2))) == list(reversed(list(vector_range(Vector() + 2))))
     assert list(reversed(vector_range(Vector() + 2, order='xyz'))) == vector_range(Vector() + 1, Vector() - 1, Vector() - 1, order='xyz')
@@ -254,3 +253,15 @@ def test_vector_range_bool():
     assert vector_range(Vector() + 1)
     assert not vector_range(Vector() + 1)[1:]
 
+def test_vector_range_getitem():
+    v = vector_range(Vector() + 2, order='xyz')
+    assert v[0] == Vector()
+    assert v[1] == Vector(1, 0, 0)
+    assert v[7] == Vector(1, 1, 1)
+    assert v[7] == v[-1]
+    assert v[6] == v[-2]
+    assert v[0] == v[-8]
+    with pytest.raises(IndexError):
+        v[8]
+    with pytest.raises(IndexError):
+        v[-9]

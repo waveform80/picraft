@@ -69,6 +69,7 @@ except NameError:
     pass
 
 
+import sys
 import math
 import operator as op
 from functools import reduce, total_ordering
@@ -234,8 +235,6 @@ class Vector(namedtuple('Vector', ('x', 'y', 'z'))):
             return self
 
 
-product = lambda l: reduce(op.mul, l)
-
 # TODO Yes, I'm being lazy with total_ordering ... probably ought to define all
 # six comparison methods but I haven't got time right now ...
 
@@ -345,33 +344,32 @@ class vector_range(Sequence):
     def order(self):
         return self._order
 
-    def index(self, value):
-        # XXX Do we need to support i and j arguments here? Python 3 defines
-        # these in "common sequence operations" but ranges don't include them
-        # TODO This is horrid (O(n)) - there must be a better way to do this
-        # (O(1) maybe, but there's definitely an O(log(n)) way given that the
-        # range output is effectively sorted). Unfortunatey I haven't got time
-        # to explore it right now (ideally it'll involve reversing the divs and
-        # mods in __getitem__, and I'd assume reversing the mods is vaguely
-        # non-trivial in that it'll involve a set result)
-        for result, v in enumerate(self):
-            if v == value:
-                return result
-        raise ValueError('%r is not in range' % (value,))
-
-    def count(self, value):
-        # count is provided by the ABC but inefficiently; given no vectors in
-        # the range can be duplicated we provide a more efficient version here
-        if value in self:
-            return 1
-        else:
-            return 0
-
     def __repr__(self):
         result = 'vector_range(%r, %r, %r, %r)' % (
                 self.start, self.stop, self.step, self.order)
         if self._slice is not None:
-            result += '[%d:%d:%d]' % (self._slice[0], self._slice[-1], self._slice.step)
+            # Horrid backwards compat. Py2's xrange and Py3.2's range don't
+            # have start/stop/step attributes (Py3.3+ do)
+            try:
+                self._slice.start
+            except AttributeError:
+                if len(self._slice) > 0:
+                    start = self._slice[0]
+                    if len(self._slice) > 1:
+                        step = self._slice[1] - self._slice[0]
+                        if step > 0:
+                            stop = self._slice[-1] + 1
+                        else:
+                            stop = self._slice[-1] - 1
+                    else:
+                        step = 1
+                        stop = start + 1
+                    result += '[%d:%d:%d]' % (start, stop, step)
+                else:
+                    result += '[empty]'
+            else:
+                result += '[%d:%d:%d]' % (
+                        self._slice.start, self._slice.stop, self._slice.step)
         return result
 
     def __len__(self):
@@ -438,20 +436,37 @@ class vector_range(Sequence):
     def __bool__(self):
         return len(self) > 0
 
+    # Py2 compat
+    __nonzero__ = __bool__
+
     def __getitem__(self, index):
         if isinstance(index, slice):
             # XXX What about a slice of a slice?
             # Calculate the start and stop indexes
             start = index.start
-            start = min(len(self), max(0, 0 if start is None else start + len(self) if start < 0 else start))
             stop = index.stop
-            stop = min(len(self), max(0, len(self) if stop is None else stop + len(self) if stop < 0 else stop))
             step = 1 if index.step is None else index.step
-            # If step is negative, flip the start and end
             if step < 0:
-                start, stop = stop, start
-                step = -step
-            return vector_range(self.start, self.stop, self.step, self.order, range(start, stop, step))
+                start = min(len(self),
+                    len(self) - 1 if start is None else
+                    max(0, start + len(self)) if start < 0 else
+                    start)
+                stop = min(len(self),
+                    -1 if stop is None else
+                    max(0, stop + len(self)) if stop < 0 else
+                    stop)
+            else:
+                start = min(len(self), max(0,
+                    0 if start is None else
+                    start + len(self) if start < 0 else
+                    start))
+                stop = min(len(self), max(0,
+                    len(self) if stop is None else
+                    stop + len(self) if stop < 0 else
+                    stop))
+            return vector_range(
+                self.start, self.stop, self.step, self.order,
+                range(start, stop, step))
         else:
             if index < 0:
                 index += len(self)
@@ -466,6 +481,88 @@ class vector_range(Sequence):
                 )
             return Vector(*(v[i] for i in self._indexes))
 
-    # Py2 compat
-    __nonzero__ = __bool__
+    def index(self, value):
+        # XXX Do we need to support i and j arguments here? Python 3 defines
+        # these in "common sequence operations" but ranges don't include them
+
+        # More horrid py2 compat. xrange's lack of index() sucks here...
+        if sys.version_info.major < 3:
+            ranges = [list(r) for r in self._ranges]
+        else:
+            ranges = self._ranges
+        # XXX Currently assumes xyz ordering for testing...
+        x_indexes = set(rmod(len(ranges[0]), ranges[0].index(value.x), range(len(self))))
+        y_indexes = set(
+                j
+                for i in rmod(len(ranges[1]), ranges[1].index(value.y),
+                    range(len(self) // len(ranges[0])))
+                for j in rdiv(len(ranges[0]), i)
+                )
+        z_indexes = set(rdiv(len(ranges[0]) * len(ranges[1]), ranges[2].index(value.z)))
+        for i in x_indexes & y_indexes & z_indexes:
+            return i
+        raise ValueError('%r is not in range' % (value,))
+
+    def count(self, value):
+        # count is provided by the ABC but inefficiently; given no vectors in
+        # the range can be duplicated we provide a more efficient version here
+        if value in self:
+            return 1
+        else:
+            return 0
+
+
+def product(l):
+    """
+    Return the product of all values in the list *l*"
+    """
+    return reduce(op.mul, l)
+
+
+def rmod(denom, result, num_range):
+    """
+    Calculates the inverse of a mod operation.
+
+    The *denom* parameter specifies the denominator of the original mod (%)
+    operation. In this implementation, *denom* must be greater than 0. The
+    *result* parameter specifies the result of the mod operation. For obvious
+    reasons this value must be in the range ``[0, denom)`` (greater than or
+    equal to zero and less than the denominator).
+
+    Finally, *num_range* specifies the range that the numerator of the original
+    mode operation can lie in. This must be an iterable sorted in ascending
+    order with unique values (e.g. most typically a :func:`range`).
+
+    The function returns the set of potential numerators (guaranteed to be a
+    subset of *num_range*).
+    """
+    if denom <= 0:
+        raise ValueError('invalid denominator')
+    if not (0 <= result < denom):
+        return set()
+    if len(num_range) == 0:
+        return set()
+    assert num_range[-1] >= num_range[0]
+    start = num_range[0] + (result - num_range[0] % denom) % denom
+    try:
+        stop = num_range.stop
+    except AttributeError:
+        stop = num_range[-1] + 1
+    return range(start, stop, denom)
+
+
+def rdiv(denom, result):
+    """
+    Calculates the inverse of a div operation.
+
+    The *denom* parameter specifies the denominator of the original div (//)
+    operation. In this implementation, *denom* must be greater than 0. The
+    *result* parameter specifies the result of the div operation.
+
+    The function returns the set of potential numerators.
+    """
+    if denom <= 0:
+        raise ValueError('invalid denominator')
+    return range(result * denom, result * denom + denom)
+
 
