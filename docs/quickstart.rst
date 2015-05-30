@@ -103,26 +103,72 @@ end is *exclusive*. You can see this explicitly with the
     Vector(x=-2, y=14, z=3)
     >>> list(vector_range(v - Vector(1, 0, 1), v + Vector(2, 1, 2)))
     [Vector(x=-3, y=14, z=2),
-     Vector(x=-2, y=14, z=2),
-     Vector(x=-1, y=14, z=2),
      Vector(x=-3, y=14, z=3),
-     Vector(x=-2, y=14, z=3),
-     Vector(x=-1, y=14, z=3),
      Vector(x=-3, y=14, z=4),
+     Vector(x=-2, y=14, z=2),
+     Vector(x=-2, y=14, z=3),
      Vector(x=-2, y=14, z=4),
+     Vector(x=-1, y=14, z=2),
+     Vector(x=-1, y=14, z=3),
+     Vector(x=-1, y=14, z=4)]
+
+This may seem a clunky way of specifying a range and, in the manner shown above
+it is. However, most standard infix arithmetic operations applied to a vector
+are applied to *all* its elements::
+
+    >>> Vector()
+    Vector(x=0, y=0, z=0)
+    >>> Vector() + 1
+    Vector(x=1, y=1, z=1)
+    >>> 2 * (Vector() + 1)
+    Vector(x=2, y=2, z=2)
+
+This makes construction of such ranges or slices considerably easier. For
+example, to construct a vertical range of vectors from the origin (0, 0, 0) to
+(0, 10, 0) we first assign the origin to ``v`` which we use for the start of
+the range, then add ``Vector(y=10)`` to it, and finally add one to compensate
+for the half-open nature of the range::
+
+    >>> v = Vector()
+    >>> list(vector_range(v, v + Vector(y=10) + 1))
+    [Vector(x=0, y=0, z=0),
+     Vector(x=0, y=1, z=0),
+     Vector(x=0, y=2, z=0),
+     Vector(x=0, y=3, z=0),
+     Vector(x=0, y=4, z=0),
+     Vector(x=0, y=5, z=0),
+     Vector(x=0, y=6, z=0),
+     Vector(x=0, y=7, z=0),
+     Vector(x=0, y=8, z=0),
+     Vector(x=0, y=9, z=0),
+     Vector(x=0, y=10, z=0)]
+
+We can also re-write the example before this (the blocks surrounding the one
+the player is standing on) in several different ways::
+
+    >>> v = world.player.tile_pos
+    >>> list(vector_range(v - 1, v + 2 - Vector(y=2)))
+    [Vector(x=-3, y=14, z=2),
+     Vector(x=-3, y=14, z=3),
+     Vector(x=-3, y=14, z=4),
+     Vector(x=-2, y=14, z=2),
+     Vector(x=-2, y=14, z=3),
+     Vector(x=-2, y=14, z=4),
+     Vector(x=-1, y=14, z=2),
+     Vector(x=-1, y=14, z=3),
      Vector(x=-1, y=14, z=4)]
 
 We can change the state of many blocks at once similarly by assigning a new
 :class:`~picraft.block.Block` object to a slice of blocks::
 
-    >>> v = world.player.tile_pos - Vector(y=1)
-    >>> world.blocks[v - Vector(1, 0, 1):v + Vector(2, 1, 2)] = Block.from_name('stone')
+    >>> v = world.player.tile_pos
+    >>> world.blocks[v - 1:v + 2 - Vector(y=2)] = Block.from_name('stone')
 
 This is a relatively quick operation, as it only involves a single network
 call. However, re-writing the state of multiple blocks with different values
 is more time consuming::
 
-    >>> world.blocks[v - Vector(1, 0, 1):v + Vector(2, 1, 2)] = [
+    >>> world.blocks[v - 1:v + 2 - Vector(y=2)] = [
     ...     Block.from_name('wool', data=i) for i in range(9)]
 
 You should notice that the example above takes a few seconds to process (each
@@ -131,9 +177,9 @@ block requires a separate network transaction and due to deficiencies in the
 execute). This can be accomplished considerably more quickly by batching
 multiple requests together::
 
-    >>> world.blocks[v - Vector(1, 0, 1):v + Vector(2, 1, 2)] = Block.from_name('stone')
+    >>> world.blocks[v - 1:v + 2 - Vector(y=2)] = Block.from_name('stone')
     >>> with world.connection.batch_start():
-    ...     world.blocks[v - Vector(1, 0, 1):v + Vector(2, 1, 2)] = [
+    ...     world.blocks[v - 1:v + 2 - Vector(y=2)] = [
     ...         Block.from_name('wool', data=i) for i in range(9)]
 
 You should notice the example above executes considerably more quickly.
@@ -141,7 +187,7 @@ Finally, the state of the Minecraft world can be saved and restored easily with
 the :attr:`~picraft.world.World.checkpoint` object::
 
     >>> world.checkpoint.save()
-    >>> world.blocks[v - Vector(1, 0, 1):v + Vector(2, 1, 2)] = Block.from_name('stone')
+    >>> world.blocks[v - 1:v + 2 - Vector(y=2)] = Block.from_name('stone')
     >>> world.checkpoint.restore()
 
 This concludes the quick tour of the picraft library. Conversion instructions

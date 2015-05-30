@@ -115,6 +115,58 @@ Specific Commands
 
 The following sections define the specific commands supported by the protocol.
 
+camera.mode.setFixed
+--------------------
+
+.. XXX Is it at the current location or somewhere else?
+
+Syntax::
+
+    camera-fixed-command = "camera.mode.setFixed()" LF
+
+The ``camera.mode.setFixed`` command fixes the camera's position at the current
+location. The camera's location can subsequently be updated with the
+``camera.setPos`` command but will not move otherwise. The camera's orientation
+is fixed facing down (parallel to a vector along Y=-1).
+
+camera.mode.setFollow
+---------------------
+
+Syntax::
+
+    camera-follow-command = "camera.mode.setFollow(" [int] ")" LF
+
+The ``camera.mode.setFollow`` command fixes the camera's position vertically
+above the player with the specified ID (if the optional integer is specified)
+or above the host player (if no integer is given). The camera's position will
+follow the specified player's position, but the orientation will be fixed
+facing down (parallel to a vector along Y=-1).
+
+camera.mode.setNormal
+---------------------
+
+Syntax::
+
+    camera-normal-command = "camera.mode.setNormal(" [int] ")" LF
+
+The ``camera.mode.setNormal`` command aligns the camera's position with the
+"head" of the player with the specified ID (if the optional integer is
+specified) or the host player (if no integer is given). The camera's position
+and orientation will subsequently track the player's head.
+
+camera.setPos
+-------------
+
+.. XXX float vector or int vector?
+
+Syntax::
+
+    camera-set-pos-command = "camera.mode.setPos(" float-vector ")" LF
+
+When the camera position has been fixed with ``camera.mode.setFixed()``, this
+command can be used to alter the position of the camera. The orientation of
+the camera will, however, remain fixed (parallel to a vector along Y=-1).
+
 chat.post
 ---------
 
@@ -185,6 +237,36 @@ Valid properties are:
 
 * ``autojump`` - when enabled, causes the player to automatically jump onto
   blocks that they run into.
+
+world.checkpoint.restore
+------------------------
+
+.. XXX Check behaviour of restoration of non-existent state
+
+Syntax::
+
+    world-restore-command = "world.checkpoint.restore()" LF
+
+The ``world.checkpoint.restore`` command restores the state of the world (i.e.
+the id and data of all blocks in the world) from a prior saved state (created
+by the ``world.checkpoint.save`` command). If no prior state exists, nothing
+is restored but no error is reported. Restoring a state does not wipe it; thus
+a saved state can be restored multiple times.
+
+world.checkpoint.save
+---------------------
+
+Syntax::
+
+    world-save-command = "world.checkpoint.save()" LF
+
+The ``world.checkpoint.save`` command can be used to save the current state
+of the world (i.e. the id and data of all blocks in the world, but not the
+position or orientation of player entities). Only one state is stored at any
+given time; any save overwrites any existing state.
+
+The state of the world can be restored with a subsequent
+``world.checkpoint.restore`` command.
 
 world.getBlock
 --------------
