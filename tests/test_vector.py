@@ -38,6 +38,7 @@ str = type('')
 
 import pytest
 from picraft import Vector, vector_range
+from picraft.vector import rmod, rdiv
 
 
 def test_vector_init():
@@ -183,10 +184,18 @@ def test_vector_range_order():
 
 def test_vector_range_index():
     assert vector_range(Vector() + 2).index(Vector()) == 0
+    assert vector_range(Vector() + 2)[:-1].index(Vector()) == 0
     assert vector_range(Vector() + 2).index(Vector(1, 1, 1)) == 7
+    assert vector_range(Vector() + 2)[1:].index(Vector(1, 1, 1)) == 6
     assert vector_range(Vector() + 2, order='xyz').index(Vector(1, 0, 0)) == 1
+    assert vector_range(Vector() + 2, order='zxy').index(Vector(1, 0, 0)) == 2
+    assert vector_range(Vector() + 2, order='zyx').index(Vector(1, 0, 0)) == 4
     with pytest.raises(ValueError):
         vector_range(Vector() + 2).index(Vector(2, 2, 2))
+    with pytest.raises(ValueError):
+        vector_range(Vector() + 2)[:-1].index(Vector(1, 1, 1))
+    with pytest.raises(ValueError):
+        vector_range(Vector() + 2)[1:].index(Vector())
 
 def test_vector_range_contains():
     assert Vector() in vector_range(Vector() + 2)
@@ -265,3 +274,12 @@ def test_vector_range_getitem():
         v[8]
     with pytest.raises(IndexError):
         v[-9]
+
+def test_vector_coverage():
+    # Miscellaneous tests purely for the sake of coverage
+    assert rmod(3, 3, range(10)) == set()
+    assert rmod(3, 2, []) == set()
+    with pytest.raises(ValueError):
+        rmod(0, 1, range(10))
+    with pytest.raises(ValueError):
+        rdiv(0, 1)

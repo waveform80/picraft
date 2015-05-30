@@ -482,26 +482,35 @@ class vector_range(Sequence):
             return Vector(*(v[i] for i in self._indexes))
 
     def index(self, value):
-        # XXX Do we need to support i and j arguments here? Python 3 defines
-        # these in "common sequence operations" but ranges don't include them
-
         # More horrid py2 compat. xrange's lack of index() sucks here...
         if sys.version_info.major < 3:
             ranges = [list(r) for r in self._ranges]
         else:
             ranges = self._ranges
-        # XXX Currently assumes xyz ordering for testing...
-        x_indexes = set(rmod(len(ranges[0]), ranges[0].index(value.x), range(len(self))))
-        y_indexes = set(
-                j
-                for i in rmod(len(ranges[1]), ranges[1].index(value.y),
-                    range(len(self) // len(ranges[0])))
-                for j in rdiv(len(ranges[0]), i)
-                )
-        z_indexes = set(rdiv(len(ranges[0]) * len(ranges[1]), ranges[2].index(value.z)))
-        for i in x_indexes & y_indexes & z_indexes:
-            return i
-        raise ValueError('%r is not in range' % (value,))
+        i, j, k = (getattr(value, axis) for axis in self.order)
+        l = product(len(r) for r in self._ranges)
+        try:
+            i_indexes = set(rmod(len(ranges[0]), ranges[0].index(i), range(l)))
+            j_indexes = set(
+                    b
+                    for a in rmod(len(ranges[1]), ranges[1].index(j),
+                        range(l // len(ranges[0])))
+                    for b in rdiv(len(ranges[0]), a)
+                    )
+            k_indexes = set(rdiv(len(ranges[0]) * len(ranges[1]), ranges[2].index(k)))
+            result = i_indexes & j_indexes & k_indexes
+            assert len(result) == 1
+            result = next(iter(result))
+            if self._slice is not None:
+                try:
+                    result = self._slice.index(result)
+                except AttributeError:
+                    # Yet more Py2 compat...
+                    result = list(self._slice).index(result)
+        except ValueError:
+            raise ValueError('%r is not in range' % (value,))
+        else:
+            return result
 
     def count(self, value):
         # count is provided by the ABC but inefficiently; given no vectors in
