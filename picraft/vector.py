@@ -64,9 +64,11 @@ from __future__ import (
     )
 str = type('')
 try:
-    range = xrange
+    xrange
 except NameError:
     pass
+else:
+    from .compat import range
 
 
 import sys
@@ -91,12 +93,31 @@ class Vector(namedtuple('Vector', ('x', 'y', 'z'))):
     Represents a 3-dimensional vector.
 
     This tuple derivative represents a 3-dimensional vector with x, y, z
-    components. The class supports simple arithmetic operations with other
-    vectors such as addition and subtraction, along with multiplication and
-    division with scalars, raising to powers, bit-shifting, and so on.
-    Attributes are provided for the :attr:`magnitude` of the vector, and a
-    :attr:`unit` vector equivalent, along with methods for taking the
-    :meth:`dot` and :meth:`cross` product with other vectors. For example::
+    components. Instances can be constructed in a number of ways. By explicitly
+    specifying the x, y, and z compnents (optionally with keyword identifiers),
+    or leaving the empty to default to 0::
+
+        >>> Vector(1, 1, 1)
+        Vector(x=1, y=1, z=1)
+        >>> Vector(x=2, y=0, z=0)
+        Vector(x=2, y=0, z=0)
+        >>> Vector()
+        Vector(x=0, y=0, z=0)
+        >>> Vector(y=10)
+        Vector(x=0, y=10, z=0)
+
+    Note that vectors don't much care whether their components are integers,
+    floating point values, or ``None``::
+
+        >>> Vector(1.0, 1, 1)
+        Vector(x=1.0, y=1, z=1)
+        >>> Vector(2, None, None)
+        Vector(x=2, y=None, z=None)
+
+    The class supports simple arithmetic operations with other vectors such as
+    addition and subtraction, along with multiplication and division with
+    scalars, raising to powers, bit-shifting, and so on. Such operations are
+    performed element-wise[1]_::
 
         >>> v1 = Vector(1, 1, 1)
         >>> v2 = Vector(2, 2, 2)
@@ -104,6 +125,24 @@ class Vector(namedtuple('Vector', ('x', 'y', 'z'))):
         Vector(x=3, y=3, z=3)
         >>> 2 * v2
         Vector(x=4, y=4, z=4)
+
+    Simple arithmetic operations with scalars return a new vector with that
+    operation performed on all elements of the original. For example::
+
+        >>> v = Vector()
+        >>> v
+        Vector(x=0, y=0, z=0)
+        >>> v + 1
+        Vector(x=1, y=1, z=1)
+        >>> 2 * (v + 2)
+        Vector(x=4, y=4, z=4)
+        >>> Vector(y=2) ** 2
+        Vector(x=0, y=4, z=0)
+
+    Attributes are provided for the :attr:`magnitude` of the vector, and a
+    :attr:`unit` vector equivalent, along with methods for taking the
+    :meth:`dot` and :meth:`cross` product with other vectors. For example::
+
         >>> Vector(z=1).magnitude
         1.0
         >>> Vector(x=1).cross(Vector(x=-1))
@@ -112,8 +151,6 @@ class Vector(namedtuple('Vector', ('x', 'y', 'z'))):
     Within the Minecraft world, the X,Z plane represents the ground, while the
     Y vector represents height.
 
-    .. Pythagoras' theorem: https://en.wikipedia.org/wiki/Pythagorean_theorem
-
     .. note::
 
         Note that, as a derivative of tuple, instances of this class are
@@ -121,6 +158,11 @@ class Vector(namedtuple('Vector', ('x', 'y', 'z'))):
         attributes; instead you must create a new vector (for example, by
         adding two vectors together). The advantage of this is that vector
         instances can be used in sets or as dictionary keys.
+
+    .. [1] I realize math purists will hate this (and demand that abs() should
+       be magnitude and * should invoke matrix multiplication), but the
+       element wise operations are sufficiently useful to warrant the
+       short-hand syntax.
     """
 
     def __new__(cls, x=0, y=0, z=0):
@@ -251,13 +293,13 @@ class vector_range(Sequence):
     of the *step* vector is zero, :exc:`ValueError` is raised.
 
     The contents of the range are largely determined by the *step* and *order*
-    which specifies the order in which the axis of the range will be
+    which specifies the order in which the axes of the range will be
     incremented.  For example, with the order ``'xyz'``, the X-axis will be
     incremented first, followed by the Y-axis, and finally the Z-axis. So, for
     a range with the default *start*, *step*, and *stop* set to ``Vector(3, 3,
     3)``, the contents of the range will be::
 
-        >>> vector_range(Vector(3, 3, 3), order='xyz')
+        >>> list(vector_range(Vector(3, 3, 3), order='xyz'))
         [Vector(0, 0, 0), Vector(1, 0, 0), Vector(2, 0, 0),
          Vector(0, 1, 0), Vector(1, 1, 0), Vector(2, 1, 0),
          Vector(0, 2, 0), Vector(1, 2, 0), Vector(2, 2, 0),
@@ -268,17 +310,15 @@ class vector_range(Sequence):
          Vector(0, 1, 2), Vector(1, 1, 2), Vector(2, 1, 2),
          Vector(0, 2, 2), Vector(1, 2, 2), Vector(2, 2, 2)]
 
-    Vector ranges implemented all common sequence operations except
-    concatenation and repetition (due to the fact that range objects can only
-    represent sequences that follow a strict pattern and repetition and
-    concatenation usually cause the resulting sequence to violate that
-    pattern).
+    Vector ranges implement all common sequence operations except concatenation
+    and repetition (due to the fact that range objects can only represent
+    sequences that follow a strict pattern and repetition and concatenation
+    usually cause the resulting sequence to violate that pattern).
 
     Vector ranges are extremely efficient compared to an equivalent
     :class:`list` or :class:`tuple` as they take a small (fixed) amount of
     memory, storing only the arguments passed in its construction and
-    calculating individual items and sub-ranges as requested. All such
-    calculations are done in fixed (O(1)) time.
+    calculating individual items and sub-ranges as requested.
 
     Vector range objects implement the :class:`collections.abc.Sequence` ABC,
     and provide features such as containment tests, element index lookup,
@@ -288,7 +328,7 @@ class vector_range(Sequence):
     used as it's the order used by the Raspberry Juice server when returning
     results from the ``getBlocks`` call. In turn, Raspberry Juice probably uses
     this order as it results in returning a horizontal layer of vectors at a
-    time (the Y-axis is used for height in the Minecraft world).
+    time (given the Y-axis is used for height in the Minecraft world).
 
     .. warning::
 
@@ -297,19 +337,54 @@ class vector_range(Sequence):
         are unlikely to test equal even though they may have the same *start*,
         *stop*, and *step* attributes (and thus contain the same vectors, but
         in a different order).
+
+    Vector ranges can be accessed by integer index, by :class`Vector` index,
+    or by a slice of vectors. For example::
+
+        >>> v = vector_range(Vector() + 1, Vector() + 3)
+        >>> list(v)
+        [Vector(x=1, y=1, z=1),
+         Vector(x=1, y=1, z=2),
+         Vector(x=2, y=1, z=1),
+         Vector(x=2, y=1, z=2),
+         Vector(x=1, y=2, z=1),
+         Vector(x=1, y=2, z=2),
+         Vector(x=2, y=2, z=1),
+         Vector(x=2, y=2, z=2)]
+        >>> v[0]
+        Vector(x=1, y=1, z=1)
+        >>> v[Vector(0, 0, 0)]
+        Vector(x=1, y=1, z=1)
+        >>> v[Vector(1, 0, 0)]
+        Vector(x=2, y=1, z=1)
+        >>> v[-1]
+        Vector(x=2, y=2, z=2)
+        >>> v[Vector() - 1]
+        Vector(x=2, y=2, z=2)
+        >>> v[Vector(x=1):]
+        vector_range(Vector(x=2, y=1, z=1), Vector(x=3, y=3, z=3),
+                Vector(x=1, y=1, z=1), order='zxy')
+        >>> list(v[Vector(x=1):])
+        [Vector(x=2, y=1, z=1),
+         Vector(x=2, y=1, z=2),
+         Vector(x=2, y=2, z=1),
+         Vector(x=2, y=2, z=2)]
+
+    However, integer slices are not currently permitted.
     """
 
     def __init__(
-            self, start, stop=None, step=Vector(1, 1, 1), order='zxy',
-            _slice=None):
+            self, start, stop=None, step=Vector(1, 1, 1), order='zxy'):
         if stop is None:
-            self._start = Vector()
-            self._stop = start
-        else:
-            self._start = start
-            self._stop = stop
+            start, stop = Vector(), start
+        if (start != start // 1) or (stop != stop // 1) or (step != step // 1):
+            raise TypeError('integer vectors are required')
         if order not in ('xyz', 'xzy', 'yxz', 'yzx', 'zxy', 'zyx'):
             raise ValueError('invalid order: %s' % order)
+        if not (step.x and step.y and step.z):
+            raise ValueError('no element of step may be zero')
+        self._start = start
+        self._stop = stop
         self._step = step
         self._order = order
         self._ranges = [
@@ -323,10 +398,9 @@ class vector_range(Sequence):
             order.index(axis)
             for axis in 'xyz'
             ]
-        self._slice = None
-        if _slice:
-            assert len(_slice) <= len(self)
-        self._slice = _slice
+        self._xrange, self._yrange, self._zrange = (
+            self._ranges[i] for i in self._indexes
+            )
 
     @property
     def start(self):
@@ -345,38 +419,17 @@ class vector_range(Sequence):
         return self._order
 
     def __repr__(self):
-        result = 'vector_range(%r, %r, %r, %r)' % (
-                self.start, self.stop, self.step, self.order)
-        if self._slice is not None:
-            # Horrid backwards compat. Py2's xrange and Py3.2's range don't
-            # have start/stop/step attributes (Py3.3+ do)
-            try:
-                self._slice.start
-            except AttributeError:
-                if len(self._slice) > 0:
-                    start = self._slice[0]
-                    if len(self._slice) > 1:
-                        step = self._slice[1] - self._slice[0]
-                        if step > 0:
-                            stop = self._slice[-1] + 1
-                        else:
-                            stop = self._slice[-1] - 1
-                    else:
-                        step = 1
-                        stop = start + 1
-                    result += '[%d:%d:%d]' % (start, stop, step)
-                else:
-                    result += '[empty]'
-            else:
-                result += '[%d:%d:%d]' % (
-                        self._slice.start, self._slice.stop, self._slice.step)
-        return result
+        if self.start == Vector() and self.step == Vector() + 1:
+            return 'vector_range(%r, order=%r)' % (self.stop, self.order)
+        elif self.step == Vector() + 1:
+            return 'vector_range(%r, %r, order=%r)' % (
+                    self.start, self.stop, self.order)
+        else:
+            return 'vector_range(%r, %r, %r, order=%r)' % (
+                    self.start, self.stop, self.step, self.order)
 
     def __len__(self):
-        if self._slice is None:
-            return product(len(r) for r in self._ranges)
-        else:
-            return len(self._slice)
+        return product(len(r) for r in self._ranges)
 
     def __lt__(self, other):
         for v1, v2 in zip_longest(self, other):
@@ -390,24 +443,12 @@ class vector_range(Sequence):
         # Fast-path: if the other object is an identical vector_range we
         # can quickly test whether we're equal
         if isinstance(other, vector_range):
-            if (
-                    self.start == other.start and
-                    self.stop == other.stop and
-                    self.step == other.step and
-                    self.order == other.order and
-                    self._slice == other._slice):
-                return True
-        # TODO Any other fast-paths we can use here? E.g. what if item[0],
-        # item[-1], step, and order are all equal; is that enough?
-        # Fast path: if the other object has a len() we can quickly determine
-        # whether we're not equal
-        try:
-            len(other)
-        except TypeError:
-            pass
-        else:
-            if len(self) != len(other):
-                return False
+            return (
+                    self._xrange == other._xrange and
+                    self._yrange == other._yrange and
+                    self._zrange == other._zrange and
+                    self.order == other.order
+                    )
         # Normal case: test every element in each sequence
         for v1, v2 in zip_longest(self, other):
             if v1 != v2:
@@ -441,39 +482,20 @@ class vector_range(Sequence):
 
     def __getitem__(self, index):
         if isinstance(index, slice):
-            # XXX What about a slice of a slice?
-            # Calculate the start and stop indexes
-            start = index.start
-            stop = index.stop
-            step = 1 if index.step is None else index.step
-            if step < 0:
-                start = min(len(self),
-                    len(self) - 1 if start is None else
-                    max(0, start + len(self)) if start < 0 else
-                    start)
-                stop = min(len(self),
-                    -1 if stop is None else
-                    max(0, stop + len(self)) if stop < 0 else
-                    stop)
-            else:
-                start = min(len(self), max(0,
-                    0 if start is None else
-                    start + len(self) if start < 0 else
-                    start))
-                stop = min(len(self), max(0,
-                    len(self) if stop is None else
-                    stop + len(self) if stop < 0 else
-                    stop))
-            return vector_range(
-                self.start, self.stop, self.step, self.order,
-                range(start, stop, step))
+            return self._get_slice(index)
+        elif isinstance(index, Vector):
+            try:
+                return Vector(*(
+                    self._ranges[i][j]
+                    for i, j in zip(self._indexes, index)
+                    ))
+            except IndexError:
+                raise IndexError('list index out of range')
         else:
             if index < 0:
                 index += len(self)
             if not (0 <= index < len(self)):
                 raise IndexError('list index out of range')
-            if self._slice is not None:
-                index = self._slice[index]
             v = (
                 self._ranges[0][index % len(self._ranges[0])],
                 self._ranges[1][(index // len(self._ranges[0])) % len(self._ranges[1])],
@@ -481,12 +503,28 @@ class vector_range(Sequence):
                 )
             return Vector(*(v[i] for i in self._indexes))
 
+    def _get_slice(self, s):
+        try:
+            step = Vector() + 1 if s.step is None else s.step
+            start = Vector(None, None, None) if s.start is None else s.start
+            stop = Vector(None, None, None) if s.stop is None else s.stop
+            if not (step.x and step.y and step.z):
+                raise ValueError(
+                    "every element of the slice's step must be non-zero")
+            x_range = self._xrange[slice(start.x, stop.x, step.x)]
+            y_range = self._yrange[slice(start.y, stop.y, step.y)]
+            z_range = self._zrange[slice(start.z, stop.z, step.z)]
+        except AttributeError:
+            raise ValueError(
+                "vector_range slices must be composed of Vectors")
+        return vector_range(
+            Vector(x_range.start, y_range.start, z_range.start),
+            Vector(x_range.stop, y_range.stop, z_range.stop),
+            Vector(x_range.step, y_range.step, z_range.step),
+            self.order)
+
     def index(self, value):
-        # More horrid py2 compat. xrange's lack of index() sucks here...
-        if sys.version_info.major < 3:
-            ranges = [list(r) for r in self._ranges]
-        else:
-            ranges = self._ranges
+        ranges = self._ranges
         i, j, k = (getattr(value, axis) for axis in self.order)
         l = product(len(r) for r in self._ranges)
         try:
@@ -501,12 +539,6 @@ class vector_range(Sequence):
             result = i_indexes & j_indexes & k_indexes
             assert len(result) == 1
             result = next(iter(result))
-            if self._slice is not None:
-                try:
-                    result = self._slice.index(result)
-                except AttributeError:
-                    # Yet more Py2 compat...
-                    result = list(self._slice).index(result)
         except ValueError:
             raise ValueError('%r is not in range' % (value,))
         else:
@@ -553,10 +585,7 @@ def rmod(denom, result, num_range):
         return set()
     assert num_range[-1] >= num_range[0]
     start = num_range[0] + (result - num_range[0] % denom) % denom
-    try:
-        stop = num_range.stop
-    except AttributeError:
-        stop = num_range[-1] + 1
+    stop = num_range.stop
     return range(start, stop, denom)
 
 
