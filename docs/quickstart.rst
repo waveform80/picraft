@@ -4,6 +4,10 @@
 Quick Start
 ===========
 
+The first thing you need to learn in picraft is vectors, and vector ranges. Er,
+the two things you need to learn in picraft are vectors, vector ranges, and
+blocks. The three things ... look, I'll just come in again.
+
 Firstly, ensure that you have a `Minecraft game`_ running on your Pi. Now start
 a terminal, start Python within the terminal, import the picraft library and
 start a connection to the Minecraft world::
@@ -71,12 +75,12 @@ id manually, or by name::
 
     >>> Block(1)
     <Block "stone" id=1 data=0>
-    >>> Block.from_name('stone')
+    >>> Block('stone')
     <Block "stone" id=1 data=0>
 
 Now we'll change the block beneath our feet::
 
-    >>> world.blocks[world.player.tile_pos - Vector(y=1)] = Block.from_name('stone')
+    >>> world.blocks[world.player.tile_pos - Vector(y=1)] = Block('stone')
 
 We can query the state of many blocks surrounding us by providing a vector
 slice to the :attr:`~picraft.world.World.blocks` attribute. To make things
@@ -162,14 +166,14 @@ We can change the state of many blocks at once similarly by assigning a new
 :class:`~picraft.block.Block` object to a slice of blocks::
 
     >>> v = world.player.tile_pos
-    >>> world.blocks[v - 1:v + 2 - Vector(y=2)] = Block.from_name('stone')
+    >>> world.blocks[v - 1:v + 2 - Vector(y=2)] = Block('stone')
 
 This is a relatively quick operation, as it only involves a single network
 call. However, re-writing the state of multiple blocks with different values
 is more time consuming::
 
     >>> world.blocks[v - 1:v + 2 - Vector(y=2)] = [
-    ...     Block.from_name('wool', data=i) for i in range(9)]
+    ...     Block('wool', data=i) for i in range(9)]
 
 You should notice that the example above takes a few seconds to process (each
 block requires a separate network transaction and due to deficiencies in the
@@ -177,17 +181,17 @@ block requires a separate network transaction and due to deficiencies in the
 execute). This can be accomplished considerably more quickly by batching
 multiple requests together::
 
-    >>> world.blocks[v - 1:v + 2 - Vector(y=2)] = Block.from_name('stone')
+    >>> world.blocks[v - 1:v + 2 - Vector(y=2)] = Block('stone')
     >>> with world.connection.batch_start():
     ...     world.blocks[v - 1:v + 2 - Vector(y=2)] = [
-    ...         Block.from_name('wool', data=i) for i in range(9)]
+    ...         Block('wool', data=i) for i in range(9)]
 
 You should notice the example above executes considerably more quickly.
 Finally, the state of the Minecraft world can be saved and restored easily with
 the :attr:`~picraft.world.World.checkpoint` object::
 
     >>> world.checkpoint.save()
-    >>> world.blocks[v - 1:v + 2 - Vector(y=2)] = Block.from_name('stone')
+    >>> world.blocks[v - 1:v + 2 - Vector(y=2)] = Block('stone')
     >>> world.checkpoint.restore()
 
 This concludes the quick tour of the picraft library. Conversion instructions
