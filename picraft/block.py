@@ -331,6 +331,8 @@ class Block(namedtuple('Block', ('id', 'data'))):
             >>> Block('stone')
             <Block "stone" id=1 data=0>
         """
+        if isinstance(name, bytes):
+            name = name.decode('utf-8')
         try:
             id = _BLOCKS_BY_NAME[name]
         except KeyError:
