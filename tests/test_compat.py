@@ -37,9 +37,8 @@ str = type('')
 
 
 import pytest
+from picraft.compat import range
 try:
-    xrange
-    from picraft.compat import range
     from itertools import izip_longest as zip_longest
 except NameError:
     from itertools import zip_longest

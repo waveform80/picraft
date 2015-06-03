@@ -204,4 +204,5 @@ if sys.version_info <= (3, 2):
                     range_stop = last
 
             return range(range_start, range_stop, range_step)
-
+else:
+    range = range

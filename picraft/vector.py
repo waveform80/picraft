@@ -63,12 +63,7 @@ from __future__ import (
     division,
     )
 str = type('')
-try:
-    xrange
-except NameError:
-    pass
-else:
-    from .compat import range
+from .compat import range
 
 
 import sys
