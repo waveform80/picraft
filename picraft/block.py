@@ -227,31 +227,88 @@ class Block(namedtuple('Block', ('id', 'data'))):
     and the *data*. Calculated properties are provided to look up the
     :attr:`name` and :attr:`description` of the block from a database derived
     from the Minecraft wiki, and classmethods are defined to construct a block
-    definition from alternate things like a :meth:`name <from_name>` or an
-    :meth:`RGB color <from_color>`::
+    definition from an :meth:`id <from_id>` or from alternate things like a
+    :meth:`name <from_name>` or an :meth:`RGB color <from_color>`::
 
-        >>> Block(0, 0)
+        >>> Block.from_id(0, 0)
         <Block "air" id=0 data=0>
-        >>> Block(2, 0)
+        >>> Block.from_id(2, 0)
         <Block "grass" id=2 data=0>
         >>> Block.from_name('stone')
         <Block "stone" id=1 data=0>
+
+    The default constructor attempts to guess which classmethod to call based
+    on the following rules (in the order given):
+
+    1. If the constructor is passed a string beginning with '#' that is 7
+       characters long, it calls :meth:`from_color`
+
+    2. If the constructor is passed a tuple containing 3 values, it calls
+       :meth:`from_color`
+
+    3. If the constructor is passed a string (not matching the case above)
+       it calls :meth:`from_name`
+
+    4. Otherwise the constructor calls :meth:`from_id` with all given
+       parameters
+
+    Aliases are provided for compatibility with the official reference
+    implementation (AIR, GRASS, STONE, etc)::
+
         >>> import picraft.block
         >>> picraft.block.WATER
         <Block "flowing_water" id=8 data=0>
-
-    Aliases are provided for compatibility with the official reference
-    implementation (AIR, GRASS, STONE, etc).
     """
 
-    def __new__(cls, id, data=0):
-        # This is simply overridden to change data to an optional param
-        return super(Block, cls).__new__(cls, id, data)
+    def __new__(cls, *args, **kwargs):
+        if len(args) >= 1:
+            a = args[0]
+            if isinstance(a, bytes):
+                a = a.decode('utf-8')
+            if isinstance(a, str) and len(a) == 7 and a.startswith('#'):
+                return cls.from_color(*args, **kwargs)
+            elif isinstance(a, tuple) and len(a) == 3:
+                return cls.from_color(*args, **kwargs)
+            elif isinstance(a, str):
+                return cls.from_name(*args, **kwargs)
+            else:
+                return cls.from_id(*args, **kwargs)
+        else:
+            if 'id' in kwargs:
+                return cls.from_id(**kwargs)
+            elif 'name' in kwargs:
+                return cls.from_name(**kwargs)
+            elif 'color' in kwargs:
+                return cls.from_color(**kwargs)
+        raise TypeError('invalid combination of arguments for Block')
 
     @classmethod
     def from_string(cls, s):
         id, data = s.split(',', 1)
-        return cls(int(id), int(data))
+        return cls.from_id(int(id), int(data))
+
+    @classmethod
+    def from_id(cls, id, data=0):
+        """
+        Construct a :class:`Block` instance from an *id* integer. This may be
+        used to construct blocks in the classic manner; by specifying a number
+        representing the block's type, and optionally a data value. For
+        example::
+
+            >>> from picraft import *
+            >>> Block.from_id(1)
+            <Block "stone" id=1 data=0>
+            >>> Block.from_id(2, 0)
+            <Block "grass" id=2 data=0>
+
+        The optional *data* parameter defaults to 0. Note that calling the
+        default constructor with an integer parameter is equivalent to calling
+        this method::
+
+            >>> Block(1)
+            <Block "stone" id=1" data=0>
+        """
+        return super(Block, cls).__new__(cls, id, data)
 
     @classmethod
     def from_name(cls, name, data=0):
@@ -261,12 +318,18 @@ class Block(namedtuple('Block', ('id', 'data'))):
         "friendly" way within code. For example::
 
             >>> from picraft import *
-            >>> w = World()
-            >>> w.blocks[Vector(0,0,0):Vector(5,5,5)] = Block.from_name('stone')
-            >>> w.blocks[Vector(1,1,1):Vector(3,3,3)] = Block.from_name('air')
+            >>> Block.from_name('stone')
+            <Block "stone" id=1 data=0>
+            >>> Block.from_name('wool', data=2)
+            <Block "wool" id=35 data=2>
 
         The optional *data* parameter can be used to specify the data component
-        of the new :class:`Block` instance; it defaults to 0.
+        of the new :class:`Block` instance; it defaults to 0. Note that calling
+        the default constructor with a string that doesn't start with "#" is
+        equivalent to calling this method::
+
+            >>> Block('stone')
+            <Block "stone" id=1 data=0>
         """
         try:
             id = _BLOCKS_BY_NAME[name]
@@ -289,7 +352,25 @@ class Block(namedtuple('Block', ('id', 'data'))):
         If *exact* is ``False`` (the default), and an exact match for the
         requested color cannot be found, the nearest color (determined simply
         by Euclidian distance) is returned. If *exact* is ``True`` and an exact
-        match cannot be found, a :exc:`ValueError` will be raised.
+        match cannot be found, a :exc:`ValueError` will be raised::
+
+            >>> from picraft import *
+            >>> Block.from_color('#ffffff')
+            <Block "wool" id=35 data=0>
+            >>> Block.from_color('#ffffff', exact=True)
+            Traceback (most recent call last):
+              File "<stdin>", line 1, in <module>
+              File "picraft/block.py", line 351, in from_color
+                if exact:
+            ValueError: no blocks match color #ffffff
+            >>> Block.from_color((1, 0, 0))
+            <Block "wool" id=35 data=14>
+
+        Note that calling the default constructor with any of the formats
+        accepted by this method is equivalent to calling this method::
+
+            >>> Block('#ffffff')
+            <Block "wool" id=35 data=0>
         """
         if isinstance(color, bytes):
             color = color.decode('utf-8')

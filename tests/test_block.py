@@ -60,6 +60,21 @@ def test_read_block_color_filename():
         io.open.return_value = [b'1 0 ffffff', b'1 1 000000']
         assert list(picraft.block._read_block_color('foo.txt')) == [(1, 0, (255, 255, 255)), (1, 1, (0, 0, 0))]
 
+def test_block_init():
+    assert Block(1, 1) == Block.from_id(1, 1)
+    assert Block(b'stone') == Block.from_name('stone')
+    assert Block('stone') == Block.from_name('stone')
+    assert Block('air', 1) == Block.from_name('air', 1)
+    assert Block('#ffffff') == Block.from_color('#ffffff')
+    assert Block((0, 0, 0)) == Block.from_color((0, 0, 0))
+    assert Block(id=1) == Block.from_id(1)
+    assert Block(name='grass') == Block.from_name('grass')
+    assert Block(color='#ffffff', exact=False) == Block.from_color('#ffffff')
+    with pytest.raises(TypeError):
+        Block()
+    with pytest.raises(TypeError):
+        Block(1, 2, 3)
+
 def test_block_from_string():
     assert Block.from_string('1,1') == Block(1, 1)
     with pytest.raises(ValueError):
@@ -68,6 +83,7 @@ def test_block_from_string():
         Block.from_string('1.0,2.0')
 
 def test_block_from_name():
+    assert Block.from_name(b'air') == Block(0, 0)
     assert Block.from_name('air') == Block(0, 0)
     assert Block.from_name('stone') == Block(1, 0)
     with pytest.raises(ValueError):
