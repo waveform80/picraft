@@ -40,20 +40,25 @@ from __future__ import (
     )
 str = type('')
 
+import sys
+
 # Python 2's xrange is rubbish compared to Python 3's range. The Python 2
 # version doesn't permit slicing (which we need for vector_range), and its
 # membership test operates in O(n) time (where n is the virtual length of the
 # range) instead of O(1) as in Python 3.
 #
+# Argh! Python 3.2's range is crap as well. Equality tests are completely
+# broken and I can't fix them easily because it lacks the start/stop/step
+# properties introduced in 3.3. Eurgh...
+#
 # The following class is partially based on Dan Crosta's wonderful pure Python
 # xrange class which can be found at https://github.com/dcrosta/xrange
 
-try:
-    xrange
-except NameError:
-    pass
-else:
-    from collections import Sequence
+if sys.version_info <= (3, 2):
+    try:
+        from collections import Sequence
+    except ImportError:
+        from collections.abc import Sequence
 
     class range(Sequence):
         def __init__(self, start, stop=None, step=1):
