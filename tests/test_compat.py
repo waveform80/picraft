@@ -138,5 +138,6 @@ def test_range_get_slice():
     assert range(3, 10, 3)[1:] == range(6, 12, 3)
     assert range(3, 10, 3)[::-1] == range(9, 0, -3)
     assert range(3, 10, 3)[2::-1] == range(9, 0, -3)
+    assert range(0, 10, 3)[:-3:-1] == range(9, 3, -3)
     with pytest.raises(ValueError):
         range(10)[::0]

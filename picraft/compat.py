@@ -197,7 +197,7 @@ if sys.version_info < (3, 3):
                     range_stop = self.start - self.step
             else:
                 if stop < 0:
-                    stop = max(start, stop + len(self))
+                    stop = max(0, stop + len(self))
                 if stop < len(self):
                     range_stop = self[stop]
                 else:
