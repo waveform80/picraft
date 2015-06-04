@@ -54,7 +54,7 @@ import sys
 # The following class is partially based on Dan Crosta's wonderful pure Python
 # xrange class which can be found at https://github.com/dcrosta/xrange
 
-if sys.version_info <= (3, 2):
+if sys.version_info < (3, 3):
     try:
         from collections import Sequence
     except ImportError:
