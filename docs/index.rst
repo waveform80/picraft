@@ -16,6 +16,7 @@
    api
    api_block
    api_connection
+   api_events
    api_exc
    api_player
    api_vector
