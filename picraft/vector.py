@@ -45,14 +45,12 @@ Vector
 ======
 
 .. autoclass:: Vector(x, y, z)
-    :members:
 
 
 vector_range
 ============
 
-.. autoclass:: vector_range(stop)
-               vector_range(start, stop[, step])
+.. autoclass:: vector_range
     :members:
 """
 
@@ -112,7 +110,7 @@ class Vector(namedtuple('Vector', ('x', 'y', 'z'))):
     The class supports simple arithmetic operations with other vectors such as
     addition and subtraction, along with multiplication and division with
     scalars, raising to powers, bit-shifting, and so on. Such operations are
-    performed element-wise[1]_::
+    performed element-wise [1]_::
 
         >>> v1 = Vector(1, 1, 1)
         >>> v2 = Vector(2, 2, 2)
@@ -134,15 +132,6 @@ class Vector(namedtuple('Vector', ('x', 'y', 'z'))):
         >>> Vector(y=2) ** 2
         Vector(x=0, y=4, z=0)
 
-    Attributes are provided for the :attr:`magnitude` of the vector, and a
-    :attr:`unit` vector equivalent, along with methods for taking the
-    :meth:`dot` and :meth:`cross` product with other vectors. For example::
-
-        >>> Vector(z=1).magnitude
-        1.0
-        >>> Vector(x=1).cross(Vector(x=-1))
-        Vector(x=0, y=0, z=0)
-
     Within the Minecraft world, the X,Z plane represents the ground, while the
     Y vector represents height.
 
@@ -158,6 +147,31 @@ class Vector(namedtuple('Vector', ('x', 'y', 'z'))):
        be magnitude and * should invoke matrix multiplication), but the
        element wise operations are sufficiently useful to warrant the
        short-hand syntax.
+
+    .. automethod:: dot
+
+    .. automethod:: cross
+
+    .. automethod:: distance_to
+
+    .. attribute:: x
+
+        The position or length of the vector along the X-axis. In the Minecraft
+        world this can be considered to run left-to-right.
+
+    .. attribute:: y
+
+        The position or length of the vector along the Y-axis. In the Minecraft
+        world this can be considered to run vertically up and down.
+
+    .. attribute:: z
+
+        The position or length of the vector along the Z-axis. In the Minecraft
+        world this can be considered as depth (in or out of the screen).
+
+    .. autoattribute:: magnitude
+
+    .. autoattribute:: unit
     """
 
     def __new__(cls, x=0, y=0, z=0):
@@ -246,15 +260,49 @@ class Vector(namedtuple('Vector', ('x', 'y', 'z'))):
     __div__ = __truediv__
 
     def dot(self, other):
+        """
+        Return the `dot product`_ of the vector with the *other* vector. The
+        result is a scalar value. For example::
+
+            >>> Vector(1, 2, 3).dot(Vector(2, 2, 2))
+            12
+            >>> Vector(1, 2, 3).dot(Vector(x=1))
+            1
+
+        .. _dot product: http://en.wikipedia.org/wiki/Dot_product
+        """
         return self.x * other.x + self.y * other.y + self.z * other.z
 
     def cross(self, other):
+        """
+        Return the `cross product`_ of the vector with the *other* vector. The
+        result is another vector. For example::
+
+            >>> Vector(1, 2, 3).cross(Vector(2, 2, 2))
+            Vector(x=-2, y=4, z=-2)
+            >>> Vector(1, 2, 3).cross(Vector(x=1))
+            Vector(x=0, y=3, z=-2)
+
+        .. _cross product: http://en.wikipedia.org/wiki/Cross_product
+        """
         return Vector(
                 self.y * other.z - self.z * other.y,
                 self.z * other.x - self.x * other.z,
                 self.x * other.y - self.y * other.x)
 
     def distance_to(self, other):
+        """
+        Return the Euclidian distance between two three dimensional points
+        (represented as vectors), calculated according to `Pythagoras'
+        theorem`_. For example::
+
+            >>> Vector(1, 2, 3).distance_to(Vector(2, 2, 2))
+            1.4142135623730951
+            >>> Vector().distance_to(Vector(x=1))
+            1.0
+
+        .. _Pythagoras' theorem: http://en.wikipedia.org/wiki/Pythagorean_theorem
+        """
         return math.sqrt(
                 (self.x - other.x) ** 2 +
                 (self.y - other.y) ** 2 +
@@ -262,10 +310,36 @@ class Vector(namedtuple('Vector', ('x', 'y', 'z'))):
 
     @property
     def magnitude(self):
+        """
+        Returns the magnitude of the vector. This could also be considered the
+        distance of the vector from the origin, i.e. ``v.magnitude`` is
+        equivalent to ``Vector().distance_to(v)``. For example::
+
+            >>> Vector(2, 4, 4).magnitude
+            6.0
+            >>> Vector().distance_to(Vector(2, 4, 4))
+            6.0
+        """
         return math.sqrt(self.x ** 2 + self.y ** 2 + self.z ** 2)
 
     @property
     def unit(self):
+        """
+        Return a `unit vector`_ (a vector with a magnitude of one) with the
+        same direction as this vector::
+
+            >>> Vector(1, 0, 0).unit
+            Vector(x=1.0, y=0.0, z=0.0)
+            >>> Vector(0, 2, 0).unit
+            Vector(x=0.0, y=1.0, z=0.0)
+
+        .. note::
+
+            If the vector's magnitude is zero, this property returns the
+            original vector.
+
+        .. _unit vector: http://en.wikipedia.org/wiki/Unit_vector
+        """
         if self.magnitude > 0:
             return self / self.magnitude
         else:
@@ -519,6 +593,10 @@ class vector_range(Sequence):
             self.order)
 
     def index(self, value):
+        """
+        Return the zero-based index of *value* within the range, or raise
+        :exc:`ValueError` if *value* does not exist in the range.
+        """
         ranges = self._ranges
         i, j, k = (getattr(value, axis) for axis in self.order)
         l = product(len(r) for r in self._ranges)
@@ -540,6 +618,11 @@ class vector_range(Sequence):
             return result
 
     def count(self, value):
+        """
+        Return the count of instances of *value* within the range (note this
+        can only be 0 or 1 in the case of a range, and thus is equivalent to
+        testing membership with ``in``).
+        """
         # count is provided by the ABC but inefficiently; given no vectors in
         # the range can be duplicated we provide a more efficient version here
         if value in self:

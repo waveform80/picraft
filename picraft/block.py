@@ -45,8 +45,10 @@ Block
 =====
 
 .. autoclass:: Block(id, data)
-    :members:
 
+
+BLOCK_COLORS
+============
 
 .. data:: BLOCK_COLORS
 
@@ -236,6 +238,8 @@ class Block(namedtuple('Block', ('id', 'data'))):
         <Block "grass" id=2 data=0>
         >>> Block.from_name('stone')
         <Block "stone" id=1 data=0>
+        >>> Block.from_color('#ffffff')
+        <Block "wool" id=35 data=0>
 
     The default constructor attempts to guess which classmethod to call based
     on the following rules (in the order given):
@@ -252,12 +256,51 @@ class Block(namedtuple('Block', ('id', 'data'))):
     4. Otherwise the constructor calls :meth:`from_id` with all given
        parameters
 
+    This means that the examples above can be more easily written::
+
+        >>> Block(0, 0)
+        <Block "air" id=0 data=0>
+        >>> Block(2, 0)
+        <Block "grass" id=2 data=0>
+        >>> Block('stone')
+        <Block "stone" id=1 data=0>
+        >>> Block('#ffffff')
+        <Block "wool" id=35 data=0>
+
     Aliases are provided for compatibility with the official reference
     implementation (AIR, GRASS, STONE, etc)::
 
         >>> import picraft.block
         >>> picraft.block.WATER
         <Block "flowing_water" id=8 data=0>
+
+    .. automethod:: from_color
+
+    .. automethod:: from_id
+
+    .. automethod:: from_name
+
+    .. attribute:: id
+
+        The "id" or type of the block. Each block type in Minecraft has a
+        unique value. For example, air blocks have the id 0, stone, has id 1,
+        and so forth. Generally it is clearer in code to refer to a block's
+        :attr:`name` but it may be quicker to use the id.
+
+    .. attribute:: data
+
+        Certain types of blocks have variants which are dictated by the data
+        value associated with them. For example, the color of a wool block
+        is determined by the *data* attribute (e.g. white is 0, red is 14,
+        and so on).
+
+    .. autoattribute:: pi
+
+    .. autoattribute:: pocket
+
+    .. autoattribute:: name
+
+    .. autoattribute:: description
     """
 
     def __new__(cls, *args, **kwargs):
