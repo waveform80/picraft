@@ -39,6 +39,7 @@ str = type('')
 import pytest
 from picraft import Vector, vector_range
 from picraft.vector import rmod, rdiv
+from picraft.compat import range
 
 
 def test_vector_init():
