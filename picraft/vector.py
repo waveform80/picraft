@@ -89,8 +89,8 @@ class Vector(namedtuple('Vector', ('x', 'y', 'z'))):
 
     This tuple derivative represents a 3-dimensional vector with x, y, z
     components. Instances can be constructed in a number of ways. By explicitly
-    specifying the x, y, and z compnents (optionally with keyword identifiers),
-    or leaving the empty to default to 0::
+    specifying the x, y, and z components (optionally with keyword
+    identifiers), or leaving the empty to default to 0::
 
         >>> Vector(1, 1, 1)
         Vector(x=1, y=1, z=1)
