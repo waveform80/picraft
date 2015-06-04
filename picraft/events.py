@@ -78,6 +78,12 @@ class BlockHitEvent(namedtuple('BlockHitEvent', ('pos', 'face', 'player'))):
     need to construct instances of this class, rather they are constructed and
     returned by calls to :meth:`~Events.poll`.
 
+    .. note::
+
+        Please note that the block hit event only registers when the player
+        *right clicks* with the sword. For some reason, left clicks do not
+        count.
+
     .. attribute:: pos
 
         A :class:`~picraft.vector.Vector` indicating the position of the block
@@ -86,11 +92,9 @@ class BlockHitEvent(namedtuple('BlockHitEvent', ('pos', 'face', 'player'))):
     .. attribute:: face
 
         A string indicating which face of the block was struck. This can be one
-        of six values: 'north', 'south', 'east', 'west', 'top', or 'bottom'.
-        The 'north' and 'south' values corresponding to increasing and
-        decreasing values along the Z axis; the 'east' and 'west' values to
-        increasing and deceasing values along the X axis. Finally, 'top' and
-        'bottom' refer to increasing and decreasing values along the Y axis.
+        of six values: 'x+', 'x-', 'y+', 'y-', 'z+', or 'z-'. The value
+        indicates which axis moves in which direction if one travelled away
+        from the block in the direction of the face.
 
     .. attribute:: player
 
@@ -100,4 +104,38 @@ class BlockHitEvent(namedtuple('BlockHitEvent', ('pos', 'face', 'player'))):
 
     @classmethod
     def from_string(cls, connection, s):
-        return cls(pos, face, Player(connection, int(player_id)))
+        v, f, p = s.rsplit(',', 2)
+        return cls(Vector.from_string(v), {
+            0: 'y-',
+            1: 'y+',
+            2: 'z-',
+            3: 'z+',
+            4: 'x-',
+            5: 'x+',
+            }[int(f)], Player(connection, int(p)))
+
+    def __repr__(self):
+        return '<BlockHitEvent pos=%s face=%r player=%d>' % (
+                self.pos, self.face, self.player.player_id)
+
+
+class Events(object):
+    """
+    This class implements the :attr:`~picraft.world.World.events` attribute.
+    """
+
+    def __init__(self, connection):
+        self._connection = connection
+
+    def clear(self):
+        self._connection.send('events.clear()')
+
+    def poll(self):
+        events = self._connection.transact('events.block.hits()')
+        if events:
+            return [
+                BlockHitEvent.from_string(self._connection, event)
+                for event in events.split('|')
+                ]
+        return []
+

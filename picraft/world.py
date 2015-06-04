@@ -75,6 +75,7 @@ from .connection import Connection
 from .player import Player, HostPlayer, Players
 from .block import Blocks
 from .vector import Vector, vector_range
+from .events import Events
 
 
 class World(object):
@@ -110,6 +111,7 @@ class World(object):
         self._height = WorldHeight(self._connection)
         self._checkpoint = Checkpoint(self._connection)
         self._camera = Camera(self._connection)
+        self._events = Events(self._connection)
 
     def __repr__(self):
         return '<World players=%d>' % len(self.players)
@@ -263,6 +265,27 @@ class World(object):
             things up.
         """
         return self._blocks
+
+    @property
+    def events(self):
+        """
+        Provides an interface to poll events that occur in the Minecraft world.
+
+        This property contains two methods: :meth:`~picraft.events.Events.poll`
+        which can be used to determine what events have occurred in the
+        Minecraft world since the last call to ``poll``, and
+        :meth:`~picraft.events.Events.clear` which can be used to tell the
+        server to forget any as-yet-unreported events. For example::
+
+            >>> events = world.events.poll()
+            >>> len(events)
+            3
+            >>> events[0]
+            <BlockHit pos=1,1,1 face="top" player=1>
+            >>> events[0].player.pos
+            <Vector x=0.5, y=0.0, z=0.5>
+        """
+        return self._events
 
     @property
     def checkpoint(self):
