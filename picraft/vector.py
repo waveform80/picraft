@@ -66,7 +66,6 @@ from .compat import range
 
 import sys
 import math
-import operator as op
 from functools import reduce, total_ordering
 from collections import namedtuple
 try:
@@ -147,6 +146,12 @@ class Vector(namedtuple('Vector', ('x', 'y', 'z'))):
        be magnitude and * should invoke matrix multiplication), but the
        element wise operations are sufficiently useful to warrant the
        short-hand syntax.
+
+    .. automethod:: replace
+
+    .. automethod:: ceil
+
+    .. automethod:: floor
 
     .. automethod:: dot
 
@@ -258,6 +263,47 @@ class Vector(namedtuple('Vector', ('x', 'y', 'z'))):
     # Py2 compat
     __nonzero__ = __bool__
     __div__ = __truediv__
+
+    def replace(self, x=None, y=None, z=None):
+        """
+        Return the vector with the x, y, or z axes replaced with the specified
+        values. For example::
+
+            >>> Vector(1, 2, 3).replace(z=4)
+            Vector(x=1, y=2, z=4)
+        """
+        # XXX What if I want to use None?
+        return Vector(
+            self.x if x is None else x,
+            self.y if y is None else y,
+            self.z if z is None else z)
+
+    def floor(self):
+        """
+        Return the vector with the floor of each component. This is only useful
+        for vectors containing floating point components::
+
+            >>> Vector(0.5, -0.5, 1.9)
+            Vector(0.0, -1.0, 1.0)
+        """
+        return Vector(
+            math.floor(self.x),
+            math.floor(self.y),
+            math.floor(self.z))
+
+    def ceil(self):
+        """
+        Return the vector with the ceiling of each component. This is only
+        useful for vectors containing floating point components::
+
+            >>> Vector(0.5, -0.5, 1.2)
+            Vector(1.0, 0.0, 2.0)
+        """
+        return Vector(
+            math.ceil(self.x),
+            math.ceil(self.y),
+            math.ceil(self.z))
+
 
     def dot(self, other):
         """
@@ -498,7 +544,7 @@ class vector_range(Sequence):
                     self.start, self.stop, self.step, self.order)
 
     def __len__(self):
-        return product(len(r) for r in self._ranges)
+        return len(self._xrange) * len(self._yrange) * len(self._zrange)
 
     def __lt__(self, other):
         for v1, v2 in zip_longest(self, other):
@@ -629,13 +675,6 @@ class vector_range(Sequence):
             return 1
         else:
             return 0
-
-
-def product(l):
-    """
-    Return the product of all values in the list *l*"
-    """
-    return reduce(op.mul, l)
 
 
 def rmod(denom, result, num_range):

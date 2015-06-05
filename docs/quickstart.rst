@@ -194,6 +194,58 @@ the :attr:`~picraft.world.World.checkpoint` object::
     >>> world.blocks[v - 1:v + 2 - Vector(y=2)] = Block('stone')
     >>> world.checkpoint.restore()
 
+In order to understand vectors, it can help to visualize them. Pick a
+relatively open area in the game world.
+
+.. image:: quick1.png
+
+We'll save the vector of your player's position as ``v`` then add 3 to it. This
+moves the vector 3 along each axis (X, Y, and Z).  Next, we'll make the block
+at ``v`` into stone::
+
+    >>> v = world.player.tile_pos
+    >>> v = v + 3
+    >>> world.blocks[v] = Block('stone')
+
+.. image:: quick2.png
+
+Now we'll explore vector slices a bit by making a line along X+5 into stone.
+Remember that slices (and ranges) are `half-open`_ so we need to add an extra
+1 to the end of the slice::
+
+    >>> world.blocks[v:v + Vector(x=5) + 1] = Block('stone')
+
+.. image:: quick3.png
+
+In order to visualize the three different axes of vectors we'll now draw them
+each. Here we also use a capability of the :class:`~picraft.block.Block`
+constructor to create a block with a particular color::
+
+    >>> world.blocks[v:v + Vector(x=5) + 1] Block('#ff0000')
+    >>> world.blocks[v:v + Vector(y=5) + 1] Block('#00ff00')
+    >>> world.blocks[v:v + Vector(z=5) + 1] Block('#0000ff')
+
+.. image:: quick4.png
+
+Finally, we can use a vector range to demonstrate patterns. Firstly we wipe
+out our axes by setting the entire block to "air". Then we define a vector
+range over the same block with a step of 2, and iterate over each vector within
+setting it to diamond::
+
+    >>> world.blocks[v:v + 6] = Block('air')
+    >>> r = vector_range(v, v + 6, Vector() + 2)
+    >>> for rv in r:
+    ...     world.blocks[rv] = Block('diamond_block')
+
+Once again, we can make use of a batch to speed this up::
+
+    >>> world.blocks[v:v + 6] = Block('air')
+    >>> with world.connection.batch_start():
+    ...     for rv in r:
+    ...         world.blocks[rv] = Block('diamond_block')
+
+.. image:: quick5.png
+
 This concludes the quick tour of the picraft library. Conversion instructions
 from mcpi can be found in the next chapter, followed by picraft recipes in the
 chapter after that. Finally, the API reference can be found at the end of the
