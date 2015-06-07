@@ -8,12 +8,6 @@ This package provides an alternate Python API for `Minecraft Pi edition`_ on
 the `Raspberry Pi`_, or `Raspberry Juice`_ on the PC for Python 2.7 (or above),
 or Python 3.2 (or above).
 
-.. warning::
-
-    This package is currently a work in progress. Several links and bits
-    of functionality may be missing / broken. This notice will be removed
-    upon the first release.
-
 Links
 =====
 
