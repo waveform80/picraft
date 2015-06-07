@@ -14,13 +14,13 @@
    recipes
    faq
    api
-   api_block
-   api_connection
-   api_events
-   api_exc
-   api_player
-   api_vector
    api_world
+   api_block
+   api_vector
+   api_events
+   api_connection
+   api_player
+   api_exc
    protocol
    changelog
    license

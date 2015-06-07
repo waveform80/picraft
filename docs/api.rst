@@ -1,8 +1,8 @@
 .. _api:
 
-=========================
-API - ``picraft`` Package
-=========================
+=============
+API Reference
+=============
 
 .. automodule:: picraft
 

@@ -1,8 +1,8 @@
 .. _api_vector:
 
-===============================
-API - ``picraft.vector`` Module
-===============================
+=============================
+API - Vector and vector_range
+=============================
 
 .. automodule:: picraft.vector
 

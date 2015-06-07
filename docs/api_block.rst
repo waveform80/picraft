@@ -1,7 +1,7 @@
 .. _api_block:
 
-==============================
-API - ``picraft.block`` Module
-==============================
+=====================
+API - The Block class
+=====================
 
 .. automodule:: picraft.block

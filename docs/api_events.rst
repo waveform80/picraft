@@ -1,8 +1,8 @@
 .. _api_events:
 
-===============================
-API - ``picraft.events`` Module
-===============================
+============
+API - Events
+============
 
 .. automodule:: picraft.events
 

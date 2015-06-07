@@ -35,8 +35,10 @@ Creating a connection with an explicit hostname and port is also similar::
 Minecraft.getBlock
 ==================
 
-See ``Minecraft.getBlockWithData`` below.
+See :ref:`Minecraft.getBlockWithData` below.
 
+
+.. _Minecraft.getBlockWithData:
 
 Minecraft.getBlockWithData
 ==========================
@@ -255,6 +257,8 @@ equivalent names to the settings that can be used::
     >>> w.nametags_visible = True
 
 
+.. _Minecraft.player.getPos:
+
 Minecraft.player.getPos
 =======================
 
@@ -286,8 +290,10 @@ relatively to their current one becomes simple::
 Minecraft.player.setPos
 =======================
 
-See ``Minecraft.player.getPos`` above.
+See :ref:`Minecraft.player.getPos` above.
 
+
+.. _Minecraft.player.getTilePos:
 
 Minecraft.player.getTilePos
 ===========================
@@ -315,7 +321,7 @@ host player::
 Minecraft.player.setTilePos
 ===========================
 
-See ``Minecraft.player.getTilePos`` above.
+See :ref:`Minecraft.player.getTilePos` above.
 
 
 Minecraft.player.setting
@@ -392,6 +398,8 @@ The ``player.getDuration`` method is replaced with the read-only
     Vector(x=0.1429840348766887, y=-0.3263934845430674, z=0.934356922711132)
 
 
+.. _Minecraft.entity.getPos:
+
 Minecraft.entity.getPos
 =======================
 
@@ -418,8 +426,10 @@ The ``entity.getPos`` and ``entity.setPos`` methods are replaced with the
 Minecraft.entity.setPos
 =======================
 
-See ``Minecraft.entity.getPos`` above.
+See :ref:`Minecraft.entity.getPos` above.
 
+
+.. _Minecraft.entity.getTilePos:
 
 Minecraft.entity.getTilePos
 ===========================
@@ -447,7 +457,7 @@ the :attr:`~picraft.player.Player.tile_pos` attribute. Access the relevant
 Minecraft.entity.setTilePos
 ===========================
 
-See ``Minecraft.entity.setTilePos`` above.
+See :ref:`Minecraft.entity.setTilePos` above.
 
 
 Minecraft.entity.getRotation
@@ -554,6 +564,8 @@ player retrieved from the :attr:`~picraft.world.World.players` attribute::
     >>> w.camera.third_person(w.players[1])
 
 
+.. _Minecraft.camera.setFixed:
+
 Minecraft.camera.setFixed
 =========================
 
@@ -577,7 +589,7 @@ position and will not move to follow any entity::
 Minecraft.camera.setPos
 =======================
 
-See ``Minecraft.camera.setFixed`` above.
+See :ref:`Minecraft.camera.setFixed` above.
 
 
 Minecraft.block.Block

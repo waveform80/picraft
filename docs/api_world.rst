@@ -1,8 +1,8 @@
 .. _api_world:
 
-==============================
-API - ``picraft.world`` Module
-==============================
+=====================
+API - The World class
+=====================
 
 .. automodule:: picraft.world
 

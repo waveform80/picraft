@@ -1,8 +1,8 @@
 .. _api_connection:
 
-===================================
-API - ``picraft.connection`` Module
-===================================
+=============================
+API - Connections and Batches
+=============================
 
 .. automodule:: picraft.connection
 

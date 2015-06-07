@@ -1,8 +1,8 @@
 .. _api_exc:
 
-============================
-API - ``picraft.exc`` Module
-============================
+================
+API - Exceptions
+================
 
 .. automodule:: picraft.exc
 

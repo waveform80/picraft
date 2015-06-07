@@ -1,8 +1,8 @@
 .. _api_player:
 
-===============================
-API - ``picraft.player`` Module
-===============================
+=============
+API - Players
+=============
 
 .. automodule:: picraft.player
 

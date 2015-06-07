@@ -39,15 +39,31 @@ typically all that is required to access classes in this package::
 
     import picraft
 
+For convenience on the command line you may prefer to simply do the following::
+
+    from picraft import *
+
+However, this is frowned upon in code as it pulls everything into the global
+namespace, so you may prefer to do something like this::
+
+    from picraft import World, Vector, Block
+
+This is the style used in the :ref:`recipes` chapter. Sometimes, if you are
+using a class extensively (:class:`~picraft.vector.Vector` is a good example)
+you may wish to alias it to a shorter name::
+
+    from picraft import World, Vector as V, Block
+
 The following sections document the various modules available within the
 package:
 
-* :mod:`picraft.block`
-* :mod:`picraft.connection`
-* :mod:`picraft.exc`
-* :mod:`picraft.player`
-* :mod:`picraft.vector`
-* :mod:`picraft.world`
+* :ref:`api_world`
+* :ref:`api_block`
+* :ref:`api_vector`
+* :ref:`api_events`
+* :ref:`api_connection`
+* :ref:`api_player`
+* :ref:`api_exc`
 """
 
 from __future__ import (
