@@ -31,6 +31,7 @@
 import sys
 import os
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
+on_rtd = os.environ.get('READTHEDOCS', None) == 'True'
 import setup as _setup
 
 # -- General configuration ------------------------------------------------
@@ -41,7 +42,7 @@ source_suffix = '.rst'
 #source_encoding = 'utf-8-sig'
 master_doc = 'index'
 project = _setup.__project__.title()
-copyright = '2013-2015 %s' % _setup.__author__
+copyright = '2015 %s' % _setup.__author__
 version = _setup.__version__
 release = _setup.__version__
 #language = None
@@ -68,15 +69,27 @@ intersphinx_mapping = {
 
 # -- Options for HTML output ----------------------------------------------
 
-html_theme = 'alabaster'
-html_theme_options = {
-        'github_user': 'waveform80',
-        'github_repo': 'picraft',
-        'logo': 'logo.png',
-        'logo_name': True,
-        'logo_text_align': 'center',
-        'description': 'The Pythonic Minecraft Library',
-        }
+if on_rtd:
+    html_theme = 'alabaster'
+    html_theme_options = {
+            'github_user': 'waveform80',
+            'github_repo': 'picraft',
+            'logo': 'logo.png',
+            'logo_name': True,
+            'logo_text_align': 'center',
+            'description': 'The Pythonic Minecraft Library',
+            }
+    html_sidebars = {
+            '**': [
+                'about.html',
+                'navigation.html',
+                'searchbox.html',
+                ]
+            }
+else:
+    html_theme = 'default'
+    #html_theme_options = {}
+    #html_sidebars = {}
 #html_theme_path = []
 #html_title = None
 #html_short_title = None
@@ -86,13 +99,6 @@ html_static_path = ['_static']
 #html_extra_path = []
 #html_last_updated_fmt = '%b %d, %Y'
 #html_use_smartypants = True
-html_sidebars = {
-        '**': [
-            'about.html',
-            'navigation.html',
-            'searchbox.html',
-            ]
-        }
 #html_additional_pages = {}
 #html_domain_indices = True
 #html_use_index = True
@@ -106,8 +112,8 @@ htmlhelp_basename = '%sdoc' % _setup.__project__
 
 # Hack to make wide tables work properly in RTD
 # See https://github.com/snide/sphinx_rtd_theme/issues/117 for details
-def setup(app):
-    app.add_stylesheet('style_override.css')
+#def setup(app):
+#    app.add_stylesheet('style_override.css')
 
 # -- Options for LaTeX output ---------------------------------------------
 
