@@ -47,7 +47,7 @@ command, described in the augmented Backus-Naur Form (ABNF) defined by `RFC
 
     command = command-name "(" [ option *( "," option ) ] ")" LF
 
-    command-name = 1*ALPHA [ "." 1*ALPHA ]
+    command-name = 1*ALPHA "." 1*ALPHA [ "." 1*ALPHA ]
     option = int-val / float-val / str-val
 
     bool-val = "0" / "1"
@@ -62,7 +62,7 @@ command, described in the augmented Backus-Naur Form (ABNF) defined by `RFC
     explicitly specified in ABNF constructions, it is not permitted by the
     specification.
 
-The typical form of a response is as follows::
+The typical form of a response (if one is given) is as follows::
 
     response = ( success-response / fail-response ) LF
 
@@ -172,10 +172,61 @@ chat.post
 
 Syntax::
 
-    chat-post-command = "chat.post(" str-val ")" LF
+    world-chat-command = "chat.post(" str-val ")" LF
 
-The ``chat.post`` command displays the message given in the string value to
-the chat console on the connected server.
+The ``chat.post`` command causes the server to echo the message provided as
+the only parameter to the in-game chat console. The message MUST NOT contain
+the LF character, but other control characters are (currently) permitted.
+
+entity.getPos
+-------------
+
+Syntax::
+
+    entity-get-pos-command = "entity.getPos(" int-val ")" LF
+    entity-get-pos-response = player-get-pos-response
+
+The ``entity.getPos`` command performs the same action as the
+:ref:`player.getPos` command for the player with the ID given by the
+sole parameter; refer to :ref:`player.getPos` for full details.
+
+entity.getTile
+--------------
+
+Syntax::
+
+    entity-get-tile-command = "entity.getTile(" int-val ")" LF
+    entity-get-tile-command = player-get-tile-response
+
+The ``entity.getTile`` command performs the same action as the
+:ref:`player.getTile` command for the player with the ID given by the
+sole parameter; refer to :ref:`player.getTile` for full details.
+
+entity.setPos
+-------------
+
+Syntax::
+
+    entity-set-pos-command = "entity.setPos(" int-val "," float-vector ")" LF
+
+The ``entity.setPos`` command performs the same action as the
+:ref:`player.setPos` command for the player with the ID given by the
+first parameter. The second parameter is equivalent to the first parameter
+for :ref:`player.setPos`; refer to that command for full details.
+
+entity.setTile
+--------------
+
+Syntax::
+
+    entity-set-tile-command = "entity.setTile(" int-val "," int-vector ")" LF
+
+The ``entity.setTile`` command performs the same action as the
+:ref:`player.setTile` command for the player with the ID given by the first
+parameter. The second parameter is equivalent to the first parameter for
+:ref:`player.setTile`; refer to that command for full details.
+
+.. _player.getPos:
 
 player.getPos
 -------------
@@ -183,11 +234,13 @@ player.getPos
 Syntax::
 
     player-get-pos-command = "player.getPos()" LF
-    player-get-pos-response = float-vector
+    player-get-pos-response = float-vector LF
 
 The ``player.getPos`` command returns the current location of the host player
 in the game world as an X, Y, Z vector of floating point values.  The
 coordinates 0, 0, 0 represent the spawn point within the world.
+
+.. _player.getTile:
 
 player.getTile
 --------------
@@ -195,11 +248,13 @@ player.getTile
 Syntax::
 
     player-get-tile-command = "player.getTile()" LF
-    player-get-tile-response = int-vector
+    player-get-tile-response = int-vector LF
 
 The ``player.getTile`` command returns the current location of the host player
 in the game world, to the nearest block coordinates, as an X, Y, Z vector of
 integer values.
+
+.. _player.setPos:
 
 player.setPos
 -------------
@@ -211,6 +266,8 @@ Syntax::
 The ``player.setPos`` command teleports the host player to the specified
 location in the game world. The floating point values given are the X, Y, and Z
 coordinates of the player's new position respectively.
+
+.. _player.setTile:
 
 player.setTile
 --------------
@@ -274,7 +331,7 @@ world.getBlock
 Syntax::
 
     world-get-block-command = "world.getBlock(" int-vector ")" LF
-    world-get-block-response = int-val
+    world-get-block-response = int-val LF
 
 The ``world.getBlock`` command can be used to retrieve the current type of a
 block within the world. The result consists of an integer representing the
@@ -288,7 +345,7 @@ world.getBlockWithData
 Syntax::
 
     world-get-blockdata-command = "world.getBlockWithData(" int-vector ")" LF
-    world-get-blockdata-response = int-val "," int-val
+    world-get-blockdata-response = int-val "," int-val LF
 
 The ``world.getBlockWithData`` command can be used to retrieve the current type
 and associated data of a block within the world. The result consists of two
@@ -296,6 +353,34 @@ comma-separated integers which represent the block type and the associated data
 respectively.
 
 See `Data Values (Pocket Edition)`_ for further information.
+
+world.getHeight
+---------------
+
+Syntax::
+
+    world-get-height-command = "world.getHeight(" int-val "," int-val ")" LF
+    world-get-height-response = int-val LF
+
+In response to the ``world.getHeight`` command the server calculates the Y
+coordinate of the first non-air block for the given X and Z coordinates (first
+and second parameter respectively) from the top of the world, and returns this
+as the result.
+
+world.getPlayerIds
+------------------
+
+.. XXX What happens when no players are connected? Fail? Blank response?
+
+Syntax::
+
+    world-enum-players-command = "world.getPlayerIds()" LF
+    world-enum-players-response = [ int-val *( "|" int-val ) LF ]
+
+The ``world.getPlayerIds`` command causes the server to a return a pipe (``|``)
+separated list of the integer player IDs of all players currently connected
+to the server. These player IDs can subsequently be used in the commands
+qualified with ``entity``.
 
 world.setBlock
 --------------
@@ -329,6 +414,25 @@ The seventh integer value provides the new type of the block. The optional
 eighth integer value provides the associated data of the block.
 
 See `Data Values (Pocket Edition)`_ for further information.
+
+world.setting
+-------------
+
+Syntax::
+
+    world-setting-command = "world.setting(" str-val "," bool-val ")" LF
+
+The ``world.setting`` command is used to alter global aspects of the world.
+The setting to be altered is named by the first parameter (the setting name
+MUST NOT be surrounded by quotation marks), while the boolean value (the only
+type currently supported) is specified as the second parameter.  The settings
+supported by the Minecraft Pi engine are:
+
+* ``world_immutable`` - This controls whether or the player can alter the world
+  (by placing or destroying blocks)
+
+* ``nametags_visible`` - This controls whether the nametags of other players
+  are visible
 
 
 .. _Data Values (Pocket Edition): http://minecraft.gamepedia.com/Data_values_%28Pocket_Edition%29

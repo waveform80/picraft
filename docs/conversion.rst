@@ -457,7 +457,7 @@ the :attr:`~picraft.player.Player.tile_pos` attribute. Access the relevant
 Minecraft.entity.setTilePos
 ===========================
 
-See :ref:`Minecraft.entity.setTilePos` above.
+See :ref:`Minecraft.entity.getTilePos` above.
 
 
 Minecraft.entity.getRotation
