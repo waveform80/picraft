@@ -1,11 +1,6 @@
 #!/usr/bin/env python
 
-from __future__ import (
-    unicode_literals,
-    print_function,
-    absolute_import,
-    division,
-    )
+from __future__ import division
 
 import io
 import time
@@ -57,7 +52,7 @@ class MinecraftTV(object):
     def __init__(self, origin=V(), size=(12, 8)):
         self.camera = picamera.PiCamera()
         self.camera.resolution = (64, int(64 / size[0] * size[1]))
-        self.camera.framerate = 15
+        self.camera.framerate = 2
         self.world = World(ignore_errors=True)
         self.origin = origin
         self.size = V(0, size[1], size[0])
@@ -104,7 +99,7 @@ class MinecraftTV(object):
 
 
 def main():
-    tv = MinecraftTV(origin=V(2, 0, 5))
+    tv = MinecraftTV(origin=V(2, 0, 5), size=(24,16))
     tv.main_loop()
 
 
