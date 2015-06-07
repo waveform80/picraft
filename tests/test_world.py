@@ -41,6 +41,7 @@ import io
 import picraft.world
 import picraft.block
 import picraft.player
+import picraft.events
 from picraft import World, Vector, vector_range, Connection, NotSupported
 try:
     from unittest import mock
@@ -63,6 +64,7 @@ def test_world_objects():
         assert isinstance(w.height, picraft.world.WorldHeight)
         assert isinstance(w.camera, picraft.world.Camera)
         assert isinstance(w.checkpoint, picraft.world.Checkpoint)
+        assert isinstance(w.events, picraft.events.Events)
 
 def test_world_say():
     with mock.patch('picraft.world.Connection') as c:

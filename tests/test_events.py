@@ -27,53 +27,60 @@
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 
-"""
-The picraft package consists of several modules which permit access to and
-modification of a Minecraft world. The package is intended as an alternative
-Python API to the "official" Minecraft Python API (for reasons explained in the
-:ref:`faq`).
-
-The classes defined in most modules of this package are available directly
-from the :mod:`picraft` namespace. In other words, the following code is
-typically all that is required to access classes in this package::
-
-    import picraft
-
-The following sections document the various modules available within the
-package:
-
-* :mod:`picraft.block`
-* :mod:`picraft.connection`
-* :mod:`picraft.exc`
-* :mod:`picraft.player`
-* :mod:`picraft.vector`
-* :mod:`picraft.world`
-"""
-
 from __future__ import (
     unicode_literals,
     absolute_import,
     print_function,
     division,
     )
-
-# Make Py2's str equivalent to Py3's
 str = type('')
 
 
-from .exc import (
-    Error,
-    ConnectionError,
-    CommandError,
-    NoResponse,
-    BatchStarted,
-    BatchNotStarted,
-    NotSupported,
-    )
-from .vector import Vector, vector_range
-from .block import Block, BLOCK_COLORS
-from .events import BlockHitEvent
-from .connection import Connection
-from .player import Players, Player, HostPlayer
-from .world import World
+import pytest
+import io
+import picraft.events
+from picraft import World, Vector
+try:
+    from unittest import mock
+except ImportError:
+    import mock
+
+
+def test_events_poll_empty():
+    conn = mock.MagicMock()
+    conn.transact.return_value = ''
+    events = picraft.events.Events(conn)
+    assert events.poll() == []
+    conn.transact.assert_called_once_with('events.block.hits()')
+
+def test_events_poll_one_hit():
+    conn = mock.MagicMock()
+    conn.transact.return_value = '1,2,3,4,5'
+    events = picraft.events.Events(conn)
+    result = events.poll()
+    assert len(result) == 1
+    assert result[0].pos == Vector(1, 2, 3)
+    assert result[0].face == 'x-'
+    assert result[0].player.player_id == 5
+    conn.transact.assert_called_once_with('events.block.hits()')
+
+def test_events_poll_multi_hits():
+    conn = mock.MagicMock()
+    conn.transact.return_value = '1,2,3,4,5|-1,0,0,0,1'
+    events = picraft.events.Events(conn)
+    result = events.poll()
+    assert len(result) == 2
+    assert result[0].pos == Vector(1, 2, 3)
+    assert result[0].face == 'x-'
+    assert result[0].player.player_id == 5
+    assert result[1].pos == Vector(-1, 0, 0)
+    assert result[1].face == 'y-'
+    assert result[1].player.player_id == 1
+    conn.transact.assert_called_once_with('events.block.hits()')
+
+def test_events_clear():
+    conn = mock.MagicMock()
+    events = picraft.events.Events(conn)
+    events.clear()
+    conn.send.assert_called_once_with('events.clear()')
 

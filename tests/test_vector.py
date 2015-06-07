@@ -155,6 +155,22 @@ def test_vector_unit():
     assert Vector().unit == Vector()
     assert Vector(2, 4, 4).unit == Vector(1/3, 2/3, 2/3)
 
+def test_vector_replace():
+    assert Vector().replace(x=1) == Vector(1, 0, 0)
+    assert Vector(1, 2, 3).replace() == Vector(1, 2, 3)
+    assert Vector(1, 2, 3).replace(2, 4, 6) == Vector(2, 4, 6)
+    assert Vector(1, 2, 3).replace(z=-1) == Vector(1, 2, -1)
+
+def test_vector_floor():
+    assert Vector(1, 2, 3).floor() == Vector(1, 2, 3)
+    assert Vector(1.1, 2.5, -1.1).floor() == Vector(1, 2, -2)
+    assert Vector(1.9, 0.0, -1.9).floor() == Vector(1, 0, -2)
+
+def test_vector_ceil():
+    assert Vector(1, 2, 3).ceil() == Vector(1, 2, 3)
+    assert Vector(1.1, 2.5, -1.1).ceil() == Vector(2, 3, -1)
+    assert Vector(1.9, 0.0, -1.9).ceil() == Vector(2, 0, -1)
+
 def test_vector_range_init():
     v = vector_range(Vector() + 2)
     assert v.start == Vector()
@@ -291,3 +307,4 @@ def test_vector_coverage():
         rmod(0, 1, range(10))
     with pytest.raises(ValueError):
         rdiv(0, 1)
+

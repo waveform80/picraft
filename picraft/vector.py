@@ -516,6 +516,7 @@ class vector_range(Sequence):
         self._xrange, self._yrange, self._zrange = (
             self._ranges[i] for i in self._indexes
             )
+        self._len = len(self._xrange) * len(self._yrange) * len(self._zrange)
 
     @property
     def start(self):
@@ -544,7 +545,7 @@ class vector_range(Sequence):
                     self.start, self.stop, self.step, self.order)
 
     def __len__(self):
-        return len(self._xrange) * len(self._yrange) * len(self._zrange)
+        return self._len
 
     def __lt__(self, other):
         for v1, v2 in zip_longest(self, other):
@@ -645,13 +646,12 @@ class vector_range(Sequence):
         """
         ranges = self._ranges
         i, j, k = (getattr(value, axis) for axis in self.order)
-        l = product(len(r) for r in self._ranges)
         try:
-            i_indexes = set(rmod(len(ranges[0]), ranges[0].index(i), range(l)))
+            i_indexes = set(rmod(len(ranges[0]), ranges[0].index(i), range(len(self))))
             j_indexes = set(
                     b
                     for a in rmod(len(ranges[1]), ranges[1].index(j),
-                        range(l // len(ranges[0])))
+                        range(len(self) // len(ranges[0])))
                     for b in rdiv(len(ranges[0]), a)
                     )
             k_indexes = set(rdiv(len(ranges[0]) * len(ranges[1]), ranges[2].index(k)))

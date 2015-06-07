@@ -75,6 +75,8 @@ if sys.version_info < (3, 3):
             self._start = start
             self._stop = stop
             self._step = step
+            q, r = divmod(self.stop - self.start, self.step)
+            self._len = q + (1 if r else 0)
 
         @property
         def start(self):
@@ -118,8 +120,7 @@ if sys.version_info < (3, 3):
             return not self.__eq__(other)
 
         def __len__(self):
-            q, r = divmod(self.stop - self.start, self.step)
-            return q + (1 if r else 0)
+            return self._len
 
         def __nonzero__(self):
             return len(self) > 0
