@@ -1,0 +1,45 @@
+Source: picraft
+Maintainer: Dave Jones <dave@waveform.org.uk>
+Homepage: http://pypi.python.org/pypi/picamera
+Section: python
+Priority: extra
+Build-Depends: debhelper (>= 8), python-all (>= 2.7), python-setuptools, python3-all, python3-setuptools, python-docutils, python-sphinx (>= 1.0.7+dfsg-1~)
+Standards-Version: 3.9.3
+X-Python-Version: >= 2.7
+X-Python3-Version: >= 3.2
+
+Package: python-picraft
+Architecture: all
+Depends: ${misc:Depends}, ${python:Depends}
+Suggests: python-picamera-docs, python-rpi.gpio
+Description: Alternative API for controlling Minecraft from Python.
+ picraft is an alternative "pythonic" library for controlling Minecraft from
+ Python. The API tries to adhere closely to Python's idioms and naming
+ conventions while replicating all functionality from the reference
+ implementation (extending it in some places).
+ .
+ This is the Python 2 version of the package.
+
+Package: python3-picraft
+Architecture: all
+Depends: ${misc:Depends}, ${python3:Depends}
+Suggests: python-picamera-docs, python3-rpi.gpio
+Description: Alternative API for controlling Minecraft from Python.
+ picraft is an alternative "pythonic" library for controlling Minecraft from
+ Python. The API tries to adhere closely to Python's idioms and naming
+ conventions while replicating all functionality from the reference
+ implementation (extending it in some places).
+ .
+ This is the Python 3 version of the package.
+
+Package: python-picraft-docs
+Architecture: all
+Section: doc
+Depends: ${sphinxdoc:Depends}, ${misc:Depends}
+Description: Documentation for the alternative Python Minecraft API.
+ picraft is an alternative "pythonic" library for controlling Minecraft from
+ Python. The API tries to adhere closely to Python's idioms and naming
+ conventions while replicating all functionality from the reference
+ implementation (extending it in some places).
+ .
+ This is the version-independent documentation for the package.

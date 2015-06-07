@@ -1,0 +1,9 @@
+Document: python-picraft
+Title: Picraft Reference
+Author: Dave Jones <dave@waveform.org.uk>
+Abstract: Documentation for the alternative Python Minecraft API.
+Section: Programming/Python
+
+Format: HTML
+Index: /usr/share/doc/python-picraft-docs/html/index.html
+Files: /usr/share/doc/python-picraft-docs/html/*
