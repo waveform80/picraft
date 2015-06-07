@@ -50,8 +50,8 @@ DOC_SOURCES:=docs/conf.py \
 DIST_EGG=dist/$(NAME)-$(VER)-$(PYVER).egg
 DIST_TAR=dist/$(NAME)-$(VER).tar.gz
 DIST_ZIP=dist/$(NAME)-$(VER).zip
-DIST_DEB=dist/python-$(NAME)_$(VER)-1$(DEB_SUFFIX)_armhf.deb \
-	dist/python3-$(NAME)_$(VER)-1$(DEB_SUFFIX)_armhf.deb \
+DIST_DEB=dist/python-$(NAME)_$(VER)-1$(DEB_SUFFIX)_all.deb \
+	dist/python3-$(NAME)_$(VER)-1$(DEB_SUFFIX)_all.deb \
 	dist/python-$(NAME)-docs_$(VER)-1$(DEB_SUFFIX)_all.deb
 DIST_DSC=dist/$(NAME)_$(VER)-1$(DEB_SUFFIX).tar.gz \
 	dist/$(NAME)_$(VER)-1$(DEB_SUFFIX).dsc \
@@ -155,7 +155,7 @@ release: $(PY_SOURCES) $(DOC_SOURCES) $(DEB_SOURCES)
 upload: $(PY_SOURCES) $(DOC_SOURCES) $(DIST_DEB) $(DIST_DSC)
 	# build a source archive and upload to PyPI
 	$(PYTHON) $(PYFLAGS) setup.py sdist upload
-	./maildebs.py $(DIST_DEB) $(DIST_DSC)
+	#./maildebs.py $(DIST_DEB) $(DIST_DSC)
 	git push --tags
 	git push
 
