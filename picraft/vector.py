@@ -489,9 +489,11 @@ class vector_range(Sequence):
     """
 
     def __init__(
-            self, start, stop=None, step=Vector(1, 1, 1), order='zxy'):
+            self, start, stop=None, step=None, order='zxy'):
         if stop is None:
             start, stop = Vector(), start
+        if step is None:
+            step = Vector(1, 1, 1)
         if (start != start // 1) or (stop != stop // 1) or (step != step // 1):
             raise TypeError('integer vectors are required')
         if order not in ('xyz', 'xzy', 'yxz', 'yzx', 'zxy', 'zyx'):

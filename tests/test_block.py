@@ -37,9 +37,10 @@ str = type('')
 
 
 import pytest
+import warnings
 import io
 import picraft.block
-from picraft import Block, Vector, vector_range
+from picraft import Block, Vector, vector_range, EmptySliceWarning
 try:
     from unittest import mock
 except ImportError:
@@ -131,6 +132,13 @@ def test_blocks_get_many():
     for v in vector_range(v_from, v_to):
         conn.transact.assert_any_call(
                 'world.getBlockWithData(%d,%d,%d)' % (v.x, v.y, v.z))
+
+def test_blocks_set_none():
+    conn = mock.MagicMock()
+    with warnings.catch_warnings():
+        warnings.simplefilter('error')
+        with pytest.raises(EmptySliceWarning):
+            picraft.block.Blocks(conn)[Vector(1, 1, 1):Vector(3, 3, -1)] = Block(0, 0)
 
 def test_blocks_set_one():
     conn = mock.MagicMock()

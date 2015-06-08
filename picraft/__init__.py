@@ -85,6 +85,7 @@ from .exc import (
     BatchStarted,
     BatchNotStarted,
     NotSupported,
+    EmptySliceWarning,
     )
 from .vector import Vector, vector_range
 from .block import Block, BLOCK_COLORS

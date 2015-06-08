@@ -49,6 +49,8 @@ Exceptions
 
 .. autoexception:: BatchNotStarted
 
+.. autoexception:: EmptySliceWarning
+
 """
 
 from __future__ import (
@@ -60,6 +62,7 @@ from __future__ import (
 str = type('')
 
 import socket
+import warnings
 
 
 class Error(Exception):
@@ -83,4 +86,6 @@ class BatchStarted(ConnectionError):
 class BatchNotStarted(ConnectionError):
     "Exception raised when a batch is terminated when none has been started"
 
+class EmptySliceWarning(Warning):
+    "Warning raised when a zero-length vector slice is passed to blocks"
 

@@ -152,6 +152,7 @@ str = type('')
 
 
 import io
+import warnings
 from math import sqrt
 from collections import namedtuple
 from operator import itemgetter
@@ -162,7 +163,8 @@ except ImportError:
     from itertools import zip_longest
 
 from pkg_resources import resource_stream
-from .vector import vector_range
+from .exc import EmptySliceWarning
+from .vector import Vector, vector_range
 
 
 def _read_block_data(filename_or_object):
@@ -508,7 +510,7 @@ class Blocks(object):
                 Block.from_string(
                     self._connection.transact(
                         'world.getBlockWithData(%d,%d,%d)' % (v.x, v.y, v.z)))
-                for v in vector_range(index.start, index.stop)
+                for v in vector_range(index.start, index.stop, index.step)
                 ]
         else:
             return Block.from_string(
@@ -517,17 +519,21 @@ class Blocks(object):
 
     def __setitem__(self, index, value):
         if isinstance(index, slice):
-            if hasattr(value, 'id') and hasattr(value, 'data'):
-                # XXX Server doesn't care if ranges are backwards; to make
-                # behaviour consistent with sequence setting we should detect
-                # empty/backward ranges here and do nothing
+            vr = vector_range(index.start, index.stop, index.step)
+            if not vr:
+                warnings.warn(EmptySliceWarning(
+                    "ignoring empty slice passed to blocks"))
+            elif (
+                    abs(vr.step) == Vector(1, 1, 1) and
+                    hasattr(value, 'id') and
+                    hasattr(value, 'data')):
                 self._connection.send(
                     'world.setBlocks(%d,%d,%d,%d,%d,%d,%d,%d)' % (
-                        index.start.x, index.start.y, index.start.z,
-                        index.stop.x - 1, index.stop.y - 1, index.stop.z - 1,
+                        vr.start.x, vr.start.y, vr.start.z,
+                        vr.stop.x - vr.step.x, vr.stop.y - vr.step.y, vr.stop.z - vr.step.z,
                         value.id, value.data))
             else:
-                for v, b in zip_longest(vector_range(index.start, index.stop), value):
+                for v, b in zip_longest(vr, value):
                     if v is None:
                         raise ValueError('too many blocks for vector range')
                     if b is None:
