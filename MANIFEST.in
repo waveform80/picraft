@@ -1,6 +1,6 @@
 prune debian
 prune docs
-include picracft/block.data
-include picracft/block.color
+include picraft/block.data
+include picraft/block.color
 include README.rst
 include LICENSE.txt
