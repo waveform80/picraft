@@ -16,7 +16,9 @@ features:
   make up the block database) to be excluded from the PyPI build (`#3`_)
 * Fix being able to set empty block ranges (`#2`_)
 * Fix being able to set block ranges with non-unit steps (`#4`_)
+* Preliminary implementation of getBlocks support (`#1`_)
 
+.. _#1: https://github.com/waveform80/picraft/issues/1
 .. _#2: https://github.com/waveform80/picraft/issues/2
 .. _#3: https://github.com/waveform80/picraft/issues/3
 .. _#4: https://github.com/waveform80/picraft/issues/4
