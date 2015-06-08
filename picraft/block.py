@@ -506,12 +506,27 @@ class Blocks(object):
 
     def __getitem__(self, index):
         if isinstance(index, slice):
-            return [
-                Block.from_string(
-                    self._connection.transact(
-                        'world.getBlockWithData(%d,%d,%d)' % (v.x, v.y, v.z)))
-                for v in vector_range(index.start, index.stop, index.step)
-                ]
+            vr = vector_range(index.start, index.stop, index.step)
+            if not vr:
+                warnings.warn(EmptySliceWarning(
+                    "ignoring empty slice passed to blocks"))
+            elif (
+                    abs(vr.step) == Vector(1, 1, 1) and
+                    self._connection.server_version == 'raspberry-juice'):
+                return [
+                    Block.from_string('%d,0' % int(i))
+                    for i in self._connection.transact(
+                        'world.getBlocks(%d,%d,%d,%d,%d,%d)' % (
+                        vr.start.x, vr.start.y, vr.start.z,
+                        vr.stop.x - vr.step.x, vr.stop.y - vr.step.y, vr.stop.z - vr.step.z)).split(',')
+                    ]
+            else:
+                return [
+                    Block.from_string(
+                        self._connection.transact(
+                            'world.getBlockWithData(%d,%d,%d)' % (v.x, v.y, v.z)))
+                    for v in vector_range(index.start, index.stop, index.step)
+                    ]
         else:
             return Block.from_string(
                 self._connection.transact(
