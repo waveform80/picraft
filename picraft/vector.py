@@ -64,9 +64,8 @@ str = type('')
 from .compat import range
 
 
-import sys
 import math
-from functools import reduce, total_ordering
+from functools import total_ordering
 from collections import namedtuple
 try:
     from itertools import zip_longest

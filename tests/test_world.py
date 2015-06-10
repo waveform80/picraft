@@ -84,7 +84,7 @@ def test_world_context():
 def test_world_immutable():
     with mock.patch('picraft.world.Connection') as c:
         w = World()
-        with pytest.raises(NotImplementedError):
+        with pytest.raises(AttributeError):
             w.immutable
         c().server_version = 'minecraft-pi'
         w.immutable = False
@@ -96,7 +96,7 @@ def test_world_immutable():
 def test_world_nametags():
     with mock.patch('picraft.world.Connection') as c:
         w = World()
-        with pytest.raises(NotImplementedError):
+        with pytest.raises(AttributeError):
             w.nametags_visible
         c().server_version = 'minecraft-pi'
         w.nametags_visible = False
@@ -150,7 +150,7 @@ def test_checkpoint_context():
 def test_camera_pos():
     with mock.patch('picraft.world.Connection') as c:
         w = World()
-        with pytest.raises(NotImplementedError):
+        with pytest.raises(AttributeError):
             w.camera.pos
         c().server_version = 'minecraft-pi'
         w.camera.pos = Vector(1, 2, 3)

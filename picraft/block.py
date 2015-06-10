@@ -155,7 +155,6 @@ import io
 import warnings
 from math import sqrt
 from collections import namedtuple
-from operator import itemgetter
 try:
     # Py2 compat
     from itertools import izip_longest as zip_longest
@@ -329,8 +328,8 @@ class Block(namedtuple('Block', ('id', 'data'))):
 
     @classmethod
     def from_string(cls, s):
-        id, data = s.split(',', 1)
-        return cls.from_id(int(id), int(data))
+        id_, data = s.split(',', 1)
+        return cls.from_id(int(id_), int(data))
 
     @classmethod
     def from_id(cls, id, data=0):
@@ -379,10 +378,10 @@ class Block(namedtuple('Block', ('id', 'data'))):
         if isinstance(name, bytes):
             name = name.decode('utf-8')
         try:
-            id = _BLOCKS_BY_NAME[name]
+            id_ = _BLOCKS_BY_NAME[name]
         except KeyError:
             raise ValueError('unknown name %s' % name)
-        return cls(id, data)
+        return cls(id_, data)
 
     @classmethod
     def from_color(cls, color, exact=False):
@@ -439,7 +438,7 @@ class Block(namedtuple('Block', ('id', 'data'))):
             if 0.0 <= r <= 1.0 and 0.0 <= g <= 1.0 and 0.0 <= b <= 1.0:
                 color = tuple(int(n * 255) for n in color)
         try:
-            id, data = _BLOCKS_BY_COLOR[color]
+            id_, data = _BLOCKS_BY_COLOR[color]
         except KeyError:
             r, g, b = color
             if exact:
@@ -447,9 +446,9 @@ class Block(namedtuple('Block', ('id', 'data'))):
                     'no blocks match color #%06x' % (r << 16 | g << 8 | b))
             diff = lambda block_color: sqrt(
                     sum((c1 - c2) ** 2 for c1, c2 in zip(color, block_color)))
-            matched_color, (id, data) = sorted(
-                    _BLOCKS_BY_COLOR.items(), key=lambda i: diff(i[0]))[0]
-        return cls(id, data)
+            matched_color = sorted(_BLOCKS_BY_COLOR, key=diff)[0]
+            id_, data = _BLOCKS_BY_COLOR[matched_color]
+        return cls(id_, data)
 
     def __repr__(self):
         try:

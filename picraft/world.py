@@ -72,7 +72,7 @@ str = type('')
 
 from .exc import NotSupported
 from .connection import Connection
-from .player import Player, HostPlayer, Players
+from .player import HostPlayer, Players
 from .block import Blocks
 from .vector import Vector, vector_range
 from .events import Events
@@ -333,12 +333,13 @@ class World(object):
         self.close()
 
     def _get_immutable(self):
-        raise NotImplementedError
+        raise AttributeError(
+                'reading immutable is not supported by the server')
     def _set_immutable(self, value):
         if self._connection.server_version != 'minecraft-pi':
             raise NotSupported(
                 'cannot change world settings on server version: %s' %
-                    self._connection.server_version)
+                self._connection.server_version)
         self._connection.send('world.setting(world_immutable,%d)' % bool(value))
     immutable = property(_get_immutable, _set_immutable,
         doc="""\
@@ -352,16 +353,17 @@ class World(object):
 
             Unfortunately, the underlying protocol provides no means of reading
             a world setting, so this property is write-only (attempting to
-            query it will result in a :exc:`NotImplementedError` being raised).
+            query it will result in an :exc:`AttributeError` being raised).
         """)
 
     def _get_nametags_visible(self):
-        raise NotImplementedError
+        raise AttributeError(
+                'reading nametags_visible is not supported by the server')
     def _set_nametags_visible(self, value):
         if self._connection.server_version != 'minecraft-pi':
             raise NotSupported(
                 'cannot change world settings on server version: %s' %
-                    self._connection.server_version)
+                self._connection.server_version)
         self._connection.send('world.setting(nametags_visible,%d)' % bool(value))
     nametags_visible = property(_get_nametags_visible, _set_nametags_visible,
         doc="""\
@@ -375,7 +377,7 @@ class World(object):
 
             Unfortunately, the underlying protocol provides no means of reading
             a world setting, so this property is write-only (attempting to
-            query it will result in a :exc:`NotImplementedError` being raised).
+            query it will result in an :exc:`AttributeError` being raised).
         """)
 
 
@@ -459,7 +461,7 @@ class Checkpoint(object):
         if self._connection.server_version != 'minecraft-pi':
             raise NotSupported(
                 'cannot save checkpoint on server version: %s' %
-                    self._connection.server_version)
+                self._connection.server_version)
         self._connection.send('world.checkpoint.save()')
 
     def restore(self):
@@ -472,7 +474,7 @@ class Checkpoint(object):
         if self._connection.server_version != 'minecraft-pi':
             raise NotSupported(
                 'cannot restore checkpoint on server version: %s' %
-                    self._connection.server_version)
+                self._connection.server_version)
         self._connection.send('world.checkpoint.restore()')
 
     def __enter__(self):
@@ -495,7 +497,8 @@ class Camera(object):
         return '<Camera>'
 
     def _get_pos(self):
-        raise NotImplementedError
+        raise AttributeError(
+                'reading camera position is not supported by server')
     def _set_pos(self, value):
         if self._connection.server_version != 'minecraft-pi':
             raise NotSupported(
@@ -511,7 +514,7 @@ class Camera(object):
 
             Unfortunately, the underlying protocol provides no means of reading
             this setting, so this property is write-only (attempting to query
-            it will result in a :exc:`NotImplementedError` being raised).
+            it will result in an :exc:`AttributeError` being raised).
         """)
 
     def third_person(self, player):
@@ -529,7 +532,7 @@ class Camera(object):
         if self._connection.server_version != 'minecraft-pi':
             raise NotSupported(
                 'cannot position camera on server version: %s' %
-                    self._connection.server_version)
+                self._connection.server_version)
         if isinstance(player, HostPlayer):
             self._connection.send('camera.mode.setFollow()')
         else:
@@ -550,7 +553,7 @@ class Camera(object):
         if self._connection.server_version != 'minecraft-pi':
             raise NotSupported(
                 'cannot position camera on server version: %s' %
-                    self._connection.server_version)
+                self._connection.server_version)
         if isinstance(player, HostPlayer):
             self._connection.send('camera.mode.setNormal()')
         else:

@@ -111,7 +111,6 @@ class Players(object):
             return self._cache[key]
         except KeyError as e:
             if self._connection.server_version == 'raspberry-juice':
-                name = key
                 try:
                     key = int(self._connection.transact('world.getPlayerId(%s)' % key))
                 except ConnectionError:
@@ -196,7 +195,7 @@ class BasePlayer(object):
         if self._connection.server_version != 'raspberry-juice':
             raise NotSupported(
                 'cannot query heading on server version: %s' %
-                    self._connection.server_version)
+                self._connection.server_version)
         return float(
             self._connection.transact(self._cmd('getRotation')))
 
@@ -216,7 +215,7 @@ class BasePlayer(object):
         if self._connection.server_version != 'raspberry-juice':
             raise NotSupported(
                 'cannot query pitch on server version: %s' %
-                    self._connection.server_version)
+                self._connection.server_version)
         return float(
             self._connection.transact(self._cmd('getPitch')))
 
@@ -236,7 +235,7 @@ class BasePlayer(object):
         if self._connection.server_version != 'raspberry-juice':
             raise NotSupported(
                 'cannot query direction on server version: %s' %
-                    self._connection.server_version)
+                self._connection.server_version)
         return Vector.from_string(
             self._connection.transact(self._cmd('getDirection')),
             type=float)
@@ -283,12 +282,13 @@ class HostPlayer(BasePlayer):
         return '<HostPlayer>'
 
     def _get_autojump(self):
-        raise NotImplementedError
+        raise AttributeError(
+                'reading autojump is not supported by the server')
     def _set_autojump(self, value):
         if self._connection.server_version != 'minecraft-pi':
             raise NotSupported(
                 'cannot change player settings on server version: %s' %
-                    self._connection.server_version)
+                self._connection.server_version)
         self._connection.send('player.setting(autojump,%d)' % bool(value))
     autojump = property(_get_autojump, _set_autojump, doc="""\
         Write-only property which sets whether the host player autojumps.
@@ -305,6 +305,6 @@ class HostPlayer(BasePlayer):
 
             Unfortunately, the underlying protocol provides no means of reading
             a world setting, so this property is write-only (attempting to
-            query it will result in a :exc:`NotImplementedError` being raised).
+            query it will result in an :exc:`AttributeError` being raised).
         """)
 

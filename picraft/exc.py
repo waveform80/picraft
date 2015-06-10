@@ -62,7 +62,6 @@ from __future__ import (
 str = type('')
 
 import socket
-import warnings
 
 
 class Error(Exception):

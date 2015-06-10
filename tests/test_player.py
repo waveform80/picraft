@@ -152,7 +152,7 @@ def test_player_mcpi():
 def test_host_player_autojump():
     conn = mock.MagicMock()
     conn.server_version = 'minecraft-pi'
-    with pytest.raises(NotImplementedError):
+    with pytest.raises(AttributeError):
         HostPlayer(conn).autojump
     HostPlayer(conn).autojump = True
     conn.send.assert_called_once_with('player.setting(autojump,1)')

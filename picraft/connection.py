@@ -192,7 +192,7 @@ class Connection(object):
         while True:
             if not self._readable(0):
                 break
-            data = self._socket.recv(1500)
+            self._socket.recv(1500)
 
     def _send(self, buf):
         """
@@ -204,7 +204,7 @@ class Connection(object):
         if self.ignore_errors:
             self._drain()
         self._wfile.write(buf)
-        logging.debug('picraft >: %r' % buf)
+        logging.debug('picraft >: %r', buf)
 
     def _receive(self, required=False):
         """
@@ -224,7 +224,7 @@ class Connection(object):
                 raise NoResponse('no response received')
             return
         result = self._rfile.readline()
-        logging.debug('picraft <: %r' % result)
+        logging.debug('picraft <: %r', result)
         result = result.decode(self.encoding).rstrip('\n')
         if result == 'Fail':
             raise CommandError('an error occurred')
