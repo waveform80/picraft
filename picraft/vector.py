@@ -181,6 +181,12 @@ class Vector(namedtuple('Vector', ('x', 'y', 'z'))):
 
     .. automethod:: distance_to
 
+    .. automethod:: projection
+
+    .. automethod:: angle_between
+
+    .. automethod:: rotate
+
     .. attribute:: x
 
         The position or length of the vector along the X-axis. In the Minecraft
