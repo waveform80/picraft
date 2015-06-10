@@ -120,6 +120,13 @@ class Vector(namedtuple('Vector', ('x', 'y', 'z'))):
         >>> Vector(y=10)
         Vector(x=0, y=10, z=0)
 
+    Shortcuts are available for the X, Y, and Z axes::
+
+        >>> X
+        Vector(x=1, y=0, z=0)
+        >>> Y
+        Vector(x=0, y=1, z=0)
+
     Note that vectors don't much care whether their components are integers,
     floating point values, or ``None``::
 
@@ -339,7 +346,7 @@ class Vector(namedtuple('Vector', ('x', 'y', 'z'))):
 
             >>> Vector(1, 2, 3).dot(Vector(2, 2, 2))
             12
-            >>> Vector(1, 2, 3).dot(Vector(x=1))
+            >>> Vector(1, 2, 3).dot(X)
             1
 
         .. _dot product: http://en.wikipedia.org/wiki/Dot_product
@@ -353,7 +360,7 @@ class Vector(namedtuple('Vector', ('x', 'y', 'z'))):
 
             >>> Vector(1, 2, 3).cross(Vector(2, 2, 2))
             Vector(x=-2, y=4, z=-2)
-            >>> Vector(1, 2, 3).cross(Vector(x=1))
+            >>> Vector(1, 2, 3).cross(X)
             Vector(x=0, y=3, z=-2)
 
         .. _cross product: http://en.wikipedia.org/wiki/Cross_product
@@ -371,7 +378,7 @@ class Vector(namedtuple('Vector', ('x', 'y', 'z'))):
 
             >>> Vector(1, 2, 3).distance_to(Vector(2, 2, 2))
             1.4142135623730951
-            >>> Vector().distance_to(Vector(x=1))
+            >>> Vector().distance_to(X)
             1.0
 
         .. _Pythagoras' theorem: http://en.wikipedia.org/wiki/Pythagorean_theorem
@@ -387,9 +394,9 @@ class Vector(namedtuple('Vector', ('x', 'y', 'z'))):
         that contains both vectors. The result is measured in degrees. For
         example::
 
-            >>> Vector(x=1).angle_between(Vector(y=1))
+            >>> X.angle_between(Y)
             90.0
-            >>> Vector(1, 1, 0).angle_between(Vector(x=1))
+            >>> (X + Y).angle_between(X)
             45.00000000000001
         """
         return math.degrees(math.acos(self.unit.dot(other.unit)))
@@ -400,7 +407,7 @@ class Vector(namedtuple('Vector', ('x', 'y', 'z'))):
         This is a scalar indicating the length of this vector in the direction
         of the *other* vector. For example::
 
-            >>> Vector(1, 2, 3).projection(Vector(y=2))
+            >>> Vector(1, 2, 3).projection(2 * Y)
             2.0
 
         .. _scalar projection: https://en.wikipedia.org/wiki/Scalar_projection
@@ -415,13 +422,13 @@ class Vector(namedtuple('Vector', ('x', 'y', 'z'))):
         rotation about the axis (through the origin) defined by *about*.
         For example::
 
-            >>> Vector(y=1).rotate(90, about=Vector(x=1))
+            >>> Y.rotate(90, about=X)
             Vector(x=0.0, y=0.0, z=1.0)
 
         Information about rotation around arbitrary lines was obtained from
-        Glenn Murray's informative site [1]_.
+        Glenn Murray's informative site [2]_.
 
-        .. [1]: http://inside.mines.edu/fs_home/gmurray/ArbitraryAxisRotation/
+        .. [2]: http://inside.mines.edu/fs_home/gmurray/ArbitraryAxisRotation/
         """
         r = math.radians(angle)
         sin = math.sin(r)
@@ -468,9 +475,9 @@ class Vector(namedtuple('Vector', ('x', 'y', 'z'))):
         Return a `unit vector`_ (a vector with a magnitude of one) with the
         same direction as this vector::
 
-            >>> Vector(1, 0, 0).unit
+            >>> X.unit
             Vector(x=1.0, y=0.0, z=0.0)
-            >>> Vector(0, 2, 0).unit
+            >>> (2 * Y).unit
             Vector(x=0.0, y=1.0, z=0.0)
 
         .. note::
