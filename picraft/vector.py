@@ -426,9 +426,9 @@ class Vector(namedtuple('Vector', ('x', 'y', 'z'))):
             Vector(x=0.0, y=0.0, z=1.0)
 
         Information about rotation around arbitrary lines was obtained from
-        Glenn Murray's informative site [2]_.
+        `Glenn Murray's informative site`_.
 
-        .. [2]: http://inside.mines.edu/fs_home/gmurray/ArbitraryAxisRotation/
+        .. _Glenn Murray's informative site: http://inside.mines.edu/fs_home/gmurray/ArbitraryAxisRotation/
         """
         r = math.radians(angle)
         sin = math.sin(r)
