@@ -52,6 +52,29 @@ vector_range
 
 .. autoclass:: vector_range
     :members:
+
+
+Short-hand variants
+===================
+
+The :class:`Vector` class is used sufficiently often to justify the inclusion
+of some shortcuts. The class itself is also available as ``V``, and vectors
+representing the three axes are each available as ``X``, ``Y``, and ``Z``. For
+example. Finally, a vector representing the origin is available as ``O``::
+
+    >>> from picraft import V, O, X, Y, Z
+    >>> O
+    Vector(x=0, y=0, z=0)
+    >>> 2 * X
+    Vector(x=2, y=0, z=0)
+    >>> X + Y
+    Vector(x=1, y=1, z=0)
+    >>> (X + Y).angle_between(X)
+    45.00000000000001
+    >>> V(3, 4, 5).projection(X)
+    3.0
+    >>> X.rotate(90, about=Y)
+    Vector(x=0.0, y=0.0, z=1.0)
 """
 
 from __future__ import (
@@ -303,7 +326,6 @@ class Vector(namedtuple('Vector', ('x', 'y', 'z'))):
             math.ceil(self.y),
             math.ceil(self.z))
 
-
     def dot(self, other):
         """
         Return the `dot product`_ of the vector with the *other* vector. The
@@ -353,6 +375,73 @@ class Vector(namedtuple('Vector', ('x', 'y', 'z'))):
                 (self.y - other.y) ** 2 +
                 (self.z - other.z) ** 2)
 
+    def angle_between(self, other):
+        """
+        Returns the angle between this vector and the *other* vector on a plane
+        that contains both vectors. The result is measured in degrees. For
+        example::
+
+            >>> Vector(x=1).angle_between(Vector(y=1))
+            90.0
+            >>> Vector(1, 1, 0).angle_between(Vector(x=1))
+            45.00000000000001
+        """
+        return math.degrees(math.acos(self.unit.dot(other.unit)))
+
+    def projection(self, other):
+        """
+        Return the `scalar projection`_ of this vector onto the *other* vector.
+        This is a scalar indicating the length of this vector in the direction
+        of the *other* vector. For example::
+
+            >>> Vector(1, 2, 3).projection(Vector(y=2))
+            2.0
+
+        .. _scalar projection: https://en.wikipedia.org/wiki/Scalar_projection
+        """
+        return self.dot(other.unit)
+
+    def rotate(self, angle, about, origin=None):
+        """
+        Return this vector after rotation of *angle* degrees about the line
+        passing through *origin* and *about*. Origin defaults to the vector
+        0, 0, 0. Hence, if this parameter is omitted this method calculates
+        rotation about the axis (through the origin) defined by *about*.
+        For example::
+
+            >>> Vector(y=1).rotate(90, about=Vector(x=1))
+            Vector(x=0.0, y=0.0, z=1.0)
+
+        Information about rotation around arbitrary lines was obtained from
+        Glenn Murray's informative site [1]_.
+
+        .. [1]: http://inside.mines.edu/fs_home/gmurray/ArbitraryAxisRotation/
+        """
+        r = math.radians(angle)
+        sin = math.sin(r)
+        cos = math.cos(r)
+        x, y, z = self
+        if origin is None:
+            if about == X:
+                return Vector(x, y * cos - z * sin, y * sin + z * cos)
+            elif about == Y:
+                return Vector(z * sin + x * cos, y, z * cos - x * sin)
+            elif about == Z:
+                return Vector(x * cos - y * sin, x * sin + y * cos, z)
+            # Generic rotation about an axis
+            u, v, w = about.unit
+            return Vector(
+                u * (u * x + v * y + w * z) * (1 - cos) + x * cos + (-w * y + v * z) * sin,
+                v * (u * x + v * y + w * z) * (1 - cos) + y * cos + ( w * x - u * z) * sin,
+                w * (u * x + v * y + w * z) * (1 - cos) + z * cos + (-v * x + u * y) * sin)
+        # Generic rotation about an arbitrary line
+        a, b, c = origin
+        u, v, w = about.unit
+        return Vector(
+            (a * (v ** 2 + w ** 2) - u * (b * v + c * w - u * x - v * y - w * z)) * (1 - cos) + x * cos + (-c * v + b * w - w * y + v * z) * sin,
+            (b * (u ** 2 + w ** 2) - v * (a * u + c * w - u * x - v * y - w * z)) * (1 - cos) + y * cos + ( c * u - a * w + w * x - u * z) * sin,
+            (c * (u ** 2 + v ** 2) - w * (a * u + b * v - u * x - v * y - w * z)) * (1 - cos) + z * cos + (-b * u + a * v - v * x + u * y) * sin)
+
     @property
     def magnitude(self):
         """
@@ -385,10 +474,18 @@ class Vector(namedtuple('Vector', ('x', 'y', 'z'))):
 
         .. _unit vector: http://en.wikipedia.org/wiki/Unit_vector
         """
-        if self.magnitude > 0:
+        try:
             return self / self.magnitude
-        else:
+        except ZeroDivisionError:
             return self
+
+
+# Short-hand variants
+V = Vector
+O = V()
+X = V(x=1)
+Y = V(y=1)
+Z = V(z=1)
 
 
 # TODO Yes, I'm being lazy with total_ordering ... probably ought to define all
@@ -720,5 +817,4 @@ def rdiv(denom, result):
     if denom <= 0:
         raise ValueError('invalid denominator')
     return range(result * denom, result * denom + denom)
-
 

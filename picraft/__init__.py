@@ -87,7 +87,7 @@ from .exc import (
     NotSupported,
     EmptySliceWarning,
     )
-from .vector import Vector, vector_range
+from .vector import Vector, vector_range, V, O, X, Y, Z
 from .block import Block, BLOCK_COLORS
 from .events import BlockHitEvent
 from .connection import Connection
