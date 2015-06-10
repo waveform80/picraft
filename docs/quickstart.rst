@@ -221,9 +221,9 @@ In order to visualize the three different axes of vectors we'll now draw them
 each. Here we also use a capability of the :class:`~picraft.block.Block`
 constructor to create a block with a particular color::
 
-    >>> world.blocks[v:v + Vector(x=5) + 1] Block('#ff0000')
-    >>> world.blocks[v:v + Vector(y=5) + 1] Block('#00ff00')
-    >>> world.blocks[v:v + Vector(z=5) + 1] Block('#0000ff')
+    >>> world.blocks[v:v + Vector(x=5) + 1] = Block('#ff0000')
+    >>> world.blocks[v:v + Vector(y=5) + 1] = Block('#00ff00')
+    >>> world.blocks[v:v + Vector(z=5) + 1] = Block('#0000ff')
 
 .. image:: quick4.png
 
