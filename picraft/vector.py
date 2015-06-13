@@ -44,14 +44,7 @@ The following items are defined in the module:
 Vector
 ======
 
-.. autoclass:: Vector(x, y, z)
-
-
-vector_range
-============
-
-.. autoclass:: vector_range
-    :members:
+.. autoclass:: Vector(x=0, y=0, z=0)
 
 
 Short-hand variants
@@ -59,8 +52,8 @@ Short-hand variants
 
 The :class:`Vector` class is used sufficiently often to justify the inclusion
 of some shortcuts. The class itself is also available as ``V``, and vectors
-representing the three axes are each available as ``X``, ``Y``, and ``Z``. For
-example. Finally, a vector representing the origin is available as ``O``::
+representing the three axes are each available as ``X``, ``Y``, and ``Z``.
+Finally, a vector representing the origin is available as ``O``::
 
     >>> from picraft import V, O, X, Y, Z
     >>> O
@@ -75,6 +68,13 @@ example. Finally, a vector representing the origin is available as ``O``::
     3.0
     >>> X.rotate(90, about=Y)
     Vector(x=0.0, y=0.0, z=1.0)
+
+
+vector_range
+============
+
+.. autoclass:: vector_range
+    :members:
 """
 
 from __future__ import (
@@ -339,6 +339,23 @@ class Vector(namedtuple('Vector', ('x', 'y', 'z'))):
             math.ceil(self.y),
             math.ceil(self.z))
 
+    def round(self, ndigits=0):
+        """
+        Return the vector with the rounded value of each component. This is
+        only useful for vectors containing floating point components::
+
+            >>> Vector(0.5, -0.5, 1.2)
+            Vector(1.0, -1.0, 1.0)
+
+        The *ndigits* argument operates as it does in the built-in
+        :func:`round` function, specifying the number of decimal (or integer)
+        places to round to.
+        """
+        return Vector(
+            round(self.x, ndigits),
+            round(self.y, ndigits),
+            round(self.z, ndigits))
+
     def dot(self, other):
         """
         Return the `dot product`_ of the vector with the *other* vector. The
@@ -423,7 +440,9 @@ class Vector(namedtuple('Vector', ('x', 'y', 'z'))):
         For example::
 
             >>> Y.rotate(90, about=X)
-            Vector(x=0.0, y=0.0, z=1.0)
+            Vector(x=0, y=6.123233995736766e-17, z=1.0)
+            >>> Vector(3, 4, 5).rotate(30, about=X, origin=10 * Y)
+            Vector(x=3.0, y=2.3038475772933684, z=1.330127018922194)
 
         Information about rotation around arbitrary lines was obtained from
         `Glenn Murray's informative site`_.
