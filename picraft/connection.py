@@ -63,6 +63,8 @@ import select
 
 from .exc import CommandError, NoResponse, BatchStarted, BatchNotStarted
 
+logger = logging.getLogger('picraft')
+
 
 class Connection(object):
     """
@@ -204,7 +206,7 @@ class Connection(object):
         if self.ignore_errors:
             self._drain()
         self._wfile.write(buf)
-        logging.debug('picraft >: %r', buf)
+        logger.debug('>: %r', buf)
 
     def _receive(self, required=False):
         """
@@ -224,7 +226,7 @@ class Connection(object):
                 raise NoResponse('no response received')
             return
         result = self._rfile.readline()
-        logging.debug('picraft <: %r', result)
+        logger.debug('<: %r', result)
         result = result.decode(self.encoding).rstrip('\n')
         if result == 'Fail':
             raise CommandError('an error occurred')
@@ -307,14 +309,17 @@ class Connection(object):
         """
         if self._batch is None:
             raise BatchNotStarted('no batch in progress')
-        buf = '\n'.join(self._batch)
-        self._batch = None
-        self._send(buf)
         try:
-            if not self.ignore_errors:
-                self._receive()
+            if self._batch:
+                buf = '\n'.join(self._batch)
+                self._send(buf)
+                try:
+                    if not self.ignore_errors:
+                        self._receive()
+                finally:
+                    self._drain()
         finally:
-            self._drain()
+            self._batch = None
 
     def batch_forget(self):
         """
