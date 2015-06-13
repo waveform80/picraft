@@ -397,6 +397,8 @@ associated data of the block.
 
 See `Data Values (Pocket Edition)`_ for further information.
 
+.. _world.setBlocks:
+
 world.setBlocks
 ---------------
 

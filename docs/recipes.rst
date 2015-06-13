@@ -63,7 +63,7 @@ storing the state of each as a dict, this is quite easy:
 
 Note: this still isn't perfect. Ideally, we would identify contiguous blocks of
 coordinates to be updated which have the same block and set them all at the
-same time (which will utilize the :ref:`setBlocks` call for efficiency).
+same time (which will utilize the :ref:`world.setBlocks` call for efficiency).
 However, this is relatively complex to do well so I shall leave it as an
 exercise for you, dear reader!
 
