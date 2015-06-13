@@ -12,28 +12,24 @@ def animation_frames(count):
             v.rotate(15 * frame, about=X).round() + (5 * Y): Block('stone')
             for v in cube_range}
 
-def minimal_update(new_state, old_state=None, default=Block('air')):
-    if old_state is None:
-        old_state = {v: default for v in new_state}
-    changes = {}
-    for v, b in new_state.items():
-        if v in old_state and old_state[v] == b:
-            continue
-        changes[v] = b
-    for v, b in old_state.items():
-        if not v in new_state:
-            changes[v] = default
-    return changes, new_state
+
+def track_changes(states, default=Block('air')):
+    old_state = None
+    for state in states:
+        if old_state is None:
+            old_state = {v: default for v in state}
+        changes = {v: b for v, b in state.items() if old_state.get(v) != b}
+        changes.update({v: default for v in old_state if v not in state})
+        yield changes
+        old_state = state
 
 
 world = World()
 world.checkpoint.save()
 try:
-    state = None
-    for frame in animation_frames(20):
-        changes, state = minimal_update(frame, state)
+    for state in track_changes(animation_frames(20)):
         with world.connection.batch_start():
-            for v, b in changes.items():
+            for v, b in state.items():
                 world.blocks[v] = b
         sleep(0.2)
 finally:
