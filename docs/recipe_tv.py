@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-
 from __future__ import division
 
 import io
@@ -98,10 +96,5 @@ class MinecraftTV(object):
             o + V(0, 1, 1):o + self.size - V(0, 2, 2) + 1] = Block('#000000')
 
 
-def main():
-    tv = MinecraftTV(origin=V(2, 0, 5), size=(24,16))
-    tv.main_loop()
-
-
-if __name__ == '__main__':
-    main()
+tv = MinecraftTV(origin=V(2, 0, 5), size=(24,16))
+tv.main_loop()

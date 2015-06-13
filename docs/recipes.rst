@@ -26,6 +26,48 @@ faster because of this. This is necessary in a script like this where rapid
 reaction to player behaviour is required.
 
 
+Animation
+=========
+
+This recipe demonstrates, in a series of steps, the construction of a
+simplistic animation system in Minecraft. Our aim is to create a simple stone
+cube which rotates about the X axis somewhere in the air. Our first script uses
+:func:`~picraft.vector.vector_range` to obtain the coordinates of the cube,
+then uses the :meth:`~picraft.vector.Vector.rotate` method to rotate them about
+the X axis.
+
+We represent the state of a frame of our animation as a dict which maps
+coordinates (in the form of :class:`~picraft.vector.Vector` instances) to
+:class:`~picraft.block.Block` instances:
+
+.. literalinclude:: recipe_anim1.py
+
+As you can see in the script above we draw the first frame, wait for a bit,
+then wipe the frame by setting all coordinates in that frame's state back to
+"air". Then we draw the second frame and wait for a bit.
+
+Although this approach works, it's obviously very long winded for lots of
+frames. What we want to do is calculate the state of each frame in a function.
+This next version demonstrates this approach; we use a generator function to
+yield the state of each frame in turn so we can iterate over the frames with
+a simple ``for`` loop:
+
+.. literalinclude:: recipe_anim2.py
+
+That's more like it, but the updates aren't terribly fast despite using the
+batch functionality. In order to improve this we should only update those
+blocks which have actually changed between each frame. Thankfully, because we're
+storing the state of each as a dict, this is quite easy:
+
+.. literalinclude:: recipe_anim3.py
+
+Note: this still isn't perfect. Ideally, we would identify contiguous blocks of
+coordinates to be updated which have the same block and set them all at the
+same time (which will utilize the :ref:`setBlocks` call for efficiency).
+However, this is relatively complex to do well so I shall leave it as an
+exercise for you, dear reader!
+
+
 Minecraft TV
 ============
 
