@@ -174,7 +174,7 @@ def test_vector_ceil():
 
 def test_vector_round():
     assert fp_vectors_equal(Vector(1, 2, 3).round(), Vector(1, 2, 3))
-    assert fp_vectors_equal(Vector(1.1, 2.5, -1.1).round(), Vector(1, 3, -1))
+    assert fp_vectors_equal(Vector(1.1, 3.5, -1.1).round(), Vector(1, 4, -1))
     assert fp_vectors_equal(Vector(1.9, 0.0, -1.9).round(), Vector(2, 0, -2))
     assert fp_vectors_equal(Vector(1.9, 0.0, -1.9).round(1), Vector(1.9, 0.0, -1.9))
     assert fp_vectors_equal(Vector(1.9, 0.0, -1.9).round(-1), Vector(0, 0, 0))
