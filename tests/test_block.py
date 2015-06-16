@@ -120,18 +120,39 @@ def test_block_desc():
 def test_blocks_get_one():
     conn = mock.MagicMock()
     conn.transact.return_value = '1,1'
-    picraft.block.Blocks(conn)[Vector(1, 2, 3)]
+    assert picraft.block.Blocks(conn)[Vector(1, 2, 3)] == Block(1, 1)
     conn.transact.assert_called_once_with('world.getBlockWithData(1,2,3)')
 
 def test_blocks_get_many():
-    conn = mock.MagicMock()
-    conn.transact.return_value = '1,1'
     v_from = Vector(1, 2, 3)
     v_to = Vector(2, 3, 5)
-    picraft.block.Blocks(conn)[v_from:v_to]
+    conn = mock.MagicMock()
+    conn.transact.return_value = '1,1'
+    assert picraft.block.Blocks(conn)[v_from:v_to] == [
+            Block(1, 1) for v in vector_range(v_from, v_to)]
     for v in vector_range(v_from, v_to):
         conn.transact.assert_any_call(
                 'world.getBlockWithData(%d,%d,%d)' % (v.x, v.y, v.z))
+
+def test_blocks_get_many_fast():
+    v_from = Vector(1, 2, 3)
+    v_to = Vector(2, 3, 5)
+    conn = mock.MagicMock()
+    conn.server_version = 'raspberry-juice'
+    conn.transact.return_value = '1,1'
+    picraft.block.Blocks(conn)[v_from:v_to] == [
+            Block(1, 0) for v in vector_range(v_from, v_to)]
+    conn.transact.assert_called_once_with(
+            'world.getBlocks(%s,%s)' % (v_from, v_to - 1))
+
+def test_blocks_get_none():
+    conn = mock.MagicMock()
+    v_from = Vector(1, 2, 3)
+    v_to = Vector(2, 3, 5)
+    with warnings.catch_warnings():
+        warnings.simplefilter('error')
+        with pytest.raises(EmptySliceWarning):
+            picraft.block.Blocks(conn)[v_to:v_from]
 
 def test_blocks_set_none():
     conn = mock.MagicMock()
