@@ -37,7 +37,8 @@ str = type('')
 
 
 import pytest
-from picraft import Vector, vector_range
+from .conftest import fp_equal, fp_vectors_equal
+from picraft import Vector, vector_range, O, X, Y, Z
 from picraft.vector import rmod, rdiv
 from picraft.compat import range
 
@@ -78,8 +79,8 @@ def test_vector_mul():
     assert 3 * Vector(1, 2, 3) == Vector(3, 6, 9)
 
 def test_vector_truediv():
-    assert Vector(1, 2, 3) / Vector(2, 2, 2) == Vector(0.5, 1, 1.5)
-    assert Vector(1, 2, 3) / 2 == Vector(0.5, 1, 1.5)
+    assert fp_vectors_equal(Vector(1, 2, 3) / Vector(2, 2, 2), Vector(0.5, 1, 1.5))
+    assert fp_vectors_equal(Vector(1, 2, 3) / 2, Vector(0.5, 1, 1.5))
     with pytest.raises(TypeError):
         2 / Vector(1, 2, 3)
 
@@ -170,6 +171,35 @@ def test_vector_ceil():
     assert Vector(1, 2, 3).ceil() == Vector(1, 2, 3)
     assert Vector(1.1, 2.5, -1.1).ceil() == Vector(2, 3, -1)
     assert Vector(1.9, 0.0, -1.9).ceil() == Vector(2, 0, -1)
+
+def test_vector_round():
+    assert fp_vectors_equal(Vector(1, 2, 3).round(), Vector(1, 2, 3))
+    assert fp_vectors_equal(Vector(1.1, 2.5, -1.1).round(), Vector(1, 3, -1))
+    assert fp_vectors_equal(Vector(1.9, 0.0, -1.9).round(), Vector(2, 0, -2))
+    assert fp_vectors_equal(Vector(1.9, 0.0, -1.9).round(1), Vector(1.9, 0.0, -1.9))
+    assert fp_vectors_equal(Vector(1.9, 0.0, -1.9).round(-1), Vector(0, 0, 0))
+
+def test_vector_angle_between():
+    assert fp_equal(X.angle_between(Y), 90.0)
+    assert fp_equal(Y.angle_between(Z), 90.0)
+    assert fp_equal((X + Y).angle_between(X), 45.0)
+
+def test_vector_project():
+    assert fp_equal(X.project(X), 1.0)
+    assert fp_equal(X.project(Y), 0.0)
+    assert fp_equal(X.project(Z), 0.0)
+    assert fp_equal(Vector(1, 2, 3).project(2 * Y), 2.0)
+    assert fp_equal(Vector(3, 4, 5).project(Vector(3, 4, 0)), 5.0)
+
+def test_vector_rotate():
+    assert fp_vectors_equal(X.rotate(90, about=X), X)
+    assert fp_vectors_equal(X.rotate(90, about=Y), -Z)
+    assert fp_vectors_equal(X.rotate(90, about=Z), Y)
+    assert fp_vectors_equal(X.rotate(90, about=-X), X)
+    assert fp_vectors_equal(X.rotate(90, about=-Y), Z)
+    assert fp_vectors_equal(X.rotate(90, about=-Z), -Y)
+    assert fp_vectors_equal(X.rotate(180, about=X + Y), Y)
+    assert fp_vectors_equal(O.rotate(180, about=Y, origin=Z), 2*Z)
 
 def test_vector_range_init():
     v = vector_range(Vector() + 2)

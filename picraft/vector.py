@@ -188,9 +188,9 @@ class Vector(namedtuple('Vector', ('x', 'y', 'z'))):
 
     .. automethod:: distance_to
 
-    .. automethod:: projection
-
     .. automethod:: angle_between
+
+    .. automethod:: project
 
     .. automethod:: rotate
 
@@ -418,14 +418,16 @@ class Vector(namedtuple('Vector', ('x', 'y', 'z'))):
         """
         return math.degrees(math.acos(self.unit.dot(other.unit)))
 
-    def projection(self, other):
+    def project(self, other):
         """
         Return the `scalar projection`_ of this vector onto the *other* vector.
         This is a scalar indicating the length of this vector in the direction
         of the *other* vector. For example::
 
-            >>> Vector(1, 2, 3).projection(2 * Y)
+            >>> Vector(1, 2, 3).project(2 * Y)
             2.0
+            >>> Vector(3, 4, 5).project(Vector(3, 4, 0))
+            5.0
 
         .. _scalar projection: https://en.wikipedia.org/wiki/Scalar_projection
         """
@@ -433,11 +435,11 @@ class Vector(namedtuple('Vector', ('x', 'y', 'z'))):
 
     def rotate(self, angle, about, origin=None):
         """
-        Return this vector after rotation of *angle* degrees about the line
-        passing through *origin* and *about*. Origin defaults to the vector
-        0, 0, 0. Hence, if this parameter is omitted this method calculates
-        rotation about the axis (through the origin) defined by *about*.
-        For example::
+        Return this vector after `rotation`_ of *angle* degrees about the line
+        passing through *origin* in the direction *about*. Origin defaults to
+        the vector 0, 0, 0. Hence, if this parameter is omitted this method
+        calculates rotation about the axis (through the origin) defined by
+        *about*.  For example::
 
             >>> Y.rotate(90, about=X)
             Vector(x=0, y=6.123233995736766e-17, z=1.0)
@@ -447,6 +449,7 @@ class Vector(namedtuple('Vector', ('x', 'y', 'z'))):
         Information about rotation around arbitrary lines was obtained from
         `Glenn Murray's informative site`_.
 
+        .. _rotation: https://en.wikipedia.org/wiki/Rotation_group_SO%283%29
         .. _Glenn Murray's informative site: http://inside.mines.edu/fs_home/gmurray/ArbitraryAxisRotation/
         """
         r = math.radians(angle)
@@ -454,19 +457,26 @@ class Vector(namedtuple('Vector', ('x', 'y', 'z'))):
         cos = math.cos(r)
         x, y, z = self
         if origin is None:
+            # Fast-paths: rotation about a specific unit axis
             if about == X:
                 return Vector(x, y * cos - z * sin, y * sin + z * cos)
             elif about == Y:
                 return Vector(z * sin + x * cos, y, z * cos - x * sin)
             elif about == Z:
                 return Vector(x * cos - y * sin, x * sin + y * cos, z)
-            # Generic rotation about an axis
+            elif about == negX:
+                return Vector(x, y * cos + z * sin, z * cos - y * sin)
+            elif about == negY:
+                return Vector(x * cos - z * sin, y, z * cos + x * sin)
+            elif about == negZ:
+                return Vector(x * cos + y * sin, y * cos - x * sin, z)
+            # Rotation about an arbitrary axis
             u, v, w = about.unit
             return Vector(
                 u * (u * x + v * y + w * z) * (1 - cos) + x * cos + (-w * y + v * z) * sin,
                 v * (u * x + v * y + w * z) * (1 - cos) + y * cos + ( w * x - u * z) * sin,
                 w * (u * x + v * y + w * z) * (1 - cos) + z * cos + (-v * x + u * y) * sin)
-        # Generic rotation about an arbitrary line
+        # Rotation about an arbitrary line
         a, b, c = origin
         u, v, w = about.unit
         return Vector(
@@ -518,6 +528,11 @@ O = V()
 X = V(x=1)
 Y = V(y=1)
 Z = V(z=1)
+# These aren't exposed as short-hands; they're only pre-calculated here to
+# speed up the fast-paths in the rotate() method
+negX = V(x=-1)
+negY = V(y=-1)
+negZ = V(z=-1)
 
 
 # TODO Yes, I'm being lazy with total_ordering ... probably ought to define all
