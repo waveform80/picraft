@@ -45,6 +45,7 @@ from __future__ import (
 str = type('')
 
 
+from itertools import islice
 from picraft.vector import Vector
 
 
@@ -57,8 +58,11 @@ def sign(v):
 
 def line(start, end):
     """
-    A 3-dimensional implementation of `Bresenham's line algorithm`_,
-    derived largely from `Bob Pendelton's implementation`_ (public domain).
+    A 3-dimensional implementation of `Bresenham's line algorithm`_, derived
+    largely from `Bob Pendelton's implementation`_ (public domain).  Given the
+    end points of the line as the *start* and *end* vectors, this generator
+    function yields the coordinate of each block (inclusive of the *start* and
+    *end* vectors) that must be filled in to render the line.
 
     .. _Bresenham's line algorithm: https://en.wikipedia.org/wiki/Bresenham%27s_line_algorithm
     .. _Bob Pendelton's implementation: ftp://ftp.isc.org/pub/usenet/comp.sources.unix/volume26/line3d
@@ -101,4 +105,27 @@ def line(start, end):
             pos[sub_axis2] += pos_inc[sub_axis2]
             error[sub_axis2] -= error_dec
         error[sub_axis2] += error_inc[sub_axis2]
+
+def lines(points, closed=True):
+    """
+    Extension of the :func:`line` function which returns all vectors necessary
+    to render the lines connecting the specified *points*. If the optional
+    *closed* parameter is ``True`` (the default) the last point in the *points*
+    sequence will be connected to the first point. Otherwise, the lines will be
+    left disconnected (assuming the last point is not coincident with the
+    first).
+    """
+    first = None
+    start = None
+    for point in points:
+        if start is None:
+            first = point
+            yield first
+        else:
+            for v in islice(line(start, point), 1, None):
+                yield v
+        start = point
+    if closed and first != point:
+        for v in islice(line(point, first), 1, None):
+            yield v
 
