@@ -37,6 +37,7 @@ str = type('')
 
 
 import pytest
+import math
 from .conftest import fp_equal, fp_vectors_equal
 from picraft import Vector, vector_range, O, X, Y, Z
 from picraft.vector import rmod, rdiv
@@ -161,6 +162,11 @@ def test_vector_replace():
     assert Vector(1, 2, 3).replace() == Vector(1, 2, 3)
     assert Vector(1, 2, 3).replace(2, 4, 6) == Vector(2, 4, 6)
     assert Vector(1, 2, 3).replace(z=-1) == Vector(1, 2, -1)
+
+def test_vector_trunc():
+    assert math.trunc(Vector(1, 2, 3)) == Vector(1, 2, 3)
+    assert math.trunc(Vector(1.1, 2.5, -1.1)) == Vector(1, 2, -1)
+    assert math.trunc(Vector(1.9, 0.0, -1.9)) == Vector(1, 0, -1)
 
 def test_vector_floor():
     assert Vector(1, 2, 3).floor() == Vector(1, 2, 3)

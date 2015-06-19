@@ -265,11 +265,29 @@ class Vector(namedtuple('Vector', ('x', 'y', 'z'))):
         except AttributeError:
             return Vector(self.x % other, self.y % other, self.z % other)
 
-    def __pow__(self, other):
+    def __pow__(self, other, modulo=None):
+        if modulo is not None:
+            try:
+                # XXX What about other vector, modulo scalar, and other scalar, modulo vector?
+                return Vector(
+                        pow(self.x, other.x, modulo.x),
+                        pow(self.y, other.y, modulo.y),
+                        pow(self.z, other.z, modulo.z))
+            except AttributeError:
+                return Vector(
+                        pow(self.x, other, modulo),
+                        pow(self.y, other, modulo),
+                        pow(self.z, other, modulo))
         try:
-            return Vector(self.x ** other.x, self.y ** other.y, self.z ** other.z)
+            return Vector(
+                    pow(self.x, other.x),
+                    pow(self.y, other.y),
+                    pow(self.z, other.z))
         except AttributeError:
-            return Vector(self.x ** other, self.y ** other, self.z ** other)
+            return Vector(
+                    pow(self.x, other),
+                    pow(self.y, other),
+                    pow(self.z, other))
 
     def __lshift__(self, other):
         try:
@@ -283,6 +301,24 @@ class Vector(namedtuple('Vector', ('x', 'y', 'z'))):
         except AttributeError:
             return Vector(self.x >> other, self.y >> other, self.z >> other)
 
+    def __and__(self, other):
+        try:
+            return Vector(self.x & other.x, self.y & other.y, self.z & other.z)
+        except AttributeError:
+            return Vector(self.x & other, self.y & other, self.z & other)
+
+    def __xor__(self, other):
+        try:
+            return Vector(self.x ^ other.x, self.y ^ other.y, self.z ^ other.z)
+        except AttributeError:
+            return Vector(self.x ^ other, self.y ^ other, self.z ^ other)
+
+    def __or__(self, other):
+        try:
+            return Vector(self.x | other.x, self.y | other.y, self.z | other.z)
+        except AttributeError:
+            return Vector(self.x | other, self.y | other, self.z | other)
+
     def __neg__(self):
         return Vector(-self.x, -self.y, -self.z)
 
@@ -294,6 +330,9 @@ class Vector(namedtuple('Vector', ('x', 'y', 'z'))):
 
     def __bool__(self):
         return bool(self.x or self.y or self.z)
+
+    def __trunc__(self):
+        return Vector(math.trunc(self.x), math.trunc(self.y), math.trunc(self.z))
 
     # Py2 compat
     __nonzero__ = __bool__
