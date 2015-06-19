@@ -99,7 +99,10 @@ def test_vector_mod():
 
 def test_vector_pow():
     assert Vector(1, 2, 3) ** Vector(2, 2, 2) == Vector(1, 4, 9)
+    assert Vector(1, 2, 3) ** Vector(2, 2, 2) == Vector(1, 4, 9)
+    assert pow(Vector(1, 2, 3), Vector(2, 2, 2), Vector(5, 5, 5)) == Vector(1, 4, 4)
     assert Vector(1, 2, 3) ** 2 == Vector(1, 4, 9)
+    assert pow(Vector(1, 2, 3), 2, 5) == Vector(1, 4, 4)
     with pytest.raises(TypeError):
         2 ** Vector(1, 2, 3)
 
@@ -114,6 +117,21 @@ def test_vector_rshift():
     assert Vector(2, 8, 16) >> 1 == Vector(1, 4, 8)
     with pytest.raises(TypeError):
         2 >> Vector(1, 1, 1)
+
+def test_vector_and():
+    assert Vector(1, 2, 3) & Vector(1, 1, 1) == Vector(1, 0, 1)
+    assert Vector(4, 4, 4) & Vector(0x7fff, 0, 0) == Vector(4, 0, 0)
+    assert Vector(1, 2, 3) & 1 == Vector(1, 0, 1)
+
+def test_vector_xor():
+    assert Vector(1, 2, 3) ^ Vector(1, 1, 1) == Vector(0, 3, 2)
+    assert Vector(4, 4, 4) ^ Vector(4, 4, 4) == Vector(0, 0, 0)
+    assert Vector(1, 2, 3) ^ 1 == Vector(0, 3, 2)
+
+def test_vector_or():
+    assert Vector(1, 2, 3) | Vector(1, 1, 1) == Vector(1, 3, 3)
+    assert Vector(4, 4, 4) | Vector(1, 2, 3) == Vector(5, 6, 7)
+    assert Vector(1, 2, 3) | 1 == Vector(1, 3, 3)
 
 def test_vector_neg():
     assert -Vector(1, 1, 1) == Vector(-1, -1, -1)
