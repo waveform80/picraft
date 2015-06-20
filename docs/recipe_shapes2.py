@@ -1,7 +1,7 @@
 from __future__ import division
 
+import math
 from picraft import World, Vector, O, X, Y, Z, lines
-
 
 def polygon(sides, center=O, radius=5):
     angle = 2 * math.pi / sides
