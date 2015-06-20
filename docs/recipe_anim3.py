@@ -1,7 +1,7 @@
 from __future__ import division
 
 from time import sleep
-from picraft import *
+from picraft import World, Vector, X, Y, Z, vector_range, Block
 
 
 def animation_frames(count):

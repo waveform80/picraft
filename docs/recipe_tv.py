@@ -3,7 +3,7 @@ from __future__ import division
 import io
 import time
 import picamera
-from picraft import World, Vector as V, Block
+from picraft import World, V, Block
 from picraft.block import _BLOCKS_BY_COLOR
 from PIL import Image
 

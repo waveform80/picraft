@@ -26,6 +26,37 @@ faster because of this. This is necessary in a script like this where rapid
 reaction to player behaviour is required.
 
 
+Shapes
+======
+
+This recipe demonstrates drawing shapes with blocks in the Minecraft world. The
+picraft library includes a couple of rudimentary routines for calculating the
+points necessary for drawing lines:
+
+* :func:`~picraft.vector.line` which can be used to calculate the positions
+  along a single line
+
+* :func:`~picraft.vector.lines` which calculates the positions along a series
+  of lines
+
+Here we will attempt to construct a script which draws each regular polygon
+from an equilateral triangle up to a regular octagon. First we start by
+defining a function which will generate the points of a regular polygon. This
+is relatively simple: the interior angles of a polygon always add up to 180
+degrees so the angle to turn each time is 180 divided by the number of sides.
+Given an origin and a side-length it's a simple matter to iterate over each
+side generating the necessary point:
+
+.. literalinclude:: recipe_shapes1.py
+
+Next we need a function which will iterate over the number of sides for each
+required polygon, using the :func:`~picraft.vector.lines` function to generate
+the points required to draw the shape. Then it's a simple matter to draw each
+polygon in turn, wiping it before displaying the next one:
+
+.. literalinclude:: recipe_shapes2.py
+
+
 Animation
 =========
 
