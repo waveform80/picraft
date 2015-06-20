@@ -6,8 +6,7 @@ from picraft import *
 world = World()
 world.checkpoint.save()
 try:
-    cube_range = vector_range(
-        Vector() - 2, Vector() + 2 + 1)
+    cube_range = vector_range(Vector() - 2, Vector() + 2 + 1)
     # Draw frame 1
     state = {}
     for v in cube_range:

@@ -56,8 +56,8 @@ a simple ``for`` loop:
 
 That's more like it, but the updates aren't terribly fast despite using the
 batch functionality. In order to improve this we should only update those
-blocks which have actually changed between each frame. Thankfully, because we're
-storing the state of each as a dict, this is quite easy:
+blocks which have actually changed between each frame. Thankfully, because
+we're storing the state of each as a dict, this is quite easy:
 
 .. literalinclude:: recipe_anim3.py
 

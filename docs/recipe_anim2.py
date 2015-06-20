@@ -5,8 +5,7 @@ from picraft import *
 
 
 def animation_frames(count):
-    cube_range = vector_range(
-        Vector() - 2, Vector() + 2 + 1)
+    cube_range = vector_range(Vector() - 2, Vector() + 2 + 1)
     for frame in range(count):
         state = {}
         for v in cube_range:
