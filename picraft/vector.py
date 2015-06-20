@@ -30,7 +30,7 @@
 """
 The vector module defines the :class:`Vector` class, which is the usual method
 of represent coordinates or vectors when dealing with the Minecraft world. It
-also provides the :func:`vector_range` function for generating a sequence of
+also provides functions like :func:`vector_range` for generating sequences of
 vectors.
 
 .. note::
@@ -75,6 +75,18 @@ vector_range
 
 .. autoclass:: vector_range
     :members:
+
+
+line
+====
+
+.. autofunction:: line
+
+
+lines
+=====
+
+.. autofunction:: lines
 """
 
 from __future__ import (
@@ -91,10 +103,10 @@ import math
 from functools import total_ordering
 from collections import namedtuple
 try:
-    from itertools import zip_longest
+    from itertools import zip_longest, islice
 except ImportError:
     # Py2 compat
-    from itertools import izip_longest as zip_longest
+    from itertools import izip_longest as zip_longest, islice
 try:
     from collections.abc import Sequence
 except ImportError:
@@ -903,4 +915,123 @@ def rdiv(denom, result):
     if denom <= 0:
         raise ValueError('invalid denominator')
     return range(result * denom, result * denom + denom)
+
+
+def sign(v):
+    """
+    Returns the sign of v as -1, 0, or 1; works for scalar values or
+    :class:`Vector` instances.
+    """
+    try:
+        return Vector(sign(v.x), sign(v.y), sign(v.z))
+    except AttributeError:
+        return 1 if v > 0 else -1 if v < 0 else 0
+
+
+def line(start, end):
+    """
+    A three-dimensional implementation of `Bresenham's line algorithm`_,
+    derived largely from `Bob Pendelton's implementation`_ (public domain).
+    Given the end points of the line as the *start* and *end* vectors, this
+    generator function yields the coordinate of each block (inclusive of the
+    *start* and *end* vectors) that should be filled in to render the line.
+
+    For example::
+
+        >>> list(line(O, V(10, 5, 0)))
+        [Vector(x=0, y=0, z=0),
+         Vector(x=1, y=1, z=0),
+         Vector(x=2, y=1, z=0),
+         Vector(x=3, y=2, z=0),
+         Vector(x=4, y=2, z=0),
+         Vector(x=5, y=3, z=0),
+         Vector(x=6, y=3, z=0),
+         Vector(x=7, y=4, z=0),
+         Vector(x=8, y=4, z=0),
+         Vector(x=9, y=5, z=0),
+         Vector(x=10, y=5, z=0)]
+
+    .. _Bresenham's line algorithm: https://en.wikipedia.org/wiki/Bresenham%27s_line_algorithm
+    .. _Bob Pendelton's implementation: ftp://ftp.isc.org/pub/usenet/comp.sources.unix/volume26/line3d
+    """
+    delta = end - start
+    # Calculate the amount to increment each axis by; only the dominant axis
+    # will advance by this amount on *every* iteration. Other axes will only
+    # increment when the error demands it
+    pos_inc = sign(delta)
+    # Set up a vector containing the error incrementor. This will be added to
+    # values tracking the axis error on each iteration
+    error_inc = abs(delta) << 1
+    # Calculate the subordinate and dominant axes. The dominant axis is simply
+    # the one in which we must move furthest
+    sub_axis1, sub_axis2, dominant_axis = sorted(
+            'xyz', key=lambda axis: getattr(error_inc, axis))
+    # Set up the error decrementor. This will be subtracted from the error
+    # values when they turn positive (indicating that the corresponding axis
+    # should advance)
+    error_dec = getattr(error_inc, dominant_axis)
+    # Set up a vector to track the error (this is only really required for the
+    # subordinate axes)
+    error = error_inc - (error_dec >> 1)
+    # Convert vectors to dicts for the remainder of the algorithm
+    error = error._asdict()
+    error_inc = error_inc._asdict()
+    pos_inc = pos_inc._asdict()
+    pos = start._asdict()
+    end = getattr(end, dominant_axis)
+    while True:
+        yield Vector(**pos)
+        if pos[dominant_axis] == end:
+            break
+        pos[dominant_axis] += pos_inc[dominant_axis]
+        if error[sub_axis1] >= 0:
+            pos[sub_axis1] += pos_inc[sub_axis1]
+            error[sub_axis1] -= error_dec
+        error[sub_axis1] += error_inc[sub_axis1]
+        if error[sub_axis2] >= 0:
+            pos[sub_axis2] += pos_inc[sub_axis2]
+            error[sub_axis2] -= error_dec
+        error[sub_axis2] += error_inc[sub_axis2]
+
+
+def lines(points, closed=True):
+    """
+    Extension of the :func:`line` function which returns all vectors necessary
+    to render the lines connecting the specified *points* (which is an iterable
+    of :class:`Vector` instances).
+
+    If the optional *closed* parameter is ``True`` (the default) the last point
+    in the *points* sequence will be connected to the first point. Otherwise,
+    the lines will be left disconnected (assuming the last point is not
+    coincident with the first). For example::
+
+        >>> points = [O, 4*X, 4*Z]
+        >>> list(lines(points))
+        [Vector(x=0, y=0, z=0),
+         Vector(x=1, y=0, z=0),
+         Vector(x=2, y=0, z=0),
+         Vector(x=3, y=0, z=0),
+         Vector(x=4, y=0, z=0),
+         Vector(x=3, y=0, z=1),
+         Vector(x=2, y=0, z=2),
+         Vector(x=1, y=0, z=3),
+         Vector(x=0, y=0, z=4),
+         Vector(x=0, y=0, z=3),
+         Vector(x=0, y=0, z=2),
+         Vector(x=0, y=0, z=1),
+         Vector(x=0, y=0, z=0)]
+    """
+    first = None
+    start = None
+    for point in points:
+        if start is None:
+            first = point
+            yield first
+        else:
+            for v in islice(line(start, point), 1, None):
+                yield v
+        start = point
+    if closed and first != point:
+        for v in islice(line(point, first), 1, None):
+            yield v
 
