@@ -625,19 +625,20 @@ class vector_range(Sequence):
     usually cause the resulting sequence to violate that pattern).
 
     Vector ranges are extremely efficient compared to an equivalent
-    :class:`list` or :class:`tuple` as they take a small (fixed) amount of
+    :func:`list` or :func:`tuple` as they take a small (fixed) amount of
     memory, storing only the arguments passed in its construction and
     calculating individual items and sub-ranges as requested.
 
-    Vector range objects implement the :class:`collections.abc.Sequence` ABC,
+    Vector range objects implement the :class:`collections.Sequence` ABC,
     and provide features such as containment tests, element index lookup,
     slicing and support for negative indices.
 
     The default order (``'zxy'``) may seem an odd choice. This is primarily
     used as it's the order used by the Raspberry Juice server when returning
-    results from the ``getBlocks`` call. In turn, Raspberry Juice probably uses
-    this order as it results in returning a horizontal layer of vectors at a
-    time (given the Y-axis is used for height in the Minecraft world).
+    results from the :ref:`world.getBlocks` call. In turn, Raspberry Juice
+    probably uses this order as it results in returning a horizontal layer of
+    vectors at a time (given the Y-axis is used for height in the Minecraft
+    world).
 
     .. warning::
 
@@ -647,7 +648,7 @@ class vector_range(Sequence):
         *stop*, and *step* attributes (and thus contain the same vectors, but
         in a different order).
 
-    Vector ranges can be accessed by integer index, by :class`Vector` index,
+    Vector ranges can be accessed by integer index, by :class:`Vector` index,
     or by a slice of vectors. For example::
 
         >>> v = vector_range(Vector() + 1, Vector() + 3)
