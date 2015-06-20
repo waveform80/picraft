@@ -185,19 +185,20 @@ class World(object):
         """
         Represents the height of the Minecraft world.
 
-        This property can be queried to determine the height of the world
-        at any location. The property can be indexed with a single
-        :class:`Vector`, in which case the height will be returned as a
-        vector with the same X and Z coordinates, but a Y coordinate adjusted
-        to the first non-air block from the top of the world::
+        This property can be queried to determine the height of the world at
+        any location. The property can be indexed with a single
+        :class:`~picraft.vector.Vector`, in which case the height will be
+        returned as a vector with the same X and Z coordinates, but a Y
+        coordinate adjusted to the first non-air block from the top of the
+        world::
 
             >>> world.height[Vector(0, -10, 0)]
             Vector(x=0, y=0, z=0)
 
         Alternatively, a slice of two vectors can be used. In this case, the
-        property returns a sequence of :class:`Vector` objects each with their
-        Y coordinates adjusted to the height of the world at the respective
-        X and Z coordinates.
+        property returns a sequence of :class:`~picraft.vector.Vector` objects
+        each with their Y coordinates adjusted to the height of the world at
+        the respective X and Z coordinates.
         """
         return self._height
 
@@ -206,9 +207,9 @@ class World(object):
         """
         Represents the camera of the Minecraft world.
 
-        This property has several methods and attributes to control the
-        position of the virtual camera in the Minecraft world. For example,
-        to position the camera directly above the host player::
+        The :class:`Camera` object contained in this property permits control
+        of the position of the virtual camera in the Minecraft world. For
+        example, to position the camera directly above the host player::
 
             >>> world.camera.third_person(world.player)
 
@@ -271,17 +272,23 @@ class World(object):
         """
         Provides an interface to poll events that occur in the Minecraft world.
 
-        This property contains two methods: :meth:`~picraft.events.Events.poll`
-        which can be used to determine what events have occurred in the
-        Minecraft world since the last call to ``poll``, and
-        :meth:`~picraft.events.Events.clear` which can be used to tell the
-        server to forget any as-yet-unreported events. For example::
+        The :class:`~picraft.events.Events` object contained in this property
+        provides two methods:
+
+        * :meth:`~picraft.events.Events.poll` which can be used to determine
+          what events have occurred in the Minecraft world since the last call
+          to ``poll``, and
+
+        * :meth:`~picraft.events.Events.clear` which can be used to tell the
+          server to forget any as-yet-unreported events
+
+        For example::
 
             >>> events = world.events.poll()
             >>> len(events)
             3
             >>> events[0]
-            <BlockHit pos=1,1,1 face="top" player=1>
+            <BlockHit pos=1,1,1 face="x+" player=1>
             >>> events[0].player.pos
             <Vector x=0.5, y=0.0, z=0.5>
         """
@@ -292,8 +299,8 @@ class World(object):
         """
         Represents the Minecraft world checkpoint system.
 
-        The :class:`Checkpoint` object returned by this attribute provides
-        the ability to save and restore the state of the world at any time::
+        The :class:`Checkpoint` object contained in this attribute provides the
+        ability to save and restore the state of the world at any time::
 
             >>> world.checkpoint.save()
             >>> world.blocks[Vector()] = Block.from_name('stone')

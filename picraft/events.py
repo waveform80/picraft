@@ -91,10 +91,11 @@ class BlockHitEvent(namedtuple('BlockHitEvent', ('pos', 'face', 'player'))):
 
     .. attribute:: face
 
-        A string indicating which face of the block was struck. This can be one
+        A string indicating which side of the block was struck. This can be one
         of six values: 'x+', 'x-', 'y+', 'y-', 'z+', or 'z-'. The value
-        indicates which axis moves in which direction if one travelled away
-        from the block in the direction of the face.
+        indicates the axis, and direction along that axis, that the side faces:
+
+        .. image:: block_faces.png
 
     .. attribute:: player
 
@@ -128,9 +129,30 @@ class Events(object):
         self._connection = connection
 
     def clear(self):
+        """
+        Forget all pending events that have not yet been retrieved with
+        :meth:`poll`.
+
+        This method is used to clear the list of block-hit events that have
+        occurred since the last call to :meth:`poll` with retrieving them. This
+        is useful for ensuring that events subsequently retrieved definitely
+        occurred *after* the call to :meth:`clear`.
+        """
         self._connection.send('events.clear()')
 
     def poll(self):
+        """
+        Return a list of all events that have occurred since the last call to
+        :meth:`poll`. Currently the only type of event supported is the
+        block-hit event represented by instances of :class:`BlockHitEvent`.
+
+        For example::
+
+            >>> w = World()
+            >>> w.events.poll()
+            [<BlockHit pos=1,1,1 face="x+" player=1>,
+             <BlockHit pos=1,1,1 face="x+" player=1>]
+        """
         events = self._connection.transact('events.block.hits()')
         if events:
             return [
