@@ -43,7 +43,13 @@ Exceptions
 
 .. autoexception:: Error
 
+.. autoexception:: NotSupported
+
 .. autoexception:: ConnectionError
+
+.. autoexception:: CommandError
+
+.. autoexception:: NoResponse
 
 .. autoexception:: BatchStarted
 
