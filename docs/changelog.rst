@@ -5,6 +5,22 @@ Change log
 ==========
 
 
+Release 0.3 (2015-06-21)
+========================
+
+Release 0.3 adds several new features:
+
+* Add support for querying a range of blocks with one transaction on the
+  Raspberry Juice server (`#1`_)
+* Add support for rotation of vectors about an arbitrary line (`#6`_)
+* Add bitwise operations and rounding of vectors
+* Lots of documentation updates (fixes to links, new recipes, events documented
+  properly, etc.)
+
+.. _#1: https://github.com/waveform80/picraft/issues/1
+.. _#6: https://github.com/waveform80/picraft/issues/6
+
+
 Release 0.2 (2015-06-08)
 ========================
 
