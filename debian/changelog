@@ -1,3 +1,14 @@
+picraft (0.3-1) stable; urgency=low
+
+  * Add support for querying a range of blocks with one transaction on the
+    Raspberry Juice server (#1)
+  * Add support for rotation of vectors about an arbitrary line (#6)
+  * Add bitwise operations and rounding of vectors
+  * Lots of documentation updates (fixes to links, new recipes, events
+    documented properly, etc.)
+
+ -- Dave Jones <dave@waveform.org.uk>  Sun, 21 Jun 2015 22:05:03 +0100
+
 picraft (0.2-1) stable; urgency=low
 
   * Fix a stupid error which caused "block.data" and "block.color" (which make
