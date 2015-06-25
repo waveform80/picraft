@@ -5,6 +5,154 @@ Recipes
 =======
 
 
+Vectors
+=======
+
+Vectors are a crucial part of working with picraft; sufficiently important to
+demand their own section
+
+The picraft :class:`~picraft.vector.Vector` class is extremely flexible and
+supports a wide variety of operations. All Python's built-in operations
+(addition, subtraction, division, multiplication, modulus, absolute, bitwise
+operations, etc.) are supported between two vectors, in which case the
+operation is performed element-wise. In other words, adding two vectors ``A``
+and ``B`` produces a new vector with its ``x`` attribute set to ``A.x + B.x``,
+its ``y`` attribute set to ``A.y + B.y`` and so on::
+
+    >>> from picraft import *
+    >>> Vector(1, 1, 0) + Vector(1, 0, 1)
+    Vector(x=2, y=1, z=1)
+
+.. image:: vector1.*
+    :align: center
+
+Likewise for subtraction, multiplication, etc.::
+
+    >>> p = Vector(1, 2, 3)
+    >>> q = Vector(3, 2, 1)
+    >>> p - q
+    Vector(x=-2, y=0, z=2)
+    >>> p * q
+    Vector(x=3, y=4, z=3)
+    >>> p % q
+    Vector(x=1, y=0, z=0)
+
+.. image:: vector2.*
+    :align: center
+
+Vectors also support several operations between themselves and a scalar value.
+In this case the operation with the scalar is applied to each element of the
+vector. For example, multiplying a vector by the number 2 will return a new
+vector with every element of the original multiplied by 2::
+
+    >>> p * 2
+    Vector(x=2, y=4, z=6)
+    >>> p + 2
+    Vector(x=3, y=4, z=5)
+    >>> p // 2
+    Vector(x=0, y=1, z=1)
+
+.. image:: vector3.*
+    :align: center
+
+Vectors also support several of Python's built-in functions::
+
+    >>> abs(Vector(-1, 0, 1))
+    Vector(x=1, y=0, z=1)
+    >>> pow(Vector(1, 2, 3), 2)
+    Vector(x=1, y=4, z=9)
+    >>> import math
+    >>> math.trunc(Vector(1.5, 2.3, 3.7))
+    Vector(x=1, y=2, z=3)
+
+Some built-in functions can't be directly supported, in which case equivalently
+named methods are provided::
+
+    >>> p = Vector(1.5, 2.3, 3.7)
+    >>> p.round()
+    Vector(x=2, y=2, z=4)
+    >>> p.ceil()
+    Vector(x=2, y=3, z=4)
+    >>> p.floor()
+    Vector(x=1, y=2, z=3)
+
+.. image:: vector4.*
+    :align: center
+
+Several vector short-hands are also provided. One for the unit vector along
+each of the three axes (X, Y, and Z), one for the origin (O), and finally V
+which is simply a short-hand for Vector itself. Obviously, these can be used
+to simplify many vector-related operations::
+
+    >>> X
+    Vector(x=1, y=0, z=0)
+    >>> X + Y
+    Vector(x=1, y=1, z=0)
+    >>> Vector(1, 2, 3) + X
+    Vector(x=2, y=2, z=3)
+    >>> V(1, 2, 3) + (4 * Y)
+    Vector(x=1, y=6, z=3)
+
+From the paragraphs above it should be relatively easy to see how one can
+implement vector translation and vector scaling using everyday operations like
+addition, subtraction, multiplication and divsion. The third major
+transformation usually required of vectors, rotation, is a little harder. For
+this, the :meth:`~picraft.vector.Vector.rotate` method is provided. This takes
+two mandatory arguments: the number of degrees to rotate, and a vector
+specifying the axis about which to rotate (it is recommended that this is
+specified as a keyword argument for code clarity). For example::
+
+    >>> Vector(1, 2, 3).rotate(90, about=X)
+    Vector(x=1.0, y=-3.0, z=2.0)
+    >>> Vector(1, 2, 3).rotate(180, about=Y)
+    Vector(x=-0.9999999999999997, y=2, z=-3.0)
+    >>> Vector(1, 2, 3).rotate(180, about=Y).round()
+    Vector(x=-1.0, y=2.0, z=-3.0)
+    >>> X.rotate(180, about=X + Y).round()
+    Vector(x=-0.0, y=1.0, z=-0.0)
+
+A third optional argument to rotate, *origin*, permits rotation about an
+arbitrary line. The line passes through the point specified by *origin* and
+runs in the direction of the axis specified by *about*. Naturally, *origin*
+defaults to the origin (0, 0, 0)::
+
+    >>> Vector(1, 0, 0).rotate(180, about=Y, origin=2 * X).round()
+    Vector(x=3.0, y=0.0, z=0.0)
+    >>> O.rotate(90, about=Y, origin=X).round()
+    Vector(x=1.0, y=0.0, z=1.0)
+
+
+
+
+Player Position
+===============
+
+The player's position can be easily queried with the
+:attr:`~picraft.player.Player.pos` attribute. The value is a
+:class:`~picraft.vector.Vector`. For example, on the command line::
+
+    >>> world = World()
+    >>> world.player.pos
+    Vector(x=2.3, y=1.1, z=-0.81)
+
+Teleporting the player is as simple as assigning a new vector to the player
+position.  Here we teleport the player into the air by adding 50 to the Y-axis
+of the player's current position (remember that in the Minecraft world, the
+Y-axis goes up/down)::
+
+    >>> world.player.pos = world.player.pos + Vector(y=50)
+
+Or we can use a bit of Python short-hand for this::
+
+    >>> world.player.pos += Vector(y=50)
+
+If you want the player position to the nearest block use the
+:attr:`~picraft.player.Player.tile_pos` instead::
+
+    >>> world.player.pos
+    Vector(x=2, y=1, z=-1)
+
+
 Auto Bridge
 ===========
 
@@ -63,13 +211,9 @@ Animation
 This recipe demonstrates, in a series of steps, the construction of a
 simplistic animation system in Minecraft. Our aim is to create a simple stone
 cube which rotates about the X axis somewhere in the air. Our first script uses
-:func:`~picraft.vector.vector_range` to obtain the coordinates of the cube,
-then uses the :meth:`~picraft.vector.Vector.rotate` method to rotate them about
-the X axis.
-
-We represent the state of a frame of our animation as a dict which maps
-coordinates (in the form of :class:`~picraft.vector.Vector` instances) to
-:class:`~picraft.block.Block` instances:
+:func:`~picraft.vector.vector_range` to obtain the coordinates of all blocks
+within the cube, then uses the :meth:`~picraft.vector.Vector.rotate` method to
+rotate them about the X axis:
 
 .. literalinclude:: recipe_anim1.py
 
@@ -81,7 +225,11 @@ Although this approach works, it's obviously very long winded for lots of
 frames. What we want to do is calculate the state of each frame in a function.
 This next version demonstrates this approach; we use a generator function to
 yield the state of each frame in turn so we can iterate over the frames with
-a simple ``for`` loop:
+a simple ``for`` loop.
+
+We represent the state of a frame of our animation as a dict which maps
+coordinates (in the form of :class:`~picraft.vector.Vector` instances) to
+:class:`~picraft.block.Block` instances:
 
 .. literalinclude:: recipe_anim2.py
 

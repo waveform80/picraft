@@ -230,18 +230,19 @@ class World(object):
 
         This property can be queried to determine the type of a block in the
         world, or can be set to alter the type of a block. The property can be
-        indexed with a single :class:`Vector`, in which case the state of a
-        single block is returned (or updated) as a :class:`Block` object::
+        indexed with a single :class:`~picraft.vector.Vector`, in which case
+        the state of a single block is returned (or updated) as a
+        :class:`~picraft.block.Block` object::
 
             >>> world.blocks[g.player.tile_pos]
             <Block "grass" id=2 data=0>
 
-        Alternatively, a slice of two vectors can be used. In this case, when
-        querying the property, a sequence of :class:`Block` objects is
-        returned, When setting a slice of two vectors you can either pass a
-        sequence of :class:`Block` objects or a single :class:`Block` object.
-        The sequence must be equal to the number of blocks represented by the
-        slice::
+        Alternatively, a slice of vectors can be used. In this case, when
+        querying the property, a sequence of :class:`~picraft.block.Block`
+        objects is returned, When setting a slice of vectors you can either
+        pass a sequence of :class:`~picraft.block.Block` objects or a single
+        :class:`~picraft.block.Block` object. The sequence must be equal to
+        the number of blocks represented by the slice::
 
             >>> world.blocks[Vector(0,0,0):Vector(2,1,1)]
             [<Block "grass" id=2 data=0>,<Block "grass" id=2 data=0>]
@@ -250,20 +251,27 @@ class World(object):
         As with normal Python slices, the interval specified is `half-open`_.
         That is to say, it is inclusive of the lower vector, *exclusive* of the
         upper one. Hence, ``Vector():Vector(x=5,1,1)`` represents the
-        coordinates (0,0,0) to (4,0,0).
+        coordinates (0,0,0) to (4,0,0). It is usually useful to specify the
+        upper bound as the vector you want and then add one to it::
+
+            >>> world.blocks[Vector():Vector(x=1) + 1]
+            [<Block "grass" id=2 data=0>,<Block "grass" id=2 data=0>]
+            >>> world.blocks[Vector():Vector(4,0,4) + 1] = Block.from_name('grass')
 
         .. _half-open: http://python-history.blogspot.co.uk/2013/10/why-python-uses-0-based-indexing.html
 
-        .. warning:
+        .. warning::
 
-            Querying or setting sequences of blocks is extremely slow as a
+            Querying or setting sequences of blocks can be extremely slow as a
             network transaction must be executed for each individual block.
             When setting a slice of blocks, this can be speeded up by
-            specifying a single :class:`Block` in which case one network
-            transaction will occur to set all blocks in the slice.
-            Additionally, a :meth:`connection batch
-            <picraft.connection.Connection.batch_start>` can be used to speed
-            things up.
+            specifying a single :class:`~picraft.block.Block` in which case one
+            network transaction will occur to set all blocks in the slice.  The
+            Raspberry Juice server also supports querying sequences of blocks
+            with a single command (picraft will automatically use this).
+            Additionally, :meth:`~picraft.connection.Connection.batch_start`
+            can be used to speed up setting sequences of blocks (though not
+            querying).
         """
         return self._blocks
 

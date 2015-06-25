@@ -12,7 +12,7 @@ Firstly, ensure that you have a `Minecraft game`_ running on your Pi. Now start
 a terminal, start Python within the terminal, import the picraft library and
 start a connection to the Minecraft world::
 
-    >>> from picraft import World, Vector, Block
+    >>> from picraft import *
     >>> world = World()
 
 The :class:`~picraft.world.World` class is the usual starting point for picraft
@@ -186,7 +186,6 @@ multiple requests together::
     ...     world.blocks[v - 1:v + 2 - Vector(y=2)] = [
     ...         Block('wool', data=i) for i in range(9)]
 
-You should notice the example above executes considerably more quickly.
 Finally, the state of the Minecraft world can be saved and restored easily with
 the :attr:`~picraft.world.World.checkpoint` object::
 

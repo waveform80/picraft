@@ -45,7 +45,6 @@ Connection
 ==========
 
 .. autoclass:: Connection
-    :members:
 """
 
 from __future__ import (
@@ -95,6 +94,18 @@ class Connection(object):
     alternatively, :meth:`batch_forget` can be used to discard the list). See
     the docs of these methods for more information.
 
+    .. automethod:: close
+
+    .. automethod:: send
+
+    .. automethod:: transact
+
+    .. automethod:: batch_start
+
+    .. automethod:: batch_send
+
+    .. automethod:: batch_forget
+
     .. attribute:: ignore_errors
 
         If ``False`` (the default), use the :attr:`timeout` to determine when
@@ -111,6 +122,8 @@ class Connection(object):
 
         The encoding that will be used for messages transmitted to, and
         received from the server. Defaults to ``'ascii'``.
+
+    .. autoattribute:: server_version
     """
 
     def __init__(

@@ -49,10 +49,10 @@ namespace, so you may prefer to do something like this::
     from picraft import World, Vector, Block
 
 This is the style used in the :ref:`recipes` chapter. Sometimes, if you are
-using the :class:`~picraft.vector.Vector` extensively, you may wish to use the
-short-cuts for it::
+using the :class:`~picraft.vector.Vector` class extensively, you may wish to
+use the short-cuts for it::
 
-    from picraft import World, V, X, Y, Z, Block
+    from picraft import World, V, O, X, Y, Z, Block
 
 The following sections document the various modules available within the
 package:

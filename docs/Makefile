@@ -8,8 +8,10 @@ PAPER         =
 BUILDDIR      = _build
 DOT_DIAGRAMS  = $(wildcard *.dot)
 MSC_DIAGRAMS  = $(wildcard *.mscgen)
+GPI_DIAGRAMS  = $(wildcard *.gpi)
 SVG_IMAGES    = $(wildcard *.svg) $(DOT_DIAGRAMS:%.dot=%.svg) $(MSC_DIAGRAMS:%.mscgen=%.svg)
-PDF_IMAGES    = $(SVG_IMAGES:%.svg=%.pdf)
+PNG_IMAGES    = $(wildcard *.png) $(GPI_DIAGRAMS:%.gpi=%.png)
+PDF_IMAGES    = $(SVG_IMAGES:%.svg=%.pdf) $(GPI_DIAGRAMS:%.gpi=%.pdf)
 
 # Internal variables.
 PAPEROPT_a4     = -D latex_paper_size=a4
@@ -46,17 +48,17 @@ help:
 clean:
 	rm -rf $(BUILDDIR)/*
 
-html: $(SVG_IMAGES)
+html: $(SVG_IMAGES) $(PNG_IMAGES)
 	$(SPHINXBUILD) -b html $(ALLSPHINXOPTS) $(BUILDDIR)/html
 	@echo
 	@echo "Build finished. The HTML pages are in $(BUILDDIR)/html."
 
-dirhtml: $(SVG_IMAGES)
+dirhtml: $(SVG_IMAGES) $(PNG_IMAGES)
 	$(SPHINXBUILD) -b dirhtml $(ALLSPHINXOPTS) $(BUILDDIR)/dirhtml
 	@echo
 	@echo "Build finished. The HTML pages are in $(BUILDDIR)/dirhtml."
 
-singlehtml: $(SVG_IMAGES)
+singlehtml: $(SVG_IMAGES) $(PNG_IMAGES)
 	$(SPHINXBUILD) -b singlehtml $(ALLSPHINXOPTS) $(BUILDDIR)/singlehtml
 	@echo
 	@echo "Build finished. The HTML page is in $(BUILDDIR)/singlehtml."
@@ -179,7 +181,13 @@ pseudoxml:
 %.svg: %.dot
 	dot -T svg -o $@ $<
 
+%.png: %.gpi common.gp
+	gnuplot -e "set term pngcairo size 640,480" $< > $@
+
 %.pdf: %.svg
 	inkscape -A $@ $<
+
+%.pdf: %.gpi common.gp
+	gnuplot -e "set term pdfcairo size 10cm,7.5cm" $< > $@
 
 .PHONY: help clean html dirhtml singlehtml pickle json htmlhelp qthelp devhelp epub latex latexpdf text man changes linkcheck doctest gettext

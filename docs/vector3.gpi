@@ -1,0 +1,23 @@
+call "common.gp" "0" "7"
+
+set parametric
+set urange [0:3]
+set vrange [0:3]
+
+set label "p" at 1,3,2
+set label "p * 2" at 2,6,4
+set label "p + 2" at 3,5,4
+set label "p // 2" at 0,1,0
+
+set arrow from 1,3,2 to 2,6,4
+set arrow from 1,3,2 to 3,5,4
+set arrow from 1,3,2 to 0,1,0
+
+set arrow from 1,3,0 to 1,3,2 lt 2 nohead
+set arrow from 2,6,0 to 2,6,4 lt 2 nohead
+set arrow from 3,5,0 to 3,5,4 lt 2 nohead
+
+splot 1,3,2 with points lt 1, \
+      2,6,4 with points lt 1, \
+      3,5,4 with points lt 1, \
+      0,1,0 with points lt 1

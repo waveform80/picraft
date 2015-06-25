@@ -36,8 +36,9 @@ the type of a block and any associated data it may have, and the
 
 .. note::
 
-    All items in this module are available from the :mod:`picraft` namespace
-    without having to import :mod:`picraft.block` directly.
+    All items in this module, except the compatibility constants, are available
+    from the :mod:`picraft` namespace without having to import
+    :mod:`picraft.block` directly.
 
 The following items are defined in the module:
 
@@ -64,78 +65,41 @@ Finally, the module also contains compatibility values equivalent to those
 in the mcpi.block module of the reference implementation. Each value represents
 the type of a block with no associated data:
 
-* AIR
-* BED
-* BEDROCK
-* BEDROCK_INVISIBLE
-* BOOKSHELF
-* BRICK_BLOCK
-* CACTUS
-* CHEST
-* CLAY
-* COAL_ORE
-* COBBLESTONE
-* COBWEB
-* CRAFTING_TABLE
-* DIAMOND_BLOCK
-* DIAMOND_ORE
-* DIRT
-* DOOR_IRON
-* DOOR_WOOD
-* FARMLAND
-* FENCE
-* FENCE_GATE
-* FIRE
-* FLOWER_CYAN
-* FLOWER_YELLOW
-* FURNACE_ACTIVE
-* FURNACE_INACTIVE
-* GLASS
-* GLASS_PANE
-* GLOWING_OBSIDIAN
-* GLOWSTONE_BLOCK
-* GOLD_BLOCK
-* GOLD_ORE
-* GRASS
-* GRASS_TALL
-* GRAVEL
-* ICE
-* IRON_BLOCK
-* IRON_ORE
-* LADDER
-* LAPIS_LAZULI_BLOCK
-* LAPIS_LAZULI_ORE
-* LAVA
-* LAVA_FLOWING
-* LAVA_STATIONARY
-* LEAVES
-* MELON
-* MOSS_STONE
-* MUSHROOM_BROWN
-* MUSHROOM_RED
-* NETHER_REACTOR_CORE
-* OBSIDIAN
-* REDSTONE_ORE
-* SAND
-* SANDSTONE
-* SAPLING
-* SNOW
-* SNOW_BLOCK
-* STAIRS_COBBLESTONE
-* STAIRS_WOOD
-* STONE
-* STONE_BRICK
-* STONE_SLAB
-* STONE_SLAB_DOUBLE
-* SUGAR_CANE
-* TNT
-* TORCH
-* WATER
-* WATER_FLOWING
-* WATER_STATIONARY
-* WOOD
-* WOOD_PLANKS
-* WOOL
+===================  ====================  =====================
+AIR                  FURNACE_ACTIVE        MUSHROOM_RED
+BED                  FURNACE_INACTIVE      NETHER_REACTOR_CORE
+BEDROCK              GLASS                 OBSIDIAN
+BEDROCK_INVISIBLE    GLASS_PANE            REDSTONE_ORE
+BOOKSHELF            GLOWING_OBSIDIAN      SAND
+BRICK_BLOCK          GLOWSTONE_BLOCK       SANDSTONE
+CACTUS               GOLD_BLOCK            SAPLING
+CHEST                GOLD_ORE              SNOW
+CLAY                 GRASS                 SNOW_BLOCK
+COAL_ORE             GRASS_TALL            STAIRS_COBBLESTONE
+COBBLESTONE          GRAVEL                STAIRS_WOOD
+COBWEB               ICE                   STONE
+CRAFTING_TABLE       IRON_BLOCK            STONE_BRICK
+DIAMOND_BLOCK        IRON_ORE              STONE_SLAB
+DIAMOND_ORE          LADDER                STONE_SLAB_DOUBLE
+DIRT                 LAPIS_LAZULI_BLOCK    SUGAR_CANE
+DOOR_IRON            LAPIS_LAZULI_ORE      TNT
+DOOR_WOOD            LAVA                  TORCH
+FARMLAND             LAVA_FLOWING          WATER
+FENCE                LAVA_STATIONARY       WATER_FLOWING
+FENCE_GATE           LEAVES                WATER_STATIONARY
+FIRE                 MELON                 WOOD
+FLOWER_CYAN          MOSS_STONE            WOOD_PLANKS
+FLOWER_YELLOW        MUSHROOM_BROWN        WOOL
+===================  ====================  =====================
+
+Use these compatibility constants by importing the block module explicitly.
+For example::
+
+    >>> from picraft import block
+    >>> block.AIR
+    <Block "air" id=0 data=0>
+    >>> block.TNT
+    <Block "tnt" id=46 data=0>
 """
 
 from __future__ import (
