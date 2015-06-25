@@ -29,6 +29,8 @@ set xtics tic_from,1,tic_to
 set ytics tic_from,1,tic_to
 set ztics tic_from,1,tic_to
 set view 60,15,1.3,1.3
+set samples 20,10
+set isosamples 20,10
 set grid
 unset key
 

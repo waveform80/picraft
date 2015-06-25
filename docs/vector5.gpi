@@ -1,0 +1,24 @@
+call "common.gp" "0" "5"
+
+set parametric
+set urange [0:3]
+set vrange [0:3]
+
+set label "X" at 1,0,0
+set label "X + Y" at 1,0,1
+set label "p" at 1,3,2
+set label "p + X" at 2,3,2
+set label "p + 2 * Y" at 1,3,4
+
+set arrow from 1,0,0 to 1,0,1
+set arrow from 1,3,2 to 2,3,2
+set arrow from 1,3,2 to 1,3,4
+
+set arrow from 1,3,0 to 1,3,2 lt 2 nohead
+set arrow from 2,3,0 to 2,3,2 lt 2 nohead
+
+splot 1,3,2 with points lt 1, \
+      2,3,2 with points lt 1, \
+      1,3,4 with points lt 1, \
+      1,0,1 with points lt 1
+

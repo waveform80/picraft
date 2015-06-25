@@ -1,0 +1,23 @@
+call "common.gp" "-4" "4"
+
+set view 60,60,1.3,1.3
+
+set parametric
+set urange [0:pi]
+set vrange [0:pi]
+
+set label "O" at 0,0,0
+set label "(2*Y)" at 0,0,2
+set label "(2*Y).rotate(180,\nabout=Y, origin=2*X)" at 4,0,2
+set label "O.rotate(90, about=Y, origin=X)" at 1,1,0
+
+set arrow from 1,0,0 to 1,0,1 lt 2 nohead
+set arrow from 2,0,0 to 2,0,3 lt 2 nohead
+
+splot 0,0,0 with points lt 1, \
+      1,1,0 with points lt 1, \
+      0,0,2 with points lt 1, \
+      4,0,2 with points lt 1, \
+      1+sin(u/2-pi/2),cos(u/2-pi/2),0 lt 1, \
+      2+2*sin(u-pi/2),2*cos(u-pi/2),2 lt 1
+

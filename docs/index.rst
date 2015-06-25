@@ -13,6 +13,7 @@ Table of Contents
    install3
    quickstart
    conversion
+   vectors
    recipes
    faq
    api

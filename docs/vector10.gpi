@@ -1,0 +1,24 @@
+call "common.gp" "0" "4"
+
+set view 60,60,1.3,1.3
+
+set parametric
+set urange [0:pi/2]
+set vrange [0:pi/2]
+
+set label "p" at 1,3,2.2
+set label "p.unit" at 0.267,0.801,0.735
+set label "p.magnitude == 3.74..." at 0.75,2.25,1.7
+set label "q" at 2,1,0.2
+set label "p.distance_to(q) == 3.0" at 1,1,0.3
+
+set arrow from 0,0,0 to 1,3,2 heads
+set arrow from 0,0,0 to 0.267,0.801,0.535 heads
+set arrow from 1,3,2 to 2,1,0 heads
+set arrow from 1,3,0 to 1,3,2 lt 2 nohead
+set arrow from 0.267,0.801,0 to 0.267,0.801,0.535 lt 2 nohead
+
+splot 1,3,2 with points lt 1, \
+      2,1,0 with points lt 1, \
+      0.267,0.801,0.535 with points lt 1
+

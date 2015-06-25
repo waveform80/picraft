@@ -451,10 +451,7 @@ class Vector(namedtuple('Vector', ('x', 'y', 'z'))):
 
         .. _Pythagoras' theorem: http://en.wikipedia.org/wiki/Pythagorean_theorem
         """
-        return math.sqrt(
-                (self.x - other.x) ** 2 +
-                (self.y - other.y) ** 2 +
-                (self.z - other.z) ** 2)
+        return (other - self).magnitude
 
     def angle_between(self, other):
         """
