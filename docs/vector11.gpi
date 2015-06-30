@@ -1,0 +1,28 @@
+call "common.gp" "-2" "3"
+
+set parametric
+set urange [0:3]
+set vrange [0:3]
+
+set label "p" at 2,0,0
+set label "q" at 0.1,-1,0
+set label "r" at 0.1,0,2
+set label "pqr" at 1,0.5,1.7
+
+set arrow from 0,0,0 to 2,0,0
+set arrow from 0,0,0 to 0,-1,0
+set arrow from 0,0,0 to 0,0,2
+
+set arrow from 2,0,0 to 2,-1,0 lt 2 nohead
+set arrow from 2,-1,0 to 2,-1,2 lt 2 nohead
+set arrow from 2,-1,2 to 0,-1,2 lt 2 nohead
+set arrow from 2,-1,2 to 2,0,2 lt 2 nohead
+set arrow from 2,0,0 to 2,0,2 lt 2 nohead
+set arrow from 2,0,2 to 0,0,2 lt 2 nohead
+set arrow from 0,0,2 to 0,-1,2 lt 2 nohead
+set arrow from 0,-1,2 to 0,-1,0 lt 2 nohead
+set arrow from 0,-1,0 to 2,-1,0 lt 2 nohead
+
+splot 2,0,0 with points lt 1, \
+      0,-1,0 with points lt 1, \
+      0,0,2 with points lt 1

@@ -115,9 +115,9 @@ Rotation
 From the paragraphs above it should be relatively easy to see how one can
 implement vector translation and vector scaling using everyday operations like
 addition, subtraction, multiplication and divsion. The third major
-transformation usually required of vectors, rotation, is a little harder. For
-this, the :meth:`~picraft.vector.Vector.rotate` method is provided. This takes
-two mandatory arguments: the number of degrees to rotate, and a vector
+transformation usually required of vectors, `rotation`_, is a little harder.
+For this, the :meth:`~picraft.vector.Vector.rotate` method is provided. This
+takes two mandatory arguments: the number of degrees to rotate, and a vector
 specifying the axis about which to rotate (it is recommended that this is
 specified as a keyword argument for code clarity). For example::
 
@@ -170,11 +170,12 @@ Magnitudes
 ==========
 
 The :attr:`~picraft.vector.Vector.magnitude` attribute can be used to determine
-the length of a vector, while the :attr:`~picraft.vector.Vector.unit` attribute
-can be used to obtain a vector in the same direction with a magnitude (length)
-of 1.0. The :meth:`~picraft.vector.Vector.distance_to` method can also be used
-to calculate the distance between two vectors (this is simply equivalent to the
-magnitude of the vector obtained by subtracting one vector from the other)::
+the length of a vector (via `Pythagoras' theorem`_, while the
+:attr:`~picraft.vector.Vector.unit` attribute can be used to obtain a vector in
+the same direction with a magnitude (length) of 1.0. The
+:meth:`~picraft.vector.Vector.distance_to` method can also be used to calculate
+the distance between two vectors (this is simply equivalent to the magnitude of
+the vector obtained by subtracting one vector from the other)::
 
     >>> p = V(1, 2, 3)
     >>> p.magnitude
@@ -189,4 +190,59 @@ magnitude of the vector obtained by subtracting one vector from the other)::
 
 .. image:: vector10.*
     :align: center
+
+Dot and cross products
+======================
+
+The `dot`_ and `cross`_ products of a vector with another can be calculated
+using the :meth:`~picraft.vector.Vector.dot` and
+:meth:`~picraft.vector.Vector.cross` methods respectively. These are useful for
+determining whether vectors are `orthogonal`_ (the dot product of orthogonal
+vectors is always 0), for finding a vector perpendicular to the plane of two
+vectors (via the cross product), or for finding the volume of a parallelepiped
+defined by three vectors, via the `triple product`_::
+
+    >>> p = V(x=2)
+    >>> q = V(z=-1)
+    >>> p.dot(q)
+    0
+    >>> r = p.cross(q)
+    >>> r
+    Vector(x=0, y=2, z=0)
+    >>> area_of_pqr = p.cross(q).dot(r)
+    >>> area_of_pqr
+    4
+
+.. image:: vector11.*
+    :align: center
+
+Projection
+==========
+
+The final method provided by the :class:`~picraft.vector.Vector` class is
+:meth:`~picraft.vector.Vector.project` which implements `scalar projection`_.
+You might think of this as calculating the length of the shadow one vector
+casts upon another. Or, put another way, this is the length of one vector
+in the direction of another (unit) vector::
+
+    >>> p = V(1, 2, 3)
+    >>> p.project(X)
+    1.0
+    >>> q = X + Z
+    >>> p.project(q)
+    2.82842712474619
+    >>> r = q.unit * p.project(q)
+    >>> r.round(4)
+    Vector(x=2.0, y=0.0, z=2.0)
+
+.. image:: vector12.*
+    :align: center
+
+.. _rotation: http://en.wikipedia.org/wiki/Rotation_group_SO%283%29
+.. _Pythagoras' theorem: http://en.wikipedia.org/wiki/Pythagorean_theorem
+.. _dot: http://en.wikipedia.org/wiki/Dot_product
+.. _cross: http://en.wikipedia.org/wiki/Cross_product
+.. _orthogonal: http://en.wikipedia.org/wiki/Orthogonality
+.. _triple product: http://en.wikipedia.org/wiki/Triple_product
+.. _scalar projection: https://en.wikipedia.org/wiki/Scalar_projection
 
