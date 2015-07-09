@@ -234,6 +234,13 @@ class Vector(namedtuple('Vector', ('x', 'y', 'z'))):
         x, y, z = s.split(',', 2)
         return cls(type(x), type(y), type(z))
 
+    @property
+    def __dict__(self):
+        # This is required to work around a subtle issue encountered in Python
+        # 3.3 and above. In these versions (probably deliberately), the
+        # __dict__ property is not inherited by namedtuple descendents
+        return super(Vector, self).__dict__
+
     def __str__(self):
         return '%s,%s,%s' % (self.x, self.y, self.z)
 
