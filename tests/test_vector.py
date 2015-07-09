@@ -39,8 +39,8 @@ str = type('')
 import pytest
 import math
 from .conftest import fp_equal, fp_vectors_equal
-from picraft import Vector, vector_range, O, X, Y, Z
-from picraft.vector import rmod, rdiv
+from picraft import Vector, vector_range, line, lines, O, X, Y, Z
+from picraft.vector import rmod, rdiv, sign
 from picraft.compat import range
 
 
@@ -362,3 +362,25 @@ def test_vector_coverage():
     with pytest.raises(ValueError):
         rdiv(0, 1)
 
+def test_vector_sign():
+    assert sign(10) == 1
+    assert sign(0) == 0
+    assert sign(-5) == -1
+    assert sign(X) == X
+    assert sign(O) == O
+    assert sign(Vector(3, 0, -3)) == X - Z
+
+def test_vector_line():
+    assert list(line(O, O)) == [O]
+    assert list(line(O, 4*X)) == [O, X, 2*X, 3*X, 4*X]
+    assert list(line(O, Vector(3, 1, 0))) == [O, X, 2*X + Y, 3*X + Y]
+    assert list(line(O, Vector(1, 2, 3))) == [O, Y + Z, Vector(1, 1, 2), Vector(1, 2, 3)]
+
+def test_vector_lines():
+    assert list(lines([O, 4*X, Vector(1, 2, 3)])) == [
+            O, X, 2*X, 3*X, 4*X, Vector(3, 1, 1), Vector(2, 1, 2),
+            Vector(1, 2, 3), Vector(1, 1, 2), Vector(0, 1, 1), O]
+
+    assert list(lines([O, 4*X, Vector(1, 2, 3)], closed=False)) == [
+            O, X, 2*X, 3*X, 4*X, Vector(3, 1, 1), Vector(2, 1, 2),
+            Vector(1, 2, 3)]
