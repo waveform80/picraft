@@ -137,6 +137,7 @@ class Connection(object):
             self, host, port, timeout=0.2, ignore_errors=False,
             encoding='ascii'):
         self._lock = threading.Lock()
+        self._local = threading.local()
         self._socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         # This is effectively an interactive protocol, so disable Nagle's
         # algorithm for better performance
@@ -144,7 +145,6 @@ class Connection(object):
         self._socket.connect((host, port))
         self._rfile = self._socket.makefile('rb', -1)
         self._wfile = self._socket.makefile('wb', 0) # no buffering for writes
-        self._batch = None
         self.timeout = timeout
         self.encoding = encoding
         # Determine what version of Minecraft we're talking to. Sadly, nobody
@@ -269,8 +269,8 @@ class Connection(object):
         the latest batch that was started (batches can be nested; see
         :meth:`batch_start` for more information).
         """
-        if self._batch is not None:
-            self._batch.append(buf)
+        if hasattr(self._local, 'batch'):
+            self._local.batch.append(buf)
         else:
             with self._lock:
                 if not self._socket:
@@ -319,9 +319,9 @@ class Connection(object):
             :meth:`batch_forget` depending on whether an exception is raised
             within the enclosed block.
         """
-        if self._batch is not None:
+        if hasattr(self._local, 'batch'):
             raise BatchStarted('batch already started')
-        self._batch = []
+        self._local.batch = []
         return self
 
     def batch_send(self):
@@ -335,11 +335,11 @@ class Connection(object):
         If no batch is currently in progress, a
         :exc:`~picraft.exc.BatchNotStarted` exception will be raised.
         """
-        if self._batch is None:
+        if not hasattr(self._local, 'batch'):
             raise BatchNotStarted('no batch in progress')
         try:
-            if self._batch:
-                buf = '\n'.join(self._batch)
+            if self._local.batch:
+                buf = '\n'.join(self._local.batch)
                 with self._lock:
                     if not self._socket:
                         raise ConnectionClosed('connection closed')
@@ -350,7 +350,7 @@ class Connection(object):
                     finally:
                         self._drain()
         finally:
-            self._batch = None
+            del self._local.batch
 
     def batch_forget(self):
         """
@@ -363,9 +363,9 @@ class Connection(object):
         If no batch is currently in progress, a
         :exc:`~picraft.exc.BatchNotStarted` exception will be raised.
         """
-        if self._batch is None:
+        if not hasattr(self._local, 'batch'):
             raise BatchNotStarted('no batch in progress')
-        self._batch = None
+        del self._local.batch
 
     def __enter__(self):
         return self

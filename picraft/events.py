@@ -64,6 +64,8 @@ str = type('')
 
 
 import logging
+import threading
+import time
 from collections import namedtuple, Container
 
 from .exc import ConnectionClosed
@@ -137,6 +139,7 @@ class Events(object):
     def __init__(self, connection):
         self._connection = connection
         self._handlers = []
+        self.poll_gap = 0.1
 
     def clear(self):
         """
@@ -176,6 +179,7 @@ class Events(object):
         try:
             while True:
                 self.process()
+                time.sleep(self.poll_gap)
         except ConnectionClosed:
             logger.info('Connection closed; exiting event loop')
 
@@ -185,7 +189,7 @@ class Events(object):
                 if handler.matches(event):
                     handler.execute(event)
 
-    def block_hit(self, pos=None, face=None):
+    def block_hit(self, pos=None, face=None, thread=False, multi=True):
         def decorator(f):
             self._handlers.append(EventHandler(f, pos, face, thread, multi))
             return f
@@ -207,18 +211,17 @@ class EventHandler(object):
         if self.thread:
             if self.multi:
                 threading.Thread(target=self.action, args=(event,)).start()
-            else:
-                self.execute_single(event)
+            elif not self._thread:
+                self._thread = threading.Thread(target=self.execute_single, args=(event,))
+                self._thread.start()
         else:
             self.action(event)
 
     def execute_single(self, event):
-        if not self._thread:
-            try:
-                self._thread = threading.Thread(target=self.action, args=(event,))
-                self._thread.start()
-            finally:
-                self._thread = None
+        try:
+            self.action(event)
+        finally:
+            self._thread = None
 
     def matches(self, event):
         return self.matches_pos(event.pos) and self.matches_face(event.face)
