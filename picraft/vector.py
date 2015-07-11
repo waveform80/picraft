@@ -101,17 +101,12 @@ from .compat import range
 
 import math
 from functools import total_ordering
-from collections import namedtuple
+from collections import namedtuple, Sequence
 try:
     from itertools import zip_longest, islice
 except ImportError:
     # Py2 compat
     from itertools import izip_longest as zip_longest, islice
-try:
-    from collections.abc import Sequence
-except ImportError:
-    # Py2 compat
-    from collections import Sequence
 
 
 class Vector(namedtuple('Vector', ('x', 'y', 'z'))):
