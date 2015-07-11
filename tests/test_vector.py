@@ -380,7 +380,7 @@ def test_vector_lines():
     assert list(lines([O, 4*X, Vector(1, 2, 3)])) == [
             O, X, 2*X, 3*X, 4*X, Vector(3, 1, 1), Vector(2, 1, 2),
             Vector(1, 2, 3), Vector(1, 1, 2), Vector(0, 1, 1), O]
-
     assert list(lines([O, 4*X, Vector(1, 2, 3)], closed=False)) == [
             O, X, 2*X, 3*X, 4*X, Vector(3, 1, 1), Vector(2, 1, 2),
             Vector(1, 2, 3)]
+

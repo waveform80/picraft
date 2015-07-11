@@ -63,7 +63,7 @@ from __future__ import (
 str = type('')
 
 
-from collections import namedtuple
+from collections import namedtuple, Container
 
 from .vector import Vector
 from .player import Player
@@ -115,6 +115,11 @@ class BlockHitEvent(namedtuple('BlockHitEvent', ('pos', 'face', 'player'))):
             5: 'x+',
             }[int(f)], Player(connection, int(p)))
 
+    @property
+    def __dict__(self):
+        # Ensure __dict__ property works in Python 3.3 and above.
+        return super(BlockHitEvent, self).__dict__
+
     def __repr__(self):
         return '<BlockHitEvent pos=%s face=%r player=%d>' % (
                 self.pos, self.face, self.player.player_id)
@@ -127,6 +132,7 @@ class Events(object):
 
     def __init__(self, connection):
         self._connection = connection
+        self._handlers = []
 
     def clear(self):
         """
@@ -160,4 +166,50 @@ class Events(object):
                 for event in events.split('|')
                 ]
         return []
+
+    def main_loop(self):
+        try:
+            while True:
+                for event in self.poll():
+                    for handler in self._handlers:
+                        if handler.matches(event):
+                            handler.action(event)
+        except ConnectionClosed:
+            pass
+
+    def on_block_hit(self, pos=None, face=None):
+        def decorator(f):
+            self._handlers.append(EventHandler(f, pos, face))
+            return f
+        return decorator
+
+
+class EventHandler(object):
+    def __init__(self, action, pos, face):
+        self.action = action
+        self.pos = pos
+        if isinstance(face, bytes):
+            face = face.decode('ascii')
+        self.face = face
+
+    def matches(self, event):
+        return self.matches_pos(event.pos) and self.matches_face(event.face)
+
+    def matches_pos(self, pos):
+        if self.pos is None:
+            return True
+        if isinstance(self.pos, Vector):
+            return self.pos == pos
+        if isinstance(self.pos, Container):
+            return pos in self.pos
+        return False
+
+    def matches_face(self, face):
+        if self.face is None:
+            return True
+        if isinstance(self.face, str):
+            return self.face == face
+        if isinstance(self.face, Container):
+            return face in self.face
+        return False
 
