@@ -79,6 +79,9 @@ class NotSupported(Error, NotImplementedError):
 class ConnectionError(Error, socket.error):
     "Base class for PiCraft errors relating to network communications"
 
+class ConnectionClosed(ConnectionError):
+    "Exception raised when an operation is attempted against a closed connection"
+
 class CommandError(ConnectionError):
     "Exception raised when a network command fails"
 

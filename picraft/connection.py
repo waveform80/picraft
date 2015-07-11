@@ -59,8 +59,15 @@ str = type('')
 import socket
 import logging
 import select
+import threading
 
-from .exc import CommandError, NoResponse, BatchStarted, BatchNotStarted
+from .exc import (
+        CommandError,
+        NoResponse,
+        BatchStarted,
+        BatchNotStarted,
+        ConnectionClosed,
+        )
 
 logger = logging.getLogger('picraft')
 
@@ -129,6 +136,7 @@ class Connection(object):
     def __init__(
             self, host, port, timeout=0.2, ignore_errors=False,
             encoding='ascii'):
+        self._lock = threading.Lock()
         self._socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         # This is effectively an interactive protocol, so disable Nagle's
         # algorithm for better performance
@@ -181,16 +189,17 @@ class Connection(object):
             self.batch_forget()
         except BatchNotStarted:
             pass
-        if self._rfile:
-            self._rfile.close()
-            self._rfile = None
-        if self._wfile:
-            self._wfile.close()
-            self._wfile = None
-        if self._socket:
-            self._socket.shutdown(socket.SHUT_RDWR)
-            self._socket.close()
-            self._socket = None
+        with self._lock:
+            if self._rfile:
+                self._rfile.close()
+                self._rfile = None
+            if self._wfile:
+                self._wfile.close()
+                self._wfile = None
+            if self._socket:
+                self._socket.shutdown(socket.SHUT_RDWR)
+                self._socket.close()
+                self._socket = None
 
     def _readable(self, timeout):
         """
@@ -223,16 +232,16 @@ class Connection(object):
 
     def _receive(self, required=False):
         """
-        Read a line from the socket. If *required* is ``True``, raise a
-        :exc:`~picraft.exc.NoResponse` error if a response is not received
-        before :attr:`timeout`. If *required* is ``False`` or
-        :attr:`ignore_errors` is True, raise a :exc:`~picraft.exc.NoResponse`
-        exception.
+        Read a line from the socket, and return it (after decoding and
+        stripping any trailing newline). If no response is received before
+        :attr:`timeout` has elapsed, then the result depends on *required* and
+        :attr:`ignore_errors`.  If *required* is ``False`` or
+        :attr:`ignore_errors` is ``True``, the method simply returns ``None``.
+        Otherwise, a :exc:`~picraft.exc.NoResponse` error is raised.
 
-        If a "Fail" response is recevied, raise a
-        :exc:`~picraft.exc.CommandError` exception (this is raised even if
-        :attr:`ignore_errors` is ``True`` to maintain compatibility with the
-        reference implementation).
+        If the response received is "Fail", a :exc:`~picraft.exc.CommandError`
+        exception is raised (this is case even if :attr:`ignore_errors` is
+        ``True`` to maintain compatibility with the reference implementation).
         """
         if not self._readable(self.timeout):
             if required and not self.ignore_errors:
@@ -263,9 +272,12 @@ class Connection(object):
         if self._batch is not None:
             self._batch.append(buf)
         else:
-            self._send(buf)
-            if not self.ignore_errors:
-                self._receive()
+            with self._lock:
+                if not self._socket:
+                    raise ConnectionClosed('connection closed')
+                self._send(buf)
+                if not self.ignore_errors:
+                    self._receive()
 
     def transact(self, buf):
         """
@@ -281,8 +293,11 @@ class Connection(object):
             is typically used to implement "getters", this is not usually an
             issue but it is worth bearing in mind.
         """
-        self._send(buf)
-        return self._receive(required=True)
+        with self._lock:
+            if not self._socket:
+                raise ConnectionClosed('connection closed')
+            self._send(buf)
+            return self._receive(required=True)
 
     def batch_start(self):
         """
@@ -325,12 +340,15 @@ class Connection(object):
         try:
             if self._batch:
                 buf = '\n'.join(self._batch)
-                self._send(buf)
-                try:
-                    if not self.ignore_errors:
-                        self._receive()
-                finally:
-                    self._drain()
+                with self._lock:
+                    if not self._socket:
+                        raise ConnectionClosed('connection closed')
+                    self._send(buf)
+                    try:
+                        if not self.ignore_errors:
+                            self._receive()
+                    finally:
+                        self._drain()
         finally:
             self._batch = None
 

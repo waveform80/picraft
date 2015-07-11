@@ -85,6 +85,7 @@ from .exc import (
     BatchStarted,
     BatchNotStarted,
     NotSupported,
+    ConnectionClosed,
     EmptySliceWarning,
     )
 from .vector import Vector, vector_range, line, lines, V, O, X, Y, Z
