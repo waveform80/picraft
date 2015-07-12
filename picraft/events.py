@@ -170,27 +170,50 @@ class Events(object):
     def main_loop(self):
         try:
             while True:
-                for event in self.poll():
-                    for handler in self._handlers:
-                        if handler.matches(event):
-                            handler.action(event)
+                self.process()
         except ConnectionClosed:
             pass
 
-    def on_block_hit(self, pos=None, face=None):
+    def process(self):
+        for event in self.poll():
+            for handler in self._handlers:
+                if handler.matches(event):
+                    handler.execute(event)
+
+    def on_block_hit(self, pos=None, face=None, thread=False, multi=True):
         def decorator(f):
-            self._handlers.append(EventHandler(f, pos, face))
+            self._handlers.append(EventHandler(f, pos, face, thread, multi))
             return f
         return decorator
 
 
 class EventHandler(object):
-    def __init__(self, action, pos, face):
+    def __init__(self, action, pos, face, thread, multi):
         self.action = action
         self.pos = pos
         if isinstance(face, bytes):
             face = face.decode('ascii')
         self.face = face
+        self.thread = thread
+        self.multi = multi
+        self._thread = None
+
+    def execute(self, event):
+        if self.thread:
+            if self.multi:
+                threading.Thread(target=self.action, args=(event,)).start()
+            else:
+                self.execute_single(event)
+        else:
+            self.action(event)
+
+    def execute_single(self, event):
+        if not self._thread:
+            try:
+                self._thread = threading.Thread(target=self.action, args=(event,))
+                self._thread.start()
+            finally:
+                self._thread = None
 
     def matches(self, event):
         return self.matches_pos(event.pos) and self.matches_face(event.face)
