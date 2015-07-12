@@ -63,10 +63,14 @@ from __future__ import (
 str = type('')
 
 
+import logging
 from collections import namedtuple, Container
 
+from .exc import ConnectionClosed
 from .vector import Vector
 from .player import Player
+
+logger = logging.getLogger('picraft')
 
 
 class BlockHitEvent(namedtuple('BlockHitEvent', ('pos', 'face', 'player'))):
@@ -168,11 +172,12 @@ class Events(object):
         return []
 
     def main_loop(self):
+        logger.info('Entering event loop')
         try:
             while True:
                 self.process()
         except ConnectionClosed:
-            pass
+            logger.info('Connection closed; exiting event loop')
 
     def process(self):
         for event in self.poll():
@@ -180,7 +185,7 @@ class Events(object):
                 if handler.matches(event):
                     handler.execute(event)
 
-    def on_block_hit(self, pos=None, face=None, thread=False, multi=True):
+    def block_hit(self, pos=None, face=None):
         def decorator(f):
             self._handlers.append(EventHandler(f, pos, face, thread, multi))
             return f
