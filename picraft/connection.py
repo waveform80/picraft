@@ -182,8 +182,8 @@ class Connection(object):
         Closes the connection.
 
         This method can be used to close down the connection to the game
-        server. It is typically called from :meth:`~picraft.world.World.close`
-        rather than being called directly.
+        server. After this method is called, any further requests will raise a
+        :exc:`~picraft.exc.ConnectionClosed` exception.
         """
         try:
             self.batch_forget()

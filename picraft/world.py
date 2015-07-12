@@ -316,16 +316,6 @@ class World(object):
         """
         return self._checkpoint
 
-    def close(self):
-        """
-        Closes the connection to the game server.
-
-        After this method is called, the connection is closed and no further
-        requests can be made. This method is implicitly called when the class
-        is used as a context manager.
-        """
-        self.connection.close()
-
     def say(self, message):
         """
         Displays *message* in the game's chat console.
@@ -345,7 +335,7 @@ class World(object):
         return self
 
     def __exit__(self, exc_type, exc_value, exc_tb):
-        self.close()
+        self.connection.close()
 
     def _get_immutable(self):
         raise AttributeError(
