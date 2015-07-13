@@ -33,6 +33,37 @@ If you want the player position to the nearest block use the
     Vector(x=2, y=1, z=-1)
 
 
+Blocks
+======
+
+The state of blocks in the world can be queried and changed by reading and
+writing to the :attr:`~picraft.world.World.blocks` attribute. This is indexed
+with a :class:`~picraft.vector.Vector` (or slice of vectors) and returns or
+accepts a :class:`~picraft.block.Block` instance. For example, on the command
+line we can find out the type of block we're standing on like so::
+
+    >>> world = World()
+    >>> p = world.player.tile_pos
+    >>> world.blocks[p - Y]
+    <Block "dirt" id=3 data=0>
+
+We can modify the block we're standing on by assigning a new block type to it::
+
+    >>> world.blocks[p - Y] = Block('stone')
+
+We can modify several blocks surrounding the one we're standing on by assigning
+to a slice of blocks. Remember that Python slices are `half-open`_ so the
+easiest way to specify the slice is to specify the start and the end
+inclusively and then simply add one to the end. Here we'll change ``p`` to
+represent the vector of the block beneath our feet, then set it and all
+immediately surrounding blocks to stone::
+
+    >>> p -= Y
+    >>> world.blocks[p - (X + Z):p + (X + Z) + 1] = Block('stone')
+
+.. _half-open: http://python-history.blogspot.co.uk/2013/10/why-python-uses-0-based-indexing.html
+
+
 Auto Bridge
 ===========
 
@@ -52,6 +83,56 @@ Note that the script starts by initializing the connection with the
 the mcpi library: errors in "set" calls are ignored, but the library reacts
 faster because of this. This is necessary in a script like this where rapid
 reaction to player behaviour is required.
+
+
+Events
+======
+
+The auto-bridge recipe above demonstrates a form of reacting to changes, in
+that case player position changing. There is a formal event handling mechanism
+in Minecraft but at the time of writing the API only exposes the "block hit"
+event which occurs when a player hits a block with their sword (by right
+clicking).
+
+The picraft library provides two different ways of working with events; you can
+select whichever one suits your particular application. The basic way of
+reacting to events is to periodically "poll" Minecraft for them (with the
+:meth:`~picraft.events.Events.poll` method). This will return a list of all
+events that occurred since the last time your script polled the server. For
+example, the following script prints a message to the console when you hit a
+block, detailing the block's coordinates and the face that you hit:
+
+.. literalinclude:: events_poll.py
+
+This is fine for simple scripts but you can probably see how more complex
+scripts that check exactly which block has been hit start to involve long
+series of ``if`` statements which look a bit ugly in code. The following script
+creates a couple of blocks near the player on startup: a black block (which
+ends the script when hit), and a white block (which makes multi-colored blocks
+fall from the sky):
+
+.. literalinclude:: events_rain1.py
+
+The alternate method of event handling in picraft is to rely on picraft's
+built-in event loop. This involves "tagging" functions which will react to
+block hits with the :meth:`~picraft.events.Events.block_hit` decorator, then
+running the :meth:`~picraft.events.Events.main_loop` method. This causes
+picraft to continually poll the server and call the tagged functions when their
+criteria are matched by a block-hit event:
+
+.. literalinclude:: events_rain2.py
+    :emphasize-lines: 13,17
+
+One advantage of this method (other than slightly cleaner code) is that event
+handlers can easily be made multi-threaded (to run in parallel with each other)
+simply by modifying the decorator used:
+
+.. literalinclude:: events_rain3.py
+    :emphasize-lines: 17
+
+Now you should find that the rain all falls simultaneously (more or less, given
+the constraints of the Pi's bandwidth!) when you hit the white block multiple
+times.
 
 
 Shapes

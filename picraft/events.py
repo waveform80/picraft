@@ -175,6 +175,17 @@ class Events(object):
         return []
 
     def main_loop(self):
+        """
+        Starts the event polling loop when using the decorator style of event
+        handling (see :meth:`block_hit`).
+
+        This method will not return, so be sure that you have specified all
+        your event handlers before calling it. The event loop can only be
+        broken by an unhandled exception, or by closing the world's connection
+        (in the latter case the resulting :exc:`~picraft.exc.ConnectionClosed`
+        exception will be suppressed as it is assumed that you want to end the
+        script cleanly).
+        """
         logger.info('Entering event loop')
         try:
             while True:
@@ -184,12 +195,65 @@ class Events(object):
             logger.info('Connection closed; exiting event loop')
 
     def process(self):
+        """
+        Poll the server for events and call any relevant event handlers
+        registered with :meth:`block_hit`.
+
+        This method is called repeatedly the event handler loop implemented by
+        :meth:`main_loop`; developers should only call this method when their
+        (presumably non-threaded) event handler is engaged in a long operation
+        and they wish to permit events to be processed in the meantime.
+        """
         for event in self.poll():
             for handler in self._handlers:
                 if handler.matches(event):
                     handler.execute(event)
 
     def block_hit(self, pos=None, face=None, thread=False, multi=True):
+        """
+        Decorator for registering a function as an event handler.
+
+        This decorator is used to mark a function as an event handler which
+        will be called for any matching events while :meth:`main_loop` is
+        executing. The decorator has two optional attributes which can be used
+        to filter the events for which the handler will be called.
+
+        The *pos* attribute can be used to specify a vector or sequence of
+        vectors (including a :class:`~picraft.vector.vector_range`); in this
+        case the event handler will only be called for block hits on matching
+        vectors.
+
+        The *face* attribute can be used to specify a face or sequence of
+        faces for which the handler will be called.
+
+        For example, to specify that one handler should be called for hits
+        on the top of any blocks, and another should be called only for hits
+        on any face of block at the origin one could use the following code::
+
+            from picraft import World, Vector
+
+            world = World()
+
+            @world.events.block_hit(pos=Vector(0, 0, 0))
+            def origin_hit(event):
+                world.say('You hit the block at the origin')
+
+            @world.events.block_hit(face="y+")
+            def top_hit(event):
+                world.say('You hit the top of a block at %d,%d,%d' % event.pos)
+
+        The *thread* parameter (which defaults to ``False``) can be used to
+        specify that the handler should be executed in its own background
+        thread, in parallel with other handlers.
+
+        Finally, the *multi* parameter (which only applies when *thread* is
+        ``True``) specifies whether multi-threaded handlers should be allowed
+        to execute in parallel. When ``True`` (the default), threaded handlers
+        execute as many times as activated in parallel. When ``False``, a
+        single instance of a threaded handler is allowed to execute at any
+        given time; simultaneous activations are ignored (but not queued, as
+        with unthreaded handlers).
+        """
         def decorator(f):
             self._handlers.append(EventHandler(f, pos, face, thread, multi))
             return f
@@ -197,6 +261,23 @@ class Events(object):
 
 
 class EventHandler(object):
+    """
+    This is an internal object used to associate event handlers with their
+    activation restrictions.
+
+    The *action* parameter specifies the function to be run when a matching
+    event is received from the server. The *pos* parameter specifies the
+    vector (or sequence of vectors) which an event must match in order to
+    activate this action. The *face* parameter specifies the block face (or
+    set of faces) which an event must match in order to activate this action.
+    These filters must both match in order for the action to fire.
+
+    The *thread* parameter specifies whether the *action* will be launched in
+    its own background thread. If *multi* is ``False``, then the
+    :meth:`execute` method will ensure that any prior execution has finished
+    before launching another one.
+    """
+
     def __init__(self, action, pos, face, thread, multi):
         self.action = action
         self.pos = pos
@@ -208,6 +289,10 @@ class EventHandler(object):
         self._thread = None
 
     def execute(self, event):
+        """
+        Launches the *action* in a background thread if necessary. If required,
+        this method also ensures threaded actions don't overlap.
+        """
         if self.thread:
             if self.multi:
                 threading.Thread(target=self.action, args=(event,)).start()
@@ -224,6 +309,10 @@ class EventHandler(object):
             self._thread = None
 
     def matches(self, event):
+        """
+        Tests whether or not *event* match all the filters for the handler that
+        this object represents.
+        """
         return self.matches_pos(event.pos) and self.matches_face(event.face)
 
     def matches_pos(self, pos):
