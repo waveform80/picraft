@@ -134,7 +134,7 @@ class Connection(object):
     """
 
     def __init__(
-            self, host, port, timeout=0.2, ignore_errors=False,
+            self, host, port, timeout=0.3, ignore_errors=False,
             encoding='ascii'):
         self._lock = threading.Lock()
         self._local = threading.local()
@@ -375,5 +375,4 @@ class Connection(object):
             self.batch_send()
         else:
             self.batch_forget()
-
 
