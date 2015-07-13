@@ -90,7 +90,7 @@ Events
 
 The auto-bridge recipe above demonstrates a form of reacting to changes, in
 that case player position changing. There is a formal event handling mechanism
-in Minecraft but at the time of writing the API only exposes the "block hit"
+in Minecraft, but at the time of writing the API only exposes the "block hit"
 event which occurs when a player hits a block with their sword (by right
 clicking).
 

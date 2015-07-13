@@ -52,7 +52,7 @@ except ImportError:
 def test_world_init():
     with mock.patch('picraft.world.Connection') as c:
         World()
-        c.assert_called_once_with('localhost', 4711, 0.2, False)
+        c.assert_called_once_with('localhost', 4711, 0.3, False)
 
 def test_world_objects():
     with mock.patch('picraft.world.Connection') as c:
