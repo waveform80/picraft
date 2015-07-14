@@ -469,7 +469,9 @@ class Blocks(object):
 
     def __getitem__(self, index):
         if isinstance(index, slice):
-            vr = vector_range(index.start, index.stop, index.step)
+            index = vector_range(index.start, index.stop, index.step)
+        if isinstance(index, vector_range):
+            vr = index
             if not vr:
                 warnings.warn(EmptySliceWarning(
                     "ignoring empty slice passed to blocks"))
@@ -497,7 +499,9 @@ class Blocks(object):
 
     def __setitem__(self, index, value):
         if isinstance(index, slice):
-            vr = vector_range(index.start, index.stop, index.step)
+            index = vector_range(index.start, index.stop, index.step)
+        if isinstance(index, vector_range):
+            vr = index
             if not vr:
                 warnings.warn(EmptySliceWarning(
                     "ignoring empty slice passed to blocks"))
