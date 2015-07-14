@@ -375,9 +375,9 @@ class Vector(namedtuple('Vector', ('x', 'y', 'z'))):
             Vector(0.0, -1.0, 1.0)
         """
         return Vector(
-            math.floor(self.x),
-            math.floor(self.y),
-            math.floor(self.z))
+            int(math.floor(self.x)),
+            int(math.floor(self.y)),
+            int(math.floor(self.z)))
 
     def ceil(self):
         """
@@ -388,9 +388,9 @@ class Vector(namedtuple('Vector', ('x', 'y', 'z'))):
             Vector(1.0, 0.0, 2.0)
         """
         return Vector(
-            math.ceil(self.x),
-            math.ceil(self.y),
-            math.ceil(self.z))
+            int(math.ceil(self.x)),
+            int(math.ceil(self.y)),
+            int(math.ceil(self.z)))
 
     def round(self, ndigits=0):
         """
