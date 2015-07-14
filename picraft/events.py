@@ -559,7 +559,9 @@ class PlayerPosHandler(EventHandler):
     def matches(self, event):
         return (
                 isinstance(event, PlayerPosEvent) and
-                self.matches_pos(event.pos))
+                (
+                    self.matches_pos(event.old_pos) or
+                    self.matches_pos(event.new_pos)))
 
     def matches_pos(self, pos):
         return self.pos is None or pos.floor() in self.pos
