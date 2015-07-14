@@ -265,7 +265,7 @@ class Events(object):
     def _set_track_players(self, value):
         try:
             self._track_players = {
-                pid: Player(self._connection, pid).pos
+                pid: Player(self._connection, pid).pos.round(1)
                 for pid in value
                 }
         except TypeError:
@@ -338,7 +338,7 @@ class Events(object):
         def player_pos_events(positions):
             for pid, old_pos in positions.items():
                 player = Player(self._connection, pid)
-                new_pos = player.pos
+                new_pos = player.pos.round(1)
                 if old_pos != new_pos:
                     yield PlayerPosEvent(old_pos, new_pos, player)
                 positions[pid] = new_pos
