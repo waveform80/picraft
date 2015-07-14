@@ -52,6 +52,20 @@ BlockHitEvent
 
 .. autoclass:: BlockHitEvent(pos, face, player)
     :members:
+
+
+PlayerPosEvent
+==============
+
+.. autoclass:: PlayerPosEvent(old_pos, new_pos, player)
+    :members:
+
+
+IdleEvent
+=========
+
+.. autoclass:: IdleEvent()
+    :members:
 """
 
 from __future__ import (
@@ -131,48 +145,218 @@ class BlockHitEvent(namedtuple('BlockHitEvent', ('pos', 'face', 'player'))):
                 self.pos, self.face, self.player.player_id)
 
 
+class PlayerPosEvent(namedtuple('PlayerPosEvent', ('old_pos', 'new_pos', 'player'))):
+    """
+    Event representing a player moving.
+
+    This tuple derivative represents the event resulting from a player moving
+    within the Minecraft world. Users will not normally need to construct
+    instances of this class, rather they are constructed and returned by calls
+    to :meth:`~Events.poll`.
+
+    .. attribute:: old_pos
+
+        A :class:`~picraft.vector.Vector` indicating the location of the player
+        prior to this event. The location includes decimal places (it is not
+        the tile-position, but the actual position).
+
+    .. attribute:: new_pos
+
+        A :class:`~picraft.vector.Vector` indicating the location of the player
+        as of this event. The location includes decimal places (it is not
+        the tile-position, but the actual position).
+
+    .. attribute:: player
+
+        A :class:`~picraft.player.Player` instance representing the player that
+        moved.
+    """
+
+    @property
+    def __dict__(self):
+        # Ensure __dict__ property works in Python 3.3 and above.
+        return super(PlayerPosEvent, self).__dict__
+
+    def __repr__(self):
+        return '<PlayerPosEvent old_pos=%s new_pos=%s player=%d>' % (
+                self.old_pos, self.new_pos, self.player.player_id)
+
+
+class IdleEvent(namedtuple('IdleEvent', ())):
+    """
+    Event that fires in the event that no other events have occurred since the
+    last poll. This is only used if :attr:`Events.include_idle` is ``True``.
+    """
+
+    @property
+    def __dict__(self):
+        # Ensure __dict__ property works in Python 3.3 and above.
+        return super(IdleEvent, self).__dict__
+
+    def __repr__(self):
+        return '<IdleEvent>'
+
+
 class Events(object):
     """
     This class implements the :attr:`~picraft.world.World.events` attribute.
+
+    There are two ways of responding to picraft's events: the first is to
+    :meth:`poll` for them manually, and process each event in the resulting
+    list::
+
+        >>> for event in world.events.poll():
+        ...     print(repr(event))
+        ...
+        <BlockHitEvent pos=1,1,1 face="y+" player=1>,
+        <PlayerPosEvent old_pos=0.2,1.0,0.7 new_pos=0.3,1.0,0.7 player=1>
+
+    The second is to "tag" functions as event handlers with the decorators
+    provided and then call the :meth:`main_loop` function which will handle
+    polling the server for you, and call all the relevant functions as needed::
+
+        @world.events.on_block_hit(pos=Vector(1,1,1))
+        def hit_block(event):
+            print('You hit the block at %s' % event.pos)
+
+        world.events.main_loop()
+
+    By default, only block hit events will be tracked. This is because it is
+    the only type of event that the Minecraft server provides information about
+    itself, and thus the only type of event that can be processed relatively
+    efficiently. If you wish to track player positions, assign a set of player
+    ids to the :attr:`track_players` attribute. If you wish to include idle
+    events (which fire when nothing else is produced in response to
+    :meth:`poll`) then set :attr:`include_idle` to ``True``.
+
+    Finally, the :attr:`poll_gap` attribute specifies how long to pause during
+    each iteration of :meth:`main_loop` to permit event handlers some time to
+    interact with the server. Setting this to 0 will provide the fastest
+    response to events, but will result in event handlers having to fight with
+    event polling for access to the server.
     """
 
     def __init__(self, connection):
         self._connection = connection
         self._handlers = []
-        self.poll_gap = 0.1
+        self._poll_gap = 0.1
+        self._include_idle = False
+        self._track_players = {}
+
+    def _get_poll_gap(self):
+        return self._poll_gap
+    def _set_poll_gap(self, value):
+        self._poll_gap = float(value)
+    poll_gap = property(_get_poll_gap, _set_poll_gap, doc="""\
+        The length of time (in seconds) to pause during :meth:`main_loop`.
+
+        This property specifies the length of time to wait at the end of each
+        iteration of :meth:`main_loop`. By default this is 0.1 seconds.
+
+        The purpose of the pause is to give event handlers executing in the
+        background time to communicate with the Minecraft server. Setting this
+        to 0.0 will result in faster response to events, but also starves
+        threaded event handlers of time to communicate with the server,
+        resulting in "choppy" performance.
+        """)
+
+    def _get_track_players(self):
+        return self._track_players.keys()
+    def _set_track_players(self, value):
+        try:
+            self._track_players = {
+                pid: Player(self._connection, pid).pos
+                for pid in value
+                }
+        except TypeError:
+            if not isinstance(value, int):
+                raise ValueError(
+                        'track_players value must be a player id '
+                        'or a sequence of player ids')
+            self._track_players = {
+                value: Player(self._connection, value).pos
+                }
+    track_players = property(_get_track_players, _set_track_players, doc="""\
+        The set of player ids for which movement should be tracked.
+
+        By default the :meth:`poll` method will not produce player position
+        events (:class:`PlayerPosEvent`). Producing these events requires extra
+        interactions with the Minecraft server (one for each player tracked)
+        which slow down response to block hit events.
+
+        If you wish to track player positions, set this attribute to the set of
+        player ids you wish to track and their positions will be stored.  The
+        next time :meth:`poll` is called it will query the positions for all
+        specified players and fire player position events if they have changed.
+
+        Given that the :attr:`~picraft.world.World.players` attribute
+        represents a dictionary mapping player ids to players, if you wish to
+        track all players you can simply do::
+
+            >>> world.events.track_players = world.players
+        """)
+
+    def _get_include_idle(self):
+        return self._include_idle
+    def _set_include_idle(self, value):
+        self._include_idle = bool(value)
+    include_idle = property(_get_include_idle, _set_include_idle, doc="""\
+        If ``True``, generate an idle event when no other events would be
+        generated by :meth:`poll`. This attribute defaults to ``False``.
+        """)
 
     def clear(self):
         """
         Forget all pending events that have not yet been retrieved with
         :meth:`poll`.
 
-        This method is used to clear the list of block-hit events that have
-        occurred since the last call to :meth:`poll` with retrieving them. This
-        is useful for ensuring that events subsequently retrieved definitely
+        This method is used to clear the list of events that have occurred
+        since the last call to :meth:`poll` without retrieving them. This is
+        useful for ensuring that events subsequently retrieved definitely
         occurred *after* the call to :meth:`clear`.
         """
+        self._set_track_players(self._get_track_players())
         self._connection.send('events.clear()')
 
     def poll(self):
         """
         Return a list of all events that have occurred since the last call to
-        :meth:`poll`. Currently the only type of event supported is the
-        block-hit event represented by instances of :class:`BlockHitEvent`.
+        :meth:`poll`.
 
         For example::
 
             >>> w = World()
+            >>> w.events.track_players = w.players
+            >>> w.events.include_idle = True
             >>> w.events.poll()
-            [<BlockHit pos=1,1,1 face="x+" player=1>,
-             <BlockHit pos=1,1,1 face="x+" player=1>]
+            [<PlayerPosEvent old_pos=0.2,1.0,0.7 new_pos=0.3,1.0,0.7 player=1>,
+             <BlockHitEvent pos=1,1,1 face="x+" player=1>,
+             <BlockHitEvent pos=1,1,1 face="x+" player=1>]
+            >>> w.events.poll()
+            [<IdleEvent>]
         """
-        events = self._connection.transact('events.block.hits()')
+        def player_pos_events(positions):
+            for pid, old_pos in positions.items():
+                player = Player(self._connection, pid)
+                new_pos = player.pos
+                if old_pos != new_pos:
+                    yield PlayerPosEvent(old_pos, new_pos, player)
+                positions[pid] = new_pos
+
+        def block_hit_events():
+            s = self._connection.transact('events.block.hits()')
+            if s:
+                for e in s.split('|'):
+                    yield BlockHitEvent.from_string(self._connection, e)
+
+        events = list(player_pos_events(self._track_players)) + list(block_hit_events())
+
         if events:
-            return [
-                BlockHitEvent.from_string(self._connection, event)
-                for event in events.split('|')
-                ]
-        return []
+            return events
+        elif self._include_idle:
+            return [IdleEvent()]
+        else:
+            return []
 
     def main_loop(self):
         """
@@ -209,14 +393,66 @@ class Events(object):
                 if handler.matches(event):
                     handler.execute(event)
 
-    def block_hit(self, pos=None, face=None, thread=False, multi=True):
+    def on_idle(self, thread=False, multi=True):
+        """
+        Decorator for registering a function as an idle handler.
+
+        This decorator is used to mark a function as an event handler which
+        will be called when no other event handlers have been called in an
+        iteration of :meth:`main_loop`. The function will be called with the
+        corresponding :class:`IdleEvent` as the only argument.
+
+        Note that idle events will only be generated if :attr:`include_idle`
+        is set to ``True``.
+        """
+        def decorator(f):
+            self._handlers.append(IdleHandler(f, thread, multi))
+            return f
+        return decorator
+
+    def on_player_pos(self, thread=False, multi=True, pos=None):
+        """
+        Decorator for registering a function as a position change handler.
+
+        This decorator is used to mark a function as an event handler which
+        will be called for any events indicating that a player's position has
+        changed while :meth:`main_loop` is executing. The function will be
+        called with the corresponding :class:`PlayerPosEvent` as the only
+        argument.
+
+        The *pos* attribute can be used to specify a vector or sequence of
+        vectors (including a :class:`~picraft.vector.vector_range`); player
+        position events which fall outside this vector (or vectors) won't
+        call the associated handler. For example, to fire a handler every
+        time any player passes through blocks within (-10, 0, -10) to (10, 0, 10)::
+
+            from picraft import World, Vector, vector_range
+
+            world = World()
+            world.events.track_players = world.players
+
+            from_pos = Vector(-10, 0, -10)
+            to_pos = Vector(10, 0, 10)
+            @world.events.on_player_pos(pos=vector_range(from_pos, to_pos + 1))
+            def in_box(event):
+                world.say('Player %d stepped in the box' % event.player.player_id)
+
+        Note that only players specified in :attr:`track_players` will generate
+        player position events.
+        """
+        def decorator(f):
+            self._handlers.append(PlayerPosHandler(f, thread, multi, pos))
+            return f
+        return decorator
+
+    def on_block_hit(self, thread=False, multi=True, pos=None, face=None):
         """
         Decorator for registering a function as an event handler.
 
         This decorator is used to mark a function as an event handler which
-        will be called for any matching events while :meth:`main_loop` is
-        executing. The decorator has two optional attributes which can be used
-        to filter the events for which the handler will be called.
+        will be called for any events indicating a block has been hit while
+        :meth:`main_loop` is executing. The function will be called with the
+        corresponding :class:`BlockHitEvent` as the only argument.
 
         The *pos* attribute can be used to specify a vector or sequence of
         vectors (including a :class:`~picraft.vector.vector_range`); in this
@@ -234,11 +470,11 @@ class Events(object):
 
             world = World()
 
-            @world.events.block_hit(pos=Vector(0, 0, 0))
+            @world.events.on_block_hit(pos=Vector(0, 0, 0))
             def origin_hit(event):
                 world.say('You hit the block at the origin')
 
-            @world.events.block_hit(face="y+")
+            @world.events.on_block_hit(face="y+")
             def top_hit(event):
                 world.say('You hit the top of a block at %d,%d,%d' % event.pos)
 
@@ -255,7 +491,7 @@ class Events(object):
         with unthreaded handlers).
         """
         def decorator(f):
-            self._handlers.append(EventHandler(f, pos, face, thread, multi))
+            self._handlers.append(BlockHitHandler(f, thread, multi, pos, face))
             return f
         return decorator
 
@@ -266,11 +502,7 @@ class EventHandler(object):
     activation restrictions.
 
     The *action* parameter specifies the function to be run when a matching
-    event is received from the server. The *pos* parameter specifies the
-    vector (or sequence of vectors) which an event must match in order to
-    activate this action. The *face* parameter specifies the block face (or
-    set of faces) which an event must match in order to activate this action.
-    These filters must both match in order for the action to fire.
+    event is received from the server.
 
     The *thread* parameter specifies whether the *action* will be launched in
     its own background thread. If *multi* is ``False``, then the
@@ -278,12 +510,8 @@ class EventHandler(object):
     before launching another one.
     """
 
-    def __init__(self, action, pos, face, thread, multi):
+    def __init__(self, action, thread, multi):
         self.action = action
-        self.pos = pos
-        if isinstance(face, bytes):
-            face = face.decode('ascii')
-        self.face = face
         self.thread = thread
         self.multi = multi
         self._thread = None
@@ -313,7 +541,54 @@ class EventHandler(object):
         Tests whether or not *event* match all the filters for the handler that
         this object represents.
         """
-        return self.matches_pos(event.pos) and self.matches_face(event.face)
+        return False
+
+
+class PlayerPosHandler(EventHandler):
+    """
+    This class associates a handler with a player-position event.
+
+    Constructor parameters are similar to the parent class,
+    :class:`EventHandler` but additionally include 
+    """
+
+    def __init__(self, action, thread, multi, pos):
+        super(PlayerPosHandler, self).__init__(action, thread, multi)
+        self.pos = pos
+
+    def matches(self, event):
+        return (
+                isinstance(event, PlayerPosEvent) and
+                self.matches_pos(event.pos))
+
+    def matches_pos(self, pos):
+        return self.pos is None or pos.floor() in self.pos
+
+
+class BlockHitHandler(EventHandler):
+    """
+    This class associates a handler with a block-hit event.
+
+    Constructor parameters are similar to the parent class,
+    :class:`EventHandler` but additionally include *pos* to specify the vector
+    (or sequence of vectors) which an event must match in order to activate
+    this action, and *face* to specify the block face (or set of faces) which
+    an event must match.  These filters must both match in order for the action
+    to fire.
+    """
+
+    def __init__(self, action, thread, multi, pos, face):
+        super(BlockHitHandler, self).__init__(action, thread, multi)
+        self.pos = pos
+        if isinstance(face, bytes):
+            face = face.decode('ascii')
+        self.face = face
+
+    def matches(self, event):
+        return (
+                isinstance(event, BlockHitEvent) and
+                self.matches_pos(event.pos) and
+                self.matches_face(event.face))
 
     def matches_pos(self, pos):
         if self.pos is None:
@@ -332,4 +607,13 @@ class EventHandler(object):
         if isinstance(self.face, Container):
             return face in self.face
         return False
+
+
+class IdleHandler(EventHandler):
+    """
+    This class associates a handler with an idle event.
+    """
+
+    def matches(self, event):
+        return isinstance(event, IdleEvent)
 

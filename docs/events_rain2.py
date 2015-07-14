@@ -10,11 +10,11 @@ black_pos = p - 3 * X
 world.blocks[white_pos] = Block('#ffffff')
 world.blocks[black_pos] = Block('#000000')
 
-@world.events.block_hit(pos=black_pos)
+@world.events.on_block_hit(pos=black_pos)
 def stop_script(event):
     world.connection.close()
 
-@world.events.block_hit(pos=white_pos)
+@world.events.on_block_hit(pos=white_pos)
 def make_it_rain(event):
     rain = Vector(p.x + randint(-10, 10), p.y + 20, p.z + randint(-10, 10))
     rain_end = world.height[rain]

@@ -281,22 +281,14 @@ class World(object):
         Provides an interface to poll events that occur in the Minecraft world.
 
         The :class:`~picraft.events.Events` object contained in this property
-        provides two methods:
-
-        * :meth:`~picraft.events.Events.poll` which can be used to determine
-          what events have occurred in the Minecraft world since the last call
-          to ``poll``, and
-
-        * :meth:`~picraft.events.Events.clear` which can be used to tell the
-          server to forget any as-yet-unreported events
-
-        For example::
+        provides methods for determining what is happening in the Minecraft
+        world::
 
             >>> events = world.events.poll()
             >>> len(events)
             3
             >>> events[0]
-            <BlockHit pos=1,1,1 face="x+" player=1>
+            <BlockHitEvent pos=1,1,1 face="x+" player=1>
             >>> events[0].player.pos
             <Vector x=0.5, y=0.0, z=0.5>
         """

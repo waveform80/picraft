@@ -85,6 +85,8 @@ faster because of this. This is necessary in a script like this where rapid
 reaction to player behaviour is required.
 
 
+.. _event_driven:
+
 Events
 ======
 
@@ -115,7 +117,7 @@ fall from the sky):
 
 The alternate method of event handling in picraft is to rely on picraft's
 built-in event loop. This involves "tagging" functions which will react to
-block hits with the :meth:`~picraft.events.Events.block_hit` decorator, then
+block hits with the :meth:`~picraft.events.Events.on_block_hit` decorator, then
 running the :meth:`~picraft.events.Events.main_loop` method. This causes
 picraft to continually poll the server and call the tagged functions when their
 criteria are matched by a block-hit event:
