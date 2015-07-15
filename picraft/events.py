@@ -410,7 +410,7 @@ class Events(object):
             return f
         return decorator
 
-    def on_player_pos(self, thread=False, multi=True, pos=None):
+    def on_player_pos(self, thread=False, multi=True, old_pos=None, new_pos=None):
         """
         Decorator for registering a function as a position change handler.
 
@@ -420,11 +420,12 @@ class Events(object):
         called with the corresponding :class:`PlayerPosEvent` as the only
         argument.
 
-        The *pos* attribute can be used to specify a vector or sequence of
-        vectors (including a :class:`~picraft.vector.vector_range`); player
-        position events which fall outside this vector (or vectors) won't
-        call the associated handler. For example, to fire a handler every
-        time any player passes through blocks within (-10, 0, -10) to (10, 0, 10)::
+        The *old_pos* and *new_pos* attributes can be used to specify vectors
+        or sequences of vectors (including a
+        :class:`~picraft.vector.vector_range`) that the player position events
+        must match in order to activate the associated handler. For example, to
+        fire a handler every time any player enters or walks over blocks within
+        (-10, 0, -10) to (10, 0, 10)::
 
             from picraft import World, Vector, vector_range
 
@@ -433,15 +434,20 @@ class Events(object):
 
             from_pos = Vector(-10, 0, -10)
             to_pos = Vector(10, 0, 10)
-            @world.events.on_player_pos(pos=vector_range(from_pos, to_pos + 1))
+            @world.events.on_player_pos(new_pos=vector_range(from_pos, to_pos + 1))
             def in_box(event):
                 world.say('Player %d stepped in the box' % event.player.player_id)
+
+        Various effects can be achieved by combining *old_pos* and *new_pos*
+        filters. For example, one could detect when a player crosses a boundary
+        in a particular direction, or decide when a player enters or leaves a
+        particular area.
 
         Note that only players specified in :attr:`track_players` will generate
         player position events.
         """
         def decorator(f):
-            self._handlers.append(PlayerPosHandler(f, thread, multi, pos))
+            self._handlers.append(PlayerPosHandler(f, thread, multi, old_pos, new_pos))
             return f
         return decorator
 
@@ -552,19 +558,25 @@ class PlayerPosHandler(EventHandler):
     :class:`EventHandler` but additionally include 
     """
 
-    def __init__(self, action, thread, multi, pos):
+    def __init__(self, action, thread, multi, old_pos, new_pos):
         super(PlayerPosHandler, self).__init__(action, thread, multi)
-        self.pos = pos
+        self.old_pos = old_pos
+        self.new_pos = new_pos
 
     def matches(self, event):
         return (
                 isinstance(event, PlayerPosEvent) and
-                (
-                    self.matches_pos(event.old_pos) or
-                    self.matches_pos(event.new_pos)))
+                self.matches_pos(self.old_pos, event.old_pos) and
+                self.matches_pos(self.new_pos, event.new_pos))
 
-    def matches_pos(self, pos):
-        return self.pos is None or pos.floor() in self.pos
+    def matches_pos(self, test, pos):
+        if test is None:
+            return True
+        if isinstance(test, Vector):
+            return test == pos
+        if isinstance(test, Container):
+            return pos in test
+        return False
 
 
 class BlockHitHandler(EventHandler):
