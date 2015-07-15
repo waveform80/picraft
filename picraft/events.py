@@ -573,9 +573,9 @@ class PlayerPosHandler(EventHandler):
         if test is None:
             return True
         if isinstance(test, Vector):
-            return test == pos
+            return test == pos.floor()
         if isinstance(test, Container):
-            return pos in test
+            return pos.floor() in test
         return False
 
 
