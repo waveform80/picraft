@@ -438,6 +438,8 @@ class Events(object):
             def in_box(event):
                 world.say('Player %d stepped in the box' % event.player.player_id)
 
+            world.events.main_loop()
+
         Various effects can be achieved by combining *old_pos* and *new_pos*
         filters. For example, one could detect when a player crosses a boundary
         in a particular direction, or decide when a player enters or leaves a
@@ -483,6 +485,8 @@ class Events(object):
             @world.events.on_block_hit(face="y+")
             def top_hit(event):
                 world.say('You hit the top of a block at %d,%d,%d' % event.pos)
+
+            world.events.main_loop()
 
         The *thread* parameter (which defaults to ``False``) can be used to
         specify that the handler should be executed in its own background

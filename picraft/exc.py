@@ -47,6 +47,8 @@ Exceptions
 
 .. autoexception:: ConnectionError
 
+.. autoexception:: ConnectionClosed
+
 .. autoexception:: CommandError
 
 .. autoexception:: NoResponse
