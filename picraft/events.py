@@ -361,7 +361,7 @@ class Events(object):
     def main_loop(self):
         """
         Starts the event polling loop when using the decorator style of event
-        handling (see :meth:`block_hit`).
+        handling (see :meth:`on_block_hit`).
 
         This method will not return, so be sure that you have specified all
         your event handlers before calling it. The event loop can only be
@@ -381,7 +381,7 @@ class Events(object):
     def process(self):
         """
         Poll the server for events and call any relevant event handlers
-        registered with :meth:`block_hit`.
+        registered with :meth:`on_block_hit`.
 
         This method is called repeatedly the event handler loop implemented by
         :meth:`main_loop`; developers should only call this method when their
