@@ -5,6 +5,29 @@ Change log
 ==========
 
 
+Release 0.4 (2015-07-19)
+========================
+
+Release 0.4 adds plenty of new features:
+
+* The events system has been expanded considerably to include an event-driven
+  programming paradigm (decorate functions to tell picraft when to call them,
+  e.g. in response to player movement or block hits). This includes the ability
+  to run event handlers in parallel with automatic threading
+* Add support for circle drawing through an arbitrary plane. I'm still not
+  happy with the implementation, and may revise it in future editions, but
+  I am happy with the API so it's worth releasing for now (`#7_`)
+* Add Raspbian packaging; we've probably got to the point where I need to start
+  making guarantees about backward compatibililty in which case it's probably
+  time to make this more generally accessible by including deb packaging
+  (`#8_`)
+* Lots of doc revisions including a new vectors chapter, more recipes, and so
+  on!
+
+.. _#7: https://github.com/waveform80/picraft/issues/7
+.. _#8: https://github.com/waveform80/picraft/issues/8
+
+
 Release 0.3 (2015-06-21)
 ========================
 
