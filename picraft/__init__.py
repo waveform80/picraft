@@ -88,7 +88,7 @@ from .exc import (
     ConnectionClosed,
     EmptySliceWarning,
     )
-from .vector import Vector, vector_range, line, lines, V, O, X, Y, Z
+from .vector import Vector, vector_range, line, lines, circle, V, O, X, Y, Z
 from .block import Block, BLOCK_COLORS
 from .events import BlockHitEvent
 from .connection import Connection

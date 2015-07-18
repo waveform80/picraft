@@ -1035,3 +1035,42 @@ def lines(points, closed=True):
         for v in islice(line(point, first), 1, None):
             yield v
 
+def circle(center, radius, plane=Y):
+    """
+    Generates the coordinates of a three-dimensional circle centered at the
+    vector *center*. The *radius* parameter is a vector specifying the distance
+    of the circumference from the center. The optional *plane* parameter
+    specifies another vector which, in combination with the *radius* vector,
+    gives the plane that the circle exists within.
+
+    For example, to create a circle centered at (0, 10, 0), with a radius of 5
+    units, existing in the X-Y plane::
+
+        >>> circle(10*Y, 5*X, Y)
+
+    To create another circle with the same center and radius, but existing in
+    the X-Z (ground) plane::
+
+        >>> circle(10*Y, 5*X, Z)
+
+    The algorithm used by this function is based on the `differences of roots`_
+    method, extended to three dimensions.
+    """
+    if radius.angle_between(plane) != 90:
+        plane = radius.cross(-(radius.cross(plane)))
+    perp = plane.unit
+    r = radius.magnitude**2
+    last_points = None
+    result = set()
+    for radial_point in line(-radius, radius):
+        circum_v = (perp * math.sqrt(r - radial_point.magnitude**2)).floor()
+        top_point = (radial_point + circum_v)
+        bottom_point = (radial_point - circum_v)
+        if last_points is not None:
+            for p in line(last_points[0], top_point):
+                result.add(center + p)
+            for p in line(last_points[1], bottom_point):
+                result.add(center + p)
+        last_points = (top_point, bottom_point)
+    return result
+
