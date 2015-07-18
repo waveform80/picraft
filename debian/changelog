@@ -1,4 +1,23 @@
-picraft (0.3-1) stable; urgency=low
+picraft (0.4-1) stable; urgency=low
+
+  * The events system has been expanded considerably to include an
+    event-driven programming paradigm (decorate functions to tell picraft when
+    to call them, e.g. in response to player movement or block hits). This
+    includes the ability to run event handlers in parallel with automatic
+    threading
+  * Add support for circle drawing through an arbitrary plane. I'm still not
+    happy with the implementation, and may revise it in future editions, but I
+    am happy with the API so it's worth releasing for now (#7)
+  * Add Raspbian packaging; we've probably got to the point where I need to
+    start making guarantees about backward compatibililty in which case it's
+    probably time to make this more generally accessible by including deb
+    packaging (#8)
+  * Lots of doc revisions including a new vectors chapter, more recipes, and
+    so on!
+
+ -- Dave Jones <dave@waveform.org.uk>  Sun, 19 Jul 2015 00:36:55 +0100
+
+picraft (0.3-1) UNRELEASED; urgency=low
 
   * Add support for querying a range of blocks with one transaction on the
     Raspberry Juice server (#1)
@@ -9,7 +28,7 @@ picraft (0.3-1) stable; urgency=low
 
  -- Dave Jones <dave@waveform.org.uk>  Sun, 21 Jun 2015 22:05:03 +0100
 
-picraft (0.2-1) stable; urgency=low
+picraft (0.2-1) UNRELEASED; urgency=low
 
   * Fix a stupid error which caused "block.data" and "block.color" (which make
     up the block database) to be excluded from the PyPI build (#3)
@@ -19,7 +38,7 @@ picraft (0.2-1) stable; urgency=low
 
  -- Dave Jones <dave@waveform.org.uk>  Mon, 08 Jun 2015 22:48:51 +0100
 
-picraft (0.1-1) stable; urgency=low
+picraft (0.1-1) UNRELEASED; urgency=low
 
   * Initial release.
 
