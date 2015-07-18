@@ -168,7 +168,7 @@ upload-pi: $(PY_SOURCES) $(DOC_SOURCES) $(DIST_DEB) $(DIST_DSC)
 	# build a source archive and upload to PyPI
 	$(PYTHON) $(PYFLAGS) setup.py sdist upload
 	# build the deb source archive and upload to Raspbian
-	dput raspiberrypi dist/$(NAME)_$(VER)-1$(DEB_SUFFIX)_source.changes
+	dput raspberrypi dist/$(NAME)_$(VER)-1$(DEB_SUFFIX)_source.changes
 	git push --tags
 
 upload-ubuntu: $(DIST_DEB) $(DIST_DSC)
