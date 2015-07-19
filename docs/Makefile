@@ -6,12 +6,17 @@ SPHINXOPTS    =
 SPHINXBUILD   = sphinx-build
 PAPER         =
 BUILDDIR      = _build
-DOT_DIAGRAMS  = $(wildcard *.dot)
-MSC_DIAGRAMS  = $(wildcard *.mscgen)
-GPI_DIAGRAMS  = $(wildcard *.gpi)
-SVG_IMAGES    = $(wildcard *.svg) $(DOT_DIAGRAMS:%.dot=%.svg) $(MSC_DIAGRAMS:%.mscgen=%.svg)
-PNG_IMAGES    = $(wildcard *.png) $(GPI_DIAGRAMS:%.gpi=%.png)
-PDF_IMAGES    = $(SVG_IMAGES:%.svg=%.pdf) $(GPI_DIAGRAMS:%.gpi=%.pdf)
+DOT_DIAGRAMS  := $(wildcard *.dot)
+MSC_DIAGRAMS  := $(wildcard *.mscgen)
+GPI_DIAGRAMS  := $(wildcard *.gpi)
+SVG_IMAGES    := $(wildcard *.svg) $(DOT_DIAGRAMS:%.dot=%.svg) $(MSC_DIAGRAMS:%.mscgen=%.svg)
+PNG_IMAGES    := $(wildcard *.png) $(GPI_DIAGRAMS:%.gpi=%.png)
+PDF_IMAGES    := $(SVG_IMAGES:%.svg=%.pdf) $(GPI_DIAGRAMS:%.gpi=%.pdf) $(DOT_DIAGRAMS:%.dot=%.pdf) $(MSC_DIAGRAMS:%.mscgen=%.pdf)
+
+# User-friendly check for sphinx-build
+ifeq ($(shell which $(SPHINXBUILD) >/dev/null 2>&1; echo $$?), 1)
+$(error The '$(SPHINXBUILD)' command was not found. Make sure you have Sphinx installed, then set the SPHINXBUILD environment variable to point to the full path of the '$(SPHINXBUILD)' executable. Alternatively you can add the directory with the executable to your PATH. If you don't have Sphinx installed, grab it from http://sphinx-doc.org/)
+endif
 
 # Internal variables.
 PAPEROPT_a4     = -D latex_paper_size=a4
@@ -175,7 +180,7 @@ pseudoxml:
 	@echo
 	@echo "Build finished. The pseudo-XML files are in $(BUILDDIR)/pseudoxml."
 
-%.svg: %.msc
+%.svg: %.mscgen
 	mscgen -T svg -o $@ $<
 
 %.svg: %.dot
@@ -190,4 +195,8 @@ pseudoxml:
 %.pdf: %.gpi common.gp
 	gnuplot -e "set term pdfcairo size 10cm,7.5cm" $< > $@
 
+%.pdf: %.mscgen
+	mscgen -T eps -o - $< | ps2pdf -dEPSCrop - $@
+
 .PHONY: help clean html dirhtml singlehtml pickle json htmlhelp qthelp devhelp epub latex latexpdf text man changes linkcheck doctest gettext
+
