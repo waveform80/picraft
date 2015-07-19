@@ -46,7 +46,9 @@ DOC_SOURCES:=docs/conf.py \
 	$(wildcard docs/*.dot) \
 	$(wildcard docs/*.mscgen) \
 	$(wildcard docs/*.gpi) \
-	$(wildcard docs/*.rst)
+	$(wildcard docs/*.rst) \
+	$(wildcard docs/*.pdf)
+SUBDIRS:=
 
 # Calculate the name of all outputs
 DIST_EGG=dist/$(NAME)-$(VER)-$(PYVER).egg
@@ -77,7 +79,7 @@ all:
 	@echo "make release - Create and tag a new release"
 	@echo "make upload - Upload the new release to repositories"
 
-install:
+install: $(SUBDIRS)
 	$(PYTHON) $(PYFLAGS) setup.py install --root $(DEST_DIR)
 
 doc: $(DOC_SOURCES)
@@ -98,7 +100,7 @@ deb: $(DIST_DEB) $(DIST_DSC)
 dist: $(DIST_EGG) $(DIST_DEB) $(DIST_DSC) $(DIST_TAR) $(DIST_ZIP)
 
 develop: tags
-	@# These have to been done separately to avoid a cockup...
+	@# These have to be done separately to avoid a cockup...
 	$(PIP) install -U setuptools
 	$(PIP) install -U pip
 	$(PIP) install -e .[doc,test]
@@ -112,21 +114,32 @@ clean:
 	$(MAKE) -f $(CURDIR)/debian/rules clean
 	$(MAKE) -C docs clean
 	rm -fr build/ dist/ $(NAME).egg-info/ tags
+	for dir in $(SUBDIRS); do \
+		$(MAKE) -C $$dir clean; \
+	done
 	find $(CURDIR) -name "*.pyc" -delete
 
 tags: $(PY_SOURCES)
 	ctags -R --exclude="build/*" --exclude="debian/*" --exclude="docs/*" --languages="Python"
 
-$(DIST_TAR): $(PY_SOURCES)
+$(SUBDIRS):
+	$(MAKE) -C $@
+
+$(MAN_PAGES): $(DOC_SOURCES)
+	$(PYTHON) $(PYFLAGS) setup.py build_sphinx -b man
+	mkdir -p man/
+	cp build/sphinx/man/*.[0-9] man/
+
+$(DIST_TAR): $(PY_SOURCES) $(SUBDIRS)
 	$(PYTHON) $(PYFLAGS) setup.py sdist --formats gztar
 
-$(DIST_ZIP): $(PY_SOURCES)
+$(DIST_ZIP): $(PY_SOURCES) $(SUBDIRS)
 	$(PYTHON) $(PYFLAGS) setup.py sdist --formats zip
 
-$(DIST_EGG): $(PY_SOURCES)
+$(DIST_EGG): $(PY_SOURCES) $(SUBDIRS)
 	$(PYTHON) $(PYFLAGS) setup.py bdist_egg
 
-$(DIST_DEB): $(PY_SOURCES) $(DEB_SOURCES)
+$(DIST_DEB): $(PY_SOURCES) $(SUBDIRS) $(DEB_SOURCES) $(MAN_PAGES)
 	# build the binary package in the parent directory then rename it to
 	# project_version.orig.tar.gz
 	$(PYTHON) $(PYFLAGS) setup.py sdist --dist-dir=../
@@ -135,7 +148,7 @@ $(DIST_DEB): $(PY_SOURCES) $(DEB_SOURCES)
 	mkdir -p dist/
 	for f in $(DIST_DEB); do cp ../$${f##*/} dist/; done
 
-$(DIST_DSC): $(PY_SOURCES) $(DEB_SOURCES)
+$(DIST_DSC): $(PY_SOURCES) $(SUBDIRS) $(DEB_SOURCES) $(MAN_PAGES)
 	# build the source package in the parent directory then rename it to
 	# project_version.orig.tar.gz
 	$(PYTHON) $(PYFLAGS) setup.py sdist --dist-dir=../
@@ -175,5 +188,5 @@ upload-ubuntu: $(DIST_DEB) $(DIST_DSC)
 	# build the deb source archive and upload to the PPA
 	dput waveform-ppa dist/$(NAME)_$(VER)-1$(DEB_SUFFIX)_source.changes
 
-.PHONY: all install develop test doc source egg zip tar deb dist clean tags release upload
+.PHONY: all install develop test doc source egg zip tar deb dist clean tags release-pi release-ubuntu upload-pi upload-ubuntu $(SUBDIRS)
 
