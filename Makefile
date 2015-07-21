@@ -25,6 +25,7 @@ DEB_SUFFIX:=ubuntu1
 else
 DEB_SUFFIX:=
 endif
+DEB_ARCH:=$(shell dpkg --print-architecture)
 PYVER:=$(shell $(PYTHON) $(PYFLAGS) -c "import sys; print('py%d.%d' % sys.version_info[:2])")
 PY_SOURCES:=$(shell \
 	$(PYTHON) $(PYFLAGS) setup.py egg_info >/dev/null 2>&1 && \
@@ -56,7 +57,8 @@ DIST_TAR=dist/$(NAME)-$(VER).tar.gz
 DIST_ZIP=dist/$(NAME)-$(VER).zip
 DIST_DEB=dist/python-$(NAME)_$(VER)-1$(DEB_SUFFIX)_all.deb \
 	dist/python3-$(NAME)_$(VER)-1$(DEB_SUFFIX)_all.deb \
-	dist/python-$(NAME)-docs_$(VER)-1$(DEB_SUFFIX)_all.deb
+	dist/python-$(NAME)-docs_$(VER)-1$(DEB_SUFFIX)_all.deb \
+	dist/$(NAME)_$(VER)-1$(DEB_SUFFIX)_$(DEB_ARCH).changes
 DIST_DSC=dist/$(NAME)_$(VER)-1$(DEB_SUFFIX).tar.gz \
 	dist/$(NAME)_$(VER)-1$(DEB_SUFFIX).dsc \
 	dist/$(NAME)_$(VER)-1$(DEB_SUFFIX)_source.changes
@@ -182,6 +184,7 @@ upload-pi: $(PY_SOURCES) $(DOC_SOURCES) $(DIST_DEB) $(DIST_DSC)
 	$(PYTHON) $(PYFLAGS) setup.py sdist upload
 	# build the deb source archive and upload to Raspbian
 	dput raspberrypi dist/$(NAME)_$(VER)-1$(DEB_SUFFIX)_source.changes
+	dput raspberrypi dist/$(NAME)_$(VER)-1$(DEB_SUFFIX)_$(DEB_ARCH).changes
 	git push --tags
 
 upload-ubuntu: $(DIST_DEB) $(DIST_DSC)
