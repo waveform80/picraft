@@ -11,7 +11,7 @@ X-Python3-Version: >= 3.2
 Package: python-picraft
 Architecture: all
 Depends: ${misc:Depends}, ${python:Depends}
-Suggests: python-picamera-docs, python-rpi.gpio
+Suggests: python-picraft-docs
 Description: Alternative API for controlling Minecraft from Python.
  picraft is an alternative "pythonic" library for controlling Minecraft from
  Python. The API tries to adhere closely to Python's idioms and naming
@@ -23,7 +23,7 @@ Description: Alternative API for controlling Minecraft from Python.
 Package: python3-picraft
 Architecture: all
 Depends: ${misc:Depends}, ${python3:Depends}
-Suggests: python-picamera-docs, python3-rpi.gpio
+Suggests: python-picraft-docs
 Description: Alternative API for controlling Minecraft from Python.
  picraft is an alternative "pythonic" library for controlling Minecraft from
  Python. The API tries to adhere closely to Python's idioms and naming
