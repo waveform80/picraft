@@ -38,7 +38,7 @@ str = type('')
 
 import pytest
 import math
-from .conftest import fp_equal, fp_vectors_equal
+from conftest import fp_equal, fp_vectors_equal
 from picraft import Vector, vector_range, line, lines, O, X, Y, Z
 from picraft.vector import rmod, rdiv, sign
 from picraft.compat import range
