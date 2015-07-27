@@ -20,8 +20,8 @@ Requirements
 ------------
 
 The keywords "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD",
-"SHOULD NOT", "RECOMMENDED", "MAY", and "OPTIONAL" in this section are to
-be interpreted as defined in `RFC 2119`_.
+"SHOULD NOT", "RECOMMENDED", "MAY", and "OPTIONAL" in this section are to be
+interpreted as defined in :RFC:`2119`.
 
 Overall Operation
 -----------------
@@ -42,8 +42,8 @@ transmitted by the client, and no "banner" message is sent by the server. A
 Minecraft session ends simply by disconnecting the socket.
 
 Commands and responses MUST consist of a single line. The typical form of a
-command, described in the augmented Backus-Naur Form (ABNF) defined by `RFC
-5234`_ is as follows::
+command, described in the augmented Backus-Naur Form (ABNF) defined by
+:RFC:`5234` is as follows::
 
     command = command-name "(" [ option *( "," option ) ] ")" LF
 
@@ -57,7 +57,7 @@ command, described in the augmented Backus-Naur Form (ABNF) defined by `RFC
 
 .. note::
 
-    Note that the ABNF specified by `RFC 5234`_ does not provide for implicit
+    Note that the ABNF specified by :RFC:`5234` does not provide for implicit
     specification of linear white space. In other words, unless whitespace is
     explicitly specified in ABNF constructions, it is not permitted by the
     specification.
@@ -80,9 +80,6 @@ follows::
     CHAR = %x01-09 / %x0B-FF  ; any character except LF
     SP = %x20                 ; space
     LF = %x0A                 ; line-feed
-
-.. _RFC 2119: https://tools.ietf.org/html/rfc2119
-.. _RFC 5234: https://tools.ietf.org/html/rfc5234
 
 Client Notes
 ------------

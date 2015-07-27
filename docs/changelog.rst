@@ -16,11 +16,11 @@ Release 0.4 adds plenty of new features:
   to run event handlers in parallel with automatic threading
 * Add support for circle drawing through an arbitrary plane. I'm still not
   happy with the implementation, and may revise it in future editions, but
-  I am happy with the API so it's worth releasing for now (`#7_`)
+  I am happy with the API so it's worth releasing for now (`#7`_)
 * Add Raspbian packaging; we've probably got to the point where I need to start
   making guarantees about backward compatibililty in which case it's probably
   time to make this more generally accessible by including deb packaging
-  (`#8_`)
+  (`#8`_)
 * Lots of doc revisions including a new vectors chapter, more recipes, and so
   on!
 

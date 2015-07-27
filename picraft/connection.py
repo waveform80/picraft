@@ -313,11 +313,10 @@ class Connection(object):
 
         .. note::
 
-            This method can be used as a context manager
-            (:ref:`the-with-statement`) which will cause a batch to be started,
-            and implicitly terminated with :meth:`batch_send` or
-            :meth:`batch_forget` depending on whether an exception is raised
-            within the enclosed block.
+            This method can be used as a context manager (:keyword:`with`)
+            which will cause a batch to be started, and implicitly terminated
+            with :meth:`batch_send` or :meth:`batch_forget` depending on
+            whether an exception is raised within the enclosed block.
         """
         if hasattr(self._local, 'batch'):
             raise BatchStarted('batch already started')
