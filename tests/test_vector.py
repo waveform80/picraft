@@ -39,7 +39,7 @@ str = type('')
 import pytest
 import math
 from conftest import fp_equal, fp_vectors_equal
-from picraft import Vector, vector_range, line, lines, circle, O, X, Y, Z
+from picraft import Vector, vector_range, line, lines, circle, filled, O, X, Y, Z
 from picraft.vector import rmod, rdiv, sign
 from picraft.compat import range
 
@@ -388,3 +388,10 @@ def test_vector_circle():
     assert set(circle(O, X)) == {-X, Y, X, -Y}
     assert set(circle(O, 2*X)) == {-2*X, -X+Y, 2*Y, X+Y, 2*X, X-Y, -2*Y, -X-Y}
     assert set(circle(O, 2*X, X+Y)) == {-2*X, -X+Y, 2*Y, X+Y, 2*X, X-Y, -2*Y, -X-Y}
+
+def test_vector_filled_poly():
+    assert set(filled(lines([O, 2*X, 2*Y]))) == {O, X, 2*X, Y, X+Y, 2*Y}
+
+def test_vector_filled_circle():
+    assert set(filled(circle(O, X))) == {-X, Y, X, -Y, O}
+    assert set(filled(circle(O, 2*X))) == {-2*X, -X+Y, 2*Y, X+Y, 2*X, X-Y, -2*Y, -X-Y, -X, Y, X, -Y, O}

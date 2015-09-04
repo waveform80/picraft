@@ -93,6 +93,11 @@ circle
 ======
 
 .. autofunction:: circle
+
+filled
+======
+
+.. autofunction:: filled
 """
 
 from __future__ import (
@@ -109,10 +114,10 @@ import math
 from functools import total_ordering
 from collections import namedtuple, Sequence
 try:
-    from itertools import zip_longest, islice
+    from itertools import zip_longest, islice, tee
 except ImportError:
     # Py2 compat
-    from itertools import izip_longest as zip_longest, islice
+    from itertools import izip_longest as zip_longest, islice, tee
 
 
 class Vector(namedtuple('Vector', ('x', 'y', 'z'))):
@@ -1028,6 +1033,8 @@ def lines(points, closed=True):
          Vector(x=0, y=0, z=2),
          Vector(x=0, y=0, z=1),
          Vector(x=0, y=0, z=0)]
+
+    To create a filled polygon, see the :func:`filled` function.
     """
     first = None
     start = None
@@ -1043,6 +1050,7 @@ def lines(points, closed=True):
         for v in islice(line(point, first), 1, None):
             yield v
 
+
 def circle(center, radius, plane=Y):
     """
     Generates the coordinates of a three-dimensional circle centered at the
@@ -1054,18 +1062,40 @@ def circle(center, radius, plane=Y):
     For example, to create a circle centered at (0, 10, 0), with a radius of 5
     units, existing in the X-Y plane::
 
-        >>> circle(10*Y, 5*X, Y)
+        >>> list(circle(O, 5*X, Y))
+        [Vector(x=-5, y=0, z=0), Vector(x=-5, y=1, z=0), Vector(x=-4, y=2, z=0),
+         Vector(x=-4, y=3, z=0), Vector(x=-5, y=-1, z=0), Vector(x=-4, y=-2, z=0),
+         Vector(x=-4, y=-3, z=0), Vector(x=-3, y=4, z=0), Vector(x=-3, y=-4, z=0),
+         Vector(x=-2, y=4, z=0), Vector(x=-2, y=-4, z=0), Vector(x=-1, y=4, z=0),
+         Vector(x=-1, y=-4, z=0), Vector(x=0, y=5, z=0), Vector(x=0, y=-5, z=0),
+         Vector(x=1, y=4, z=0), Vector(x=1, y=-4, z=0), Vector(x=2, y=4, z=0),
+         Vector(x=2, y=-4, z=0), Vector(x=3, y=4, z=0), Vector(x=3, y=-4, z=0),
+         Vector(x=4, y=3, z=0), Vector(x=4, y=-3, z=0), Vector(x=4, y=2, z=0),
+         Vector(x=5, y=1, z=0), Vector(x=5, y=0, z=0), Vector(x=4, y=-2, z=0),
+         Vector(x=5, y=-1, z=0)]
 
     To create another circle with the same center and radius, but existing in
     the X-Z (ground) plane::
 
-        >>> circle(10*Y, 5*X, Z)
+        >>> list(circle(O, 5*X, Z))
+        [Vector(x=-5, y=0, z=0), Vector(x=-5, y=0, z=1), Vector(x=-4, y=0, z=2),
+         Vector(x=-4, y=0, z=3), Vector(x=-5, y=0, z=-1), Vector(x=-4, y=0, z=-2),
+         Vector(x=-4, y=0, z=-3), Vector(x=-3, y=0, z=4), Vector(x=-3, y=0, z=-4),
+         Vector(x=-2, y=0, z=4), Vector(x=-2, y=0, z=-4), Vector(x=-1, y=0, z=4),
+         Vector(x=-1, y=0, z=-4), Vector(x=0, y=0, z=5), Vector(x=0, y=0, z=-5),
+         Vector(x=1, y=0, z=4), Vector(x=1, y=0, z=-4), Vector(x=2, y=0, z=4),
+         Vector(x=2, y=0, z=-4), Vector(x=3, y=0, z=4), Vector(x=3, y=0, z=-4),
+         Vector(x=4, y=0, z=3), Vector(x=4, y=0, z=-3), Vector(x=4, y=0, z=2),
+         Vector(x=5, y=0, z=1), Vector(x=5, y=0, z=0), Vector(x=4, y=0, z=-2),
+         Vector(x=5, y=0, z=-1)]
 
     The algorithm used by this function is based on a straight-forward
     differences of roots method, extended to three dimensions. This produces
     `worse looking`_ circles than the `midpoint circle algorithm`_ (also known
     as a the Bresenham circle algorithm), but isn't restricted to working in a
     simple cartesian plane.
+
+    To create a filled circle, see the :func:`filled` function.
 
     .. _worse looking: https://sites.google.com/site/ruslancray/lab/projects/bresenhamscircleellipsedrawingalgorithm/bresenham-s-circle-ellipse-drawing-algorithm
     .. _midpoint circle algorithm: https://en.wikipedia.org/wiki/Midpoint_circle_algorithm
@@ -1076,6 +1106,7 @@ def circle(center, radius, plane=Y):
     r = radius.magnitude**2
     last_points = None
     result = set()
+    result_len = 0
     for radial_point in line(-radius, radius):
         circum_v = (perp * math.sqrt(r - radial_point.magnitude**2)).floor()
         top_point = (radial_point + circum_v)
@@ -1083,8 +1114,74 @@ def circle(center, radius, plane=Y):
         if last_points is not None:
             for p in line(last_points[0], top_point):
                 result.add(center + p)
+                if len(result) > result_len:
+                    result_len += 1
+                    yield p
             for p in line(last_points[1], bottom_point):
                 result.add(center + p)
+                if len(result) > result_len:
+                    result_len += 1
+                    yield p
         last_points = (top_point, bottom_point)
-    return result
+
+
+def pairwise(iterable):
+    "s -> (s0,s1), (s1,s2), (s2, s3), ..."
+    a, b = tee(iterable)
+    next(b, None)
+    return zip(a, b)
+
+
+def filled(points):
+    """
+    Generates the coordinates necessary to fill the space enclosed by the
+    specified *points*. A simple brute-force algorithm is used that simply
+    generates all the lines connecting all specified points. However, duplicate
+    elimination is used to ensure that no point within the filled space is
+    returned twice.
+
+    This function can be applied to anything that returns a sequence of points.
+    For example, to create a filled triangle::
+
+        >>> triangle = [O, 4*X, 4*Z]
+        >>> list(filled(lines(triangle)))
+        [Vector(x=0, y=0, z=0), Vector(x=0, y=0, z=1), Vector(x=0, y=0, z=2),
+         Vector(x=0, y=0, z=3), Vector(x=0, y=0, z=4), Vector(x=1, y=0, z=2),
+         Vector(x=1, y=0, z=1), Vector(x=1, y=0, z=0), Vector(x=1, y=0, z=3),
+         Vector(x=2, y=0, z=1), Vector(x=2, y=0, z=0), Vector(x=2, y=0, z=2),
+         Vector(x=3, y=0, z=1), Vector(x=3, y=0, z=0), Vector(x=4, y=0, z=0)]
+
+    Or to create a filled circle::
+
+        >>> list(filled(circle(O, 4*X)))
+        [Vector(x=-4, y=0, z=0), Vector(x=-3, y=-1, z=0), Vector(x=-3, y=-2, z=0),
+         Vector(x=-3, y=0, z=0), Vector(x=-3, y=1, z=0), Vector(x=-3, y=2, z=0),
+         Vector(x=-2, y=-1, z=0), Vector(x=-2, y=-2, z=0), Vector(x=-2, y=-3, z=0),
+         Vector(x=-2, y=0, z=0), Vector(x=-2, y=1, z=0), Vector(x=-2, y=2, z=0),
+         Vector(x=-2, y=3, z=0), Vector(x=-1, y=0, z=0), Vector(x=-1, y=-1, z=0),
+         Vector(x=-1, y=-2, z=0), Vector(x=-1, y=-3, z=0), Vector(x=-1, y=1, z=0),
+         Vector(x=-1, y=2, z=0), Vector(x=-1, y=3, z=0), Vector(x=0, y=-1, z=0),
+         Vector(x=0, y=-2, z=0), Vector(x=0, y=-3, z=0), Vector(x=0, y=-4, z=0),
+         Vector(x=0, y=0, z=0), Vector(x=0, y=1, z=0), Vector(x=0, y=2, z=0),
+         Vector(x=0, y=3, z=0), Vector(x=0, y=4, z=0), Vector(x=1, y=0, z=0),
+         Vector(x=1, y=-1, z=0), Vector(x=1, y=-2, z=0), Vector(x=1, y=-3, z=0),
+         Vector(x=1, y=1, z=0), Vector(x=1, y=2, z=0), Vector(x=1, y=3, z=0),
+         Vector(x=2, y=0, z=0), Vector(x=2, y=-1, z=0), Vector(x=2, y=-2, z=0),
+         Vector(x=2, y=-3, z=0), Vector(x=2, y=1, z=0), Vector(x=2, y=2, z=0),
+         Vector(x=2, y=3, z=0), Vector(x=3, y=0, z=0), Vector(x=3, y=-1, z=0),
+         Vector(x=3, y=-2, z=0), Vector(x=3, y=1, z=0), Vector(x=3, y=2, z=0),
+         Vector(x=4, y=0, z=0), Vector(x=4, y=-1, z=0), Vector(x=4, y=1, z=0)]
+
+    Note that if you pass the coordinates of a polyhedron which contains holes
+    or gaps compared to its convex hull, this function *may* fill those holes
+    or gaps (but it will depend on the orientation of the object).
+    """
+    result = set()
+    result_len = 0
+    for p, q in pairwise(sorted(points)):
+        for l in line(p, q):
+            result.add(l)
+            if len(result) > result_len:
+                result_len += 1
+                yield l
 
