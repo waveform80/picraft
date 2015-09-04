@@ -1095,10 +1095,17 @@ def circle(center, radius, plane=Y):
     as a the Bresenham circle algorithm), but isn't restricted to working in a
     simple cartesian plane.
 
+    .. note::
+
+        If you know of a three dimensional generalization of the midpoint
+        circle algorithm (which handles entirely arbitrary planes, not merely
+        simple X-Y, X-Z, etc. planes), please contact the `author`_!
+
     To create a filled circle, see the :func:`filled` function.
 
     .. _worse looking: https://sites.google.com/site/ruslancray/lab/projects/bresenhamscircleellipsedrawingalgorithm/bresenham-s-circle-ellipse-drawing-algorithm
     .. _midpoint circle algorithm: https://en.wikipedia.org/wiki/Midpoint_circle_algorithm
+    .. _author: mailto:dave@waveform.org.uk
     """
     if radius.angle_between(plane) != 90:
         plane = radius.cross(-(radius.cross(plane)))
