@@ -43,7 +43,14 @@ try:
     from unittest import mock
 except ImportError:
     import mock
-from picraft import Connection, ConnectionError, CommandError, BatchStarted, BatchNotStarted
+from picraft import (
+    Connection,
+    ConnectionError,
+    ConnectionClosed,
+    CommandError,
+    BatchStarted,
+    BatchNotStarted,
+    )
 
 
 def test_connection_init_pi():
@@ -81,6 +88,14 @@ def test_connection_close():
         # Repeated attempts shouldn't fail
         conn.close()
         s.close.assert_called_once_with()
+
+def test_connection_closed():
+    with mock.patch('socket.socket'), mock.patch('select.select'):
+        select.select.return_value = [False]
+        conn = Connection('myhost', 1234)
+        conn.close()
+        with pytest.raises(ConnectionClosed):
+            conn.send('foo()')
 
 def test_connection_send():
     with mock.patch('socket.socket'), mock.patch('select.select'):

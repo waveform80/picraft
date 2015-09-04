@@ -236,11 +236,11 @@ class Events(object):
     event polling for access to the server.
     """
 
-    def __init__(self, connection):
+    def __init__(self, connection, poll_gap=0.1, include_idle=False):
         self._connection = connection
         self._handlers = []
-        self._poll_gap = 0.1
-        self._include_idle = False
+        self._poll_gap = poll_gap
+        self._include_idle = include_idle
         self._track_players = {}
 
     def _get_poll_gap(self):
@@ -384,9 +384,10 @@ class Events(object):
         registered with :meth:`on_block_hit`.
 
         This method is called repeatedly the event handler loop implemented by
-        :meth:`main_loop`; developers should only call this method when their
-        (presumably non-threaded) event handler is engaged in a long operation
-        and they wish to permit events to be processed in the meantime.
+        :meth:`main_loop`; developers should only call this method when
+        implementing their own event loop manually, or when their (presumably
+        non-threaded) event handler is engaged in a long operation and they
+        wish to permit events to be processed in the meantime.
         """
         for event in self.poll():
             for handler in self._handlers:
@@ -455,7 +456,7 @@ class Events(object):
 
     def on_block_hit(self, thread=False, multi=True, pos=None, face=None):
         """
-        Decorator for registering a function as an event handler.
+        Decorator for registering a function as a block hit handler.
 
         This decorator is used to mark a function as an event handler which
         will be called for any events indicating a block has been hit while
@@ -551,7 +552,7 @@ class EventHandler(object):
         Tests whether or not *event* match all the filters for the handler that
         this object represents.
         """
-        return False
+        raise NotImplementedError
 
 
 class PlayerPosHandler(EventHandler):
@@ -559,7 +560,10 @@ class PlayerPosHandler(EventHandler):
     This class associates a handler with a player-position event.
 
     Constructor parameters are similar to the parent class,
-    :class:`EventHandler` but additionally include 
+    :class:`EventHandler` but additionally include *old_pos* and *new_pos* to
+    specify the vectors (or sequences of vectors) that an event must transition
+    across in order to activate this action. These filters must both match in
+    order for the action to fire.
     """
 
     def __init__(self, action, thread, multi, old_pos, new_pos):
@@ -580,7 +584,9 @@ class PlayerPosHandler(EventHandler):
             return test == pos.floor()
         if isinstance(test, Container):
             return pos.floor() in test
-        return False
+        raise TypeError(
+                "%r is not a valid position test; expected Vector or "
+                "sequence of Vector" % test)
 
 
 class BlockHitHandler(EventHandler):
@@ -615,7 +621,9 @@ class BlockHitHandler(EventHandler):
             return self.pos == pos
         if isinstance(self.pos, Container):
             return pos in self.pos
-        return False
+        raise TypeError(
+                "%r is not a valid position test; expected Vector or "
+                "sequence of Vector" % pos)
 
     def matches_face(self, face):
         if self.face is None:
@@ -624,7 +632,9 @@ class BlockHitHandler(EventHandler):
             return self.face == face
         if isinstance(self.face, Container):
             return face in self.face
-        return False
+        raise TypeError(
+                "%r is not a valid face test; expected string or sequence "
+                "of strings" % face)
 
 
 class IdleHandler(EventHandler):

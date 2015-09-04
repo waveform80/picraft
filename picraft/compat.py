@@ -55,10 +55,7 @@ import sys
 # xrange class which can be found at https://github.com/dcrosta/xrange
 
 if sys.version_info < (3, 3):
-    try:
-        from collections import Sequence
-    except ImportError:
-        from collections.abc import Sequence
+    from collections import Sequence
 
     class range(Sequence):
         def __init__(self, start, stop=None, step=1):

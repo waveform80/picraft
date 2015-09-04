@@ -222,6 +222,8 @@ class Connection(object):
         """
         Write *buf* (suitably encoded) to the socket.
         """
+        if not self._socket:
+            raise ConnectionClosed('connection closed')
         if not buf.endswith('\n'):
             buf += '\n'
         buf = buf.encode(self.encoding)
@@ -273,8 +275,6 @@ class Connection(object):
             self._local.batch.append(buf)
         else:
             with self._lock:
-                if not self._socket:
-                    raise ConnectionClosed('connection closed')
                 self._send(buf)
                 if not self.ignore_errors:
                     self._receive()
@@ -294,8 +294,6 @@ class Connection(object):
             issue but it is worth bearing in mind.
         """
         with self._lock:
-            if not self._socket:
-                raise ConnectionClosed('connection closed')
             self._send(buf)
             return self._receive(required=True)
 
@@ -340,8 +338,6 @@ class Connection(object):
             if self._local.batch:
                 buf = '\n'.join(self._local.batch)
                 with self._lock:
-                    if not self._socket:
-                        raise ConnectionClosed('connection closed')
                     self._send(buf)
                     try:
                         if not self.ignore_errors:

@@ -268,6 +268,8 @@ class Block(namedtuple('Block', ('id', 'data'))):
     .. autoattribute:: description
     """
 
+    __slots__ = ()
+
     def __new__(cls, *args, **kwargs):
         if len(args) >= 1:
             a = args[0]
