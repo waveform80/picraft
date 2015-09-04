@@ -90,7 +90,7 @@ from .exc import (
     )
 from .vector import Vector, vector_range, line, lines, circle, V, O, X, Y, Z
 from .block import Block, BLOCK_COLORS
-from .events import BlockHitEvent
+from .events import BlockHitEvent, PlayerPosEvent, IdleEvent
 from .connection import Connection
 from .player import Players, Player, HostPlayer
 from .world import World
