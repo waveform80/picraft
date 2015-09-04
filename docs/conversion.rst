@@ -38,6 +38,43 @@ Minecraft.getBlock
 See :ref:`Minecraft.getBlockWithData` below.
 
 
+Minecraft.getBlocks
+===================
+
+Equivalent: :attr:`~picraft.world.World.blocks`
+
+This method only works with the `Raspberry Juice`_ mod for the PC version of
+Minecraft. In picraft simply query the :attr:`~picraft.world.World.blocks`
+attribute with a slice of vectors, just as with the equivalent to
+:ref:`Minecraft.setBlocks` below::
+
+    >>> import mcpi.minecraft as minecraft
+    >>> mc = minecraft.Minecraft.create()
+    >>> mc.getBlocks(0, -1, 0, 0, 5, 0)
+    [2, 2, 2, 2, 2, 2, 2]
+
+    >>> from picraft import World, Vector, Block
+    >>> w = World()
+    >>> v1 = Vector(0, -1, 0)
+    >>> v2 = Vector(0, 5, 0)
+    >>> w.blocks[v1:v2 + 1] = Block('air')
+
+.. note::
+
+    In picraft, this method will work with both Raspberry Juice and Minecraft
+    Pi Edition, but the efficient ``getBlocks`` call will only be used when
+    picraft detects it is connected to a Raspberry Juice server.
+
+.. warning::
+
+    There is currently no equivalent to ``getBlockWithData`` that operates over
+    multiple blocks, so blocks returned by querying in this manner only have a
+    valid :attr:`~picraft.block.Block.id` field; the
+    :attr:`~picraft.block.Block.data` attribute is always 0.
+
+.. _Raspberry Juice: http://dev.bukkit.org/bukkit-plugins/raspberryjuice/
+
+
 .. _Minecraft.getBlockWithData:
 
 Minecraft.getBlockWithData
@@ -103,7 +140,7 @@ Equivalent: :attr:`~picraft.world.World.blocks`
 Again, the same attribute as for ``setBlock`` is used for ``setBlocks``; just
 pass a slice of :class:`vectors <picraft.vector.Vector>` instead of a single
 vector (the example below shows an easy method of generating such a slice by
-adding two vectors together for the upper end of the slice)::
+adding 1 to a vector for the upper end of the slice)::
 
     >>> import mcpi.minecraft as minecraft
     >>> mc = minecraft.Minecraft.create()
@@ -113,10 +150,11 @@ adding two vectors together for the upper end of the slice)::
 
     >>> from picraft import World, Vector, Block
     >>> w = World()
-    >>> v = Vector(0, -1, 0)
+    >>> v1 = Vector(0, -1, 0)
+    >>> v2 = Vector(0, 5, 0)
     >>> w.blocks[v]
     <Block "grass" id=2 data=0>
-    >>> w.blocks[v:v + Vector(1, 7, 1)] = Block(1, 0)
+    >>> w.blocks[v1:v2 + 1] = Block(1, 0)
 
 
 Minecraft.getHeight
