@@ -87,6 +87,12 @@ lines
 =====
 
 .. autofunction:: lines
+
+
+circle
+======
+
+.. autofunction:: circle
 """
 
 from __future__ import (
@@ -221,12 +227,14 @@ class Vector(namedtuple('Vector', ('x', 'y', 'z'))):
     .. autoattribute:: unit
     """
 
+    __slots__ = ()
+
     def __new__(cls, x=0, y=0, z=0):
         return super(Vector, cls).__new__(cls, x, y, z)
 
     @classmethod
     def from_string(cls, s, type=int):
-        x, y, z = s.split(',', 2)
+        x, y, z = s.split(',')
         return cls(type(x), type(y), type(z))
 
     @property
@@ -1053,8 +1061,14 @@ def circle(center, radius, plane=Y):
 
         >>> circle(10*Y, 5*X, Z)
 
-    The algorithm used by this function is based on the `differences of roots`_
-    method, extended to three dimensions.
+    The algorithm used by this function is based on a straight-forward
+    differences of roots method, extended to three dimensions. This produces
+    `worse looking`_ circles than the `midpoint circle algorithm`_ (also known
+    as a the Bresenham circle algorithm), but isn't restricted to working in a
+    simple cartesian plane.
+
+    .. _worse looking: https://sites.google.com/site/ruslancray/lab/projects/bresenhamscircleellipsedrawingalgorithm/bresenham-s-circle-ellipse-drawing-algorithm
+    .. _midpoint circle algorithm: https://en.wikipedia.org/wiki/Midpoint_circle_algorithm
     """
     if radius.angle_between(plane) != 90:
         plane = radius.cross(-(radius.cross(plane)))
