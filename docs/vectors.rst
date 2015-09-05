@@ -177,7 +177,7 @@ Magnitudes
 ==========
 
 The :attr:`~picraft.vector.Vector.magnitude` attribute can be used to determine
-the length of a vector (via `Pythagoras' theorem`_, while the
+the length of a vector (via `Pythagoras' theorem`_), while the
 :attr:`~picraft.vector.Vector.unit` attribute can be used to obtain a vector in
 the same direction with a magnitude (length) of 1.0. The
 :meth:`~picraft.vector.Vector.distance_to` method can also be used to calculate
