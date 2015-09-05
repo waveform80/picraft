@@ -478,7 +478,7 @@ class Blocks(object):
                 warnings.warn(EmptySliceWarning(
                     "ignoring empty slice passed to blocks"))
             elif (
-                    abs(vr.step) == Vector(1, 1, 1) and
+                    abs(vr.step) == Vector(1, 1, 1) and vr.order == 'zxy' and
                     self._connection.server_version == 'raspberry-juice'):
                 return [
                     Block.from_string('%d,0' % int(i))
