@@ -277,19 +277,30 @@ Immutability
 
 Vectors in picraft (in contrast to the Vec3 class in mcpi) are immutable. This
 simply means that you cannot change the X, Y, or Z coordinate of an existing
-vector; you must create a new vector instead. For example::
+vector::
 
     >>> v = Vector(1, 2, 3)
+    >>> v.x += 1
+    Traceback (most recent call last):
+      File "<stdin>", line 1, in <module>
+    AttributeError: can't set attribute
     >>> v.x = 2
     Traceback (most recent call last):
       File "<stdin>", line 1, in <module>
     AttributeError: can't set attribute
-    >>> v + 2*X
-    Vector(x=3, y=2, z=3)
 
-This may seem like an arbitrary restriction but it conveys an extremely
-important capability in Python: only immutable objects may be keys of a
-:class:`dict` or members of a :class:`set`. Hence, in picraft, a dict can be
+Given that nearly every standard operation can be applied to the vector itself,
+this isn't a huge imposition::
+
+    >>> v + X
+    Vector(x=2, y=2, z=3)
+    >>> v += X
+    >>> v
+    Vector(x=2, y=2, z=3)
+
+Nevertheless, it may seem like an arbitrary restriction. However, it conveys an
+extremely important capability in Python: only immutable objects may be keys of
+a :class:`dict` or members of a :class:`set`. Hence, in picraft, a dict can be
 used to represent the state of a portion of the world by mapping vectors to
 block types, and set operators can be used to trivially determine regions.
 
@@ -309,17 +320,19 @@ and in one but not the other::
     Vector(x=1, y=0, z=5), Vector(x=0, y=0, z=5), Vector(x=0, y=0, z=4),
     Vector(x=2, y=0, z=3), Vector(x=2, y=0, z=5), Vector(x=0, y=0, z=3)])
 
+.. image:: regions1.*
+    :align: center
+
 We could use a dict to store the state of the world for one of the ranges::
 
     >>> d = {v: b for (v, b) in zip(vr1, world.blocks[vr1])}
 
-We can then manipulate this using dict comprehensions. For example, to create
-a dict representing that portion of the world translated 2 steps to the right
-along the X axis::
+We can then manipulate this using dict comprehensions. For example, to modify
+the dict to shift all vectors right by two blocks::
 
     >>> d = {v + 2*X: b for (v, b) in d.items()}
 
-Or to rotate that portion of the world 45 degrees around the Y axis::
+Or to rotate the vectors by 45 degrees about the Y axis::
 
     >>> d = {v.rotate(45, about=Y).round(): b for (v, b) in d.items()}
 

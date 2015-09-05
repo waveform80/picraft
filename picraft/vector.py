@@ -124,10 +124,11 @@ class Vector(namedtuple('Vector', ('x', 'y', 'z'))):
     """
     Represents a 3-dimensional vector.
 
-    This tuple derivative represents a 3-dimensional vector with x, y, z
-    components. Instances can be constructed in a number of ways. By explicitly
-    specifying the x, y, and z components (optionally with keyword
-    identifiers), or leaving the empty to default to 0::
+    This :func:`~collections.namedtuple` derivative represents a 3-dimensional
+    vector with :attr:`x`, :attr:`y`, :attr:`z` components. Instances can be
+    constructed in a number of ways: by explicitly specifying the x, y, and z
+    components (optionally with keyword identifiers), or leaving the empty to
+    default to 0::
 
         >>> Vector(1, 1, 1)
         Vector(x=1, y=1, z=1)
@@ -138,7 +139,7 @@ class Vector(namedtuple('Vector', ('x', 'y', 'z'))):
         >>> Vector(y=10)
         Vector(x=0, y=10, z=0)
 
-    Shortcuts are available for the X, Y, and Z axes::
+    Shortcuts are available for vectors representing the X, Y, and Z axes::
 
         >>> X
         Vector(x=1, y=0, z=0)
@@ -154,16 +155,16 @@ class Vector(namedtuple('Vector', ('x', 'y', 'z'))):
         Vector(x=2, y=None, z=None)
 
     The class supports simple arithmetic operations with other vectors such as
-    addition and subtraction, along with multiplication and division with
-    scalars, raising to powers, bit-shifting, and so on. Such operations are
-    performed element-wise [1]_::
+    addition and subtraction, along with multiplication and division, raising
+    to powers, bit-shifting, and so on. Such operations are performed
+    element-wise [1]_::
 
         >>> v1 = Vector(1, 1, 1)
         >>> v2 = Vector(2, 2, 2)
         >>> v1 + v2
         Vector(x=3, y=3, z=3)
-        >>> 2 * v2
-        Vector(x=4, y=4, z=4)
+        >>> v1 * v2
+        Vector(x=2, y=2, z=2)
 
     Simple arithmetic operations with scalars return a new vector with that
     operation performed on all elements of the original. For example::
@@ -183,11 +184,12 @@ class Vector(namedtuple('Vector', ('x', 'y', 'z'))):
 
     .. note::
 
-        Note that, as a derivative of tuple, instances of this class are
-        immutable. That is, you cannot directly manipulate the x, y, and z
-        attributes; instead you must create a new vector (for example, by
-        adding two vectors together). The advantage of this is that vector
-        instances can be used in sets or as dictionary keys.
+        Note that, as a derivative of :func:`~collections.namedtuple`,
+        instances of this class are immutable. That is, you cannot directly
+        manipulate the :attr:`x`, :attr:`y`, and :attr:`z` attributes; instead
+        you must create a new vector (for example, by adding two vectors
+        together). The advantage of this is that vector instances can be
+        members of :class:`set` or keys in a :class:`dict`.
 
     .. [1] I realize math purists will hate this (and demand that abs() should
        be magnitude and * should invoke matrix multiplication), but the
@@ -654,9 +656,9 @@ class vector_range(Sequence):
 
     .. warning::
 
-        Bear in mind that the ordering of a vector range may have a bearing on
-        tests for its ordering and equality. Two ranges with different orders
-        are unlikely to test equal even though they may have the same *start*,
+        Bear in mind that the ordering of a vector range may have affect tests
+        for its ordering and equality. Two ranges with different orders are
+        unlikely to test equal even though they may have the same *start*,
         *stop*, and *step* attributes (and thus contain the same vectors, but
         in a different order).
 

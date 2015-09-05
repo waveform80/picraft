@@ -29,9 +29,8 @@
 
 """
 The block module defines the :class:`Block` class, which is used to represent
-the type of a block and any associated data it may have, and the
-:class:`Blocks` class which is used to implement the
-:attr:`~picraft.world.World.blocks` attribute on the
+the type of a block and any associated data it may have, and the class which is
+used to implement the :attr:`~picraft.world.World.blocks` attribute on the
 :class:`~picraft.world.World` class.
 
 .. note::
@@ -190,12 +189,12 @@ class Block(namedtuple('Block', ('id', 'data'))):
     optional *data* value (defaults to 0) which means different things for
     different block types (e.g.  for wool it defines the color of the wool).
 
-    Blocks are represented by this library as a :func:`namedtuple` of the *id*
-    and the *data*. Calculated properties are provided to look up the
-    :attr:`name` and :attr:`description` of the block from a database derived
-    from the Minecraft wiki, and classmethods are defined to construct a block
-    definition from an :meth:`id <from_id>` or from alternate things like a
-    :meth:`name <from_name>` or an :meth:`RGB color <from_color>`::
+    Blocks are represented by this library as a :func:`~collections.namedtuple`
+    of the *id* and the *data*. Calculated properties are provided to look up
+    the :attr:`name` and :attr:`description` of the block from a database
+    derived from the Minecraft wiki, and classmethods are defined to construct
+    a block definition from an :meth:`id <from_id>` or from alternate things
+    like a :meth:`name <from_name>` or an :meth:`RGB color <from_color>`::
 
         >>> Block.from_id(0, 0)
         <Block "air" id=0 data=0>
