@@ -8,6 +8,33 @@ Vectors are a crucial part of working with picraft; sufficiently important to
 demand their own section. This chapter introduces all the major vector
 operations with simple examples and diagrams illustrating the results.
 
+Orientation
+===========
+
+Vectors represent a position or direction within the Minecraft world. The
+Minecraft world uses a `right-hand coordinate system`_ where the Y axis is
+vertical, and Z represents depth. You can think of positive Z values as
+pointing "out of" the screen, while negative Z values point "into" the screen.
+
+If you ever have trouble remembering the orientation label the thumb, index
+finger, and middle finger of your right hand as X, Y, Z respectively. Raise
+your hand so that Y (the index finger) is pointing up. Now spread your thumb
+and middle finger so they're at right angles to each other and your index
+finger, and you'll have the correct orientation of Minecraft's coordinate
+system.
+
+The following illustration shows the directions of each of the axes:
+
+.. image:: block_faces.*
+    :align: center
+
+Positive rotation in Minecraft also follows the `right-hand rule`_. For
+example, positive rotation about the Y axis proceeds clockwise along the X-Z
+plane. Again, this is easy to see by applying the rule: make a fist with your
+right hand, then point the thumb vertically (positive direction along the Y
+axis). Your other fingers now indicate the positive direction of rotation
+around that axis.
+
 Vector-vector operations
 ========================
 
@@ -245,6 +272,64 @@ in the direction of another (unit) vector::
 .. image:: vector12.*
     :align: center
 
+Immutability
+============
+
+Vectors in picraft (in contrast to the Vec3 class in mcpi) are immutable. This
+simply means that you cannot change the X, Y, or Z coordinate of an existing
+vector; you must create a new vector instead. For example::
+
+    >>> v = Vector(1, 2, 3)
+    >>> v.x = 2
+    Traceback (most recent call last):
+      File "<stdin>", line 1, in <module>
+    AttributeError: can't set attribute
+    >>> v + 2*X
+    Vector(x=3, y=2, z=3)
+
+This may seem like an arbitrary restriction but it conveys an extremely
+important capability in Python: only immutable objects may be keys of a
+:class:`dict` or members of a :class:`set`. Hence, in picraft, a dict can be
+used to represent the state of a portion of the world by mapping vectors to
+block types, and set operators can be used to trivially determine regions.
+
+For example, consider two vector ranges. We can convert them to sets and use
+the standard set operators to determine all vectors that occur in both ranges,
+and in one but not the other::
+
+    >>> vr1 = vector_range(O, V(5, 0, 5) + 1)
+    >>> vr1 = vector_range(O, V(2, 0, 5) + 1)
+    >>> vr2 = vector_range(O, V(5, 0, 2) + 1)
+    >>> set(vr1) & set(vr2)
+    set([Vector(x=0, y=0, z=2), Vector(x=1, y=0, z=0), Vector(x=2, y=0, z=2),
+    Vector(x=0, y=0, z=1), Vector(x=1, y=0, z=1), Vector(x=0, y=0, z=0),
+    Vector(x=2, y=0, z=1), Vector(x=1, y=0, z=2), Vector(x=2, y=0, z=0)])
+    >>> set(vr1) - set(vr2)
+    set([Vector(x=1, y=0, z=3), Vector(x=1, y=0, z=4), Vector(x=2, y=0, z=4),
+    Vector(x=1, y=0, z=5), Vector(x=0, y=0, z=5), Vector(x=0, y=0, z=4),
+    Vector(x=2, y=0, z=3), Vector(x=2, y=0, z=5), Vector(x=0, y=0, z=3)])
+
+We could use a dict to store the state of the world for one of the ranges::
+
+    >>> d = {v: b for (v, b) in zip(vr1, world.blocks[vr1])}
+
+We can then manipulate this using dict comprehensions. For example, to create
+a dict representing that portion of the world translated 2 steps to the right
+along the X axis::
+
+    >>> d = {v + 2*X: b for (v, b) in d.items()}
+
+Or to rotate that portion of the world 45 degrees around the Y axis::
+
+    >>> d = {v.rotate(45, about=Y).round(): b for (v, b) in d.items()}
+
+It is also worth noting to that due to their nature, sets and dicts
+automatically eliminate duplicated coordinates. This can be useful for
+efficiency, but in some cases (such as the rotation above), can be something to
+watch out for.
+
+.. _right-hand coordinate system: https://en.wikipedia.org/wiki/Cartesian_coordinate_system#Orientation_and_handedness
+.. _right-hand rule: https://en.wikipedia.org/wiki/Right-hand_rule
 .. _rotation: http://en.wikipedia.org/wiki/Rotation_group_SO%283%29
 .. _Pythagoras' theorem: http://en.wikipedia.org/wiki/Pythagorean_theorem
 .. _dot: http://en.wikipedia.org/wiki/Dot_product
