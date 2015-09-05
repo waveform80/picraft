@@ -88,6 +88,13 @@ named methods are provided::
 .. image:: vector4.*
     :align: center
 
+.. hint::
+
+    Floor rounding is the method Minecraft uses to convert from a player
+    position to a tile position. Floor rounding may looking simply like
+    truncation, aka "round toward zero", but becomes different when negative
+    numbers are involved.
+
 Short-cuts
 ==========
 

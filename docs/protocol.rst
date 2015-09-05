@@ -336,6 +336,22 @@ block type.
 
 See `Data Values (Pocket Edition)`_ for a list of block types.
 
+.. _world.getBlocks:
+
+world.getBlocks
+---------------
+
+Syntax::
+
+    world-get-blocks-command = "world.getBlocks(" int-vector "," int-vector ")" LF
+    world-get-blocks-response = int-val *( "," int-val ) LF
+
+The ``world.getBlocks`` command is a Raspberry Juice extension which retrieves
+the block ids of an entire range of blocks in a single network transaction. The
+result consists of a list of comma-separated integers representing the ids
+(but not the data) of all blocks within the cuboid defined by the two vectors
+inclusively. The ordering of vectors within the range is by z, then x, then y.
+
 world.getBlockWithData
 ----------------------
 

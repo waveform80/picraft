@@ -132,6 +132,8 @@ it::
     >>> w.blocks[Vector(0, -1, 0)] = Block(1, 0)
 
 
+.. _Minecraft.setBlocks:
+
 Minecraft.setBlocks
 ===================
 
