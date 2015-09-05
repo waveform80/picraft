@@ -492,7 +492,7 @@ class Blocks(object):
                     Block.from_string(
                         self._connection.transact(
                             'world.getBlockWithData(%d,%d,%d)' % (v.x, v.y, v.z)))
-                    for v in vector_range(index.start, index.stop, index.step)
+                    for v in vr
                     ]
         else:
             return Block.from_string(
