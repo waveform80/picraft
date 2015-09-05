@@ -10,7 +10,7 @@ DOT_DIAGRAMS  := $(wildcard *.dot)
 MSC_DIAGRAMS  := $(wildcard *.mscgen)
 GPI_DIAGRAMS  := $(wildcard *.gpi)
 SVG_IMAGES    := $(wildcard *.svg) $(DOT_DIAGRAMS:%.dot=%.svg) $(MSC_DIAGRAMS:%.mscgen=%.svg)
-PNG_IMAGES    := $(wildcard *.png) $(GPI_DIAGRAMS:%.gpi=%.png)
+PNG_IMAGES    := $(wildcard *.png) $(GPI_DIAGRAMS:%.gpi=%.png) $(SVG_IMAGES:%.svg=%.png)
 PDF_IMAGES    := $(SVG_IMAGES:%.svg=%.pdf) $(GPI_DIAGRAMS:%.gpi=%.pdf) $(DOT_DIAGRAMS:%.dot=%.pdf) $(MSC_DIAGRAMS:%.mscgen=%.pdf)
 
 # User-friendly check for sphinx-build
@@ -188,6 +188,9 @@ pseudoxml:
 
 %.png: %.gpi common.gp
 	gnuplot -e "set term pngcairo size 640,480" $< > $@
+
+%.png: %.svg
+	inkscape -e $@ $<
 
 %.pdf: %.svg
 	inkscape -A $@ $<
