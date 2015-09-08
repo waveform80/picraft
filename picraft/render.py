@@ -81,6 +81,146 @@ class NegativeWeight(ParseWarning):
     "Warning raised when a negative weight is encountered"
 
 
+class TokenTypes(object):
+    "Defines the available token type constants for use by the tokenizer"
+
+    def __init__(self):
+        self.names = {}
+        self._counter = 0
+
+    def add(self, new_type, type_name=None):
+        if hasattr(self, new_type):
+            raise ValueError('%s is already registered as a token type' % new_type)
+        if type_name is None:
+            type_name = new_type
+        setattr(self, new_type, self._counter)
+        self.names[self._counter] = type_name
+        self._counter += 1
+
+# Replace the class with an instance of itself and a convenient alias
+TokenTypes = TokenTypes()
+TT = TokenTypes
+
+for (type, name) in (
+        ('ERROR',      None),            # Invalid/unknown token
+        ('WHITESPACE', '<space>'),       # Whitespace
+        ('COMMENT',    '<comment>'),     # A comment
+        ('STATEMENT',  '<statement>'),   # A statement (v, p, l, f, etc.)
+        ('TERMINATOR', '<terminator>'),  # A statement terminator
+        ('NUMBER',     '<number>'),      # A numeric literal
+        ('STRING',     '<string>'),      # A string literal
+        ('OPERATOR',   '<operator>'),    # An operator
+    ):
+    TT.add(type, name)
+
+Token = namedtuple('Token', (
+    'type',
+    'value',
+    'source',
+    'line',
+    'column',
+    ))
+
+
+class Tokenizer(object):
+    def __init__(self, source, emit_whitespace=False):
+        self._emit_whitespace = emit_whitespace
+        if isinstance(source, bytes):
+            source = source.decode('utf-8')
+        self._opened = isinstance(source, str)
+        if self._opened:
+            self._source = io.open(source, 'rb')
+        else:
+            self._source = source
+        self._buffer = self._source.read(1)
+        self._index = 0
+        self._line = 1
+        self._line_start = 0
+        self._token_source = ''
+        self._token_line = self.line
+        self._token_column = self.column
+
+    def close(self):
+        if self._opened:
+            self._source.close()
+        self._source = None
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc_value, exc_tb):
+        self.close()
+
+    @property
+    def line(self):
+        return self._line
+
+    @property
+    def column(self):
+        return (self._index - self._line_start) + 1
+
+    def _next(self):
+        result = self._buffer
+        self._buffer = self._source.read(1)
+        self._index += 1
+        if result == '\n':
+            self._line += 1
+            self._line_start = index
+            self._token_source += result
+        return result
+
+    def _peek(self):
+        return self._buffer
+
+    def _token(self, type, value):
+        token = Token(
+            type,
+            value,
+            self._token_source,
+            self._token_line,
+            self._token_column,
+            )
+        self._token_source = ''
+        self._token_line = self.line
+        self._token_column = self.column
+        return token
+
+    def __iter__(self):
+        self._jump = {}
+        for char in ' \t\r':
+            self._jump[char] = self._handle_space
+        for char in 'bcdefghlmopstuv':
+            self._jump[char] = self._handle_letter
+        for char in '0123456789':
+            self._jump[char] = self._handle_digit
+        self._jump.update({
+            '\\': self._handle_backslash,
+            '\r': self._handle_carriage_return,
+            '\n': self._handle_newline,
+            "'":  self._handle_apos,
+            '"':  self._handle_quote,
+            '#':  self._handle_hash,
+            })
+        while True:
+            c = self._next()
+            if c == '\0':
+                break
+            token = self._jump.get(c, self._handle_default)(c)
+            if token.type != TT.WHITESPACE or self._emit_whitespace:
+                yield token
+
+    def _handle_carriage_return(self, c):
+        if self._peek() == '\n':
+            return self._handle_newline(self._read())
+        else:
+            return self._handle_space(c)
+
+    def _handle_space(self, c):
+        s = c
+        while self._peek() in ' \t':
+            self._read()
+
+
 class Vertex(namedtuple('Vertex', ('x', 'y', 'z', 'w'))):
     """
     Represents a geometric vertex in a Wavefront obj file. The w component is
