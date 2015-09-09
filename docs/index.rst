@@ -23,6 +23,7 @@ Table of Contents
    api_events
    api_connection
    api_player
+   api_render
    api_exc
    protocol
    changelog

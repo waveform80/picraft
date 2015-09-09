@@ -94,4 +94,5 @@ from .events import BlockHitEvent, PlayerPosEvent, IdleEvent
 from .connection import Connection
 from .player import Players, Player, HostPlayer
 from .world import World
+from .render import Model, ParseWarning, UnsupportedCommand, NegativeWeight
 
