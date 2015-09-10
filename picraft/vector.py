@@ -419,10 +419,16 @@ class Vector(namedtuple('Vector', ('x', 'y', 'z'))):
         :func:`round` function, specifying the number of decimal (or integer)
         places to round to.
         """
-        return Vector(
-            round(self.x, ndigits),
-            round(self.y, ndigits),
-            round(self.z, ndigits))
+        if ndigits <= 0:
+            return Vector(
+                int(round(self.x, ndigits)),
+                int(round(self.y, ndigits)),
+                int(round(self.z, ndigits)))
+        else:
+            return Vector(
+                round(self.x, ndigits),
+                round(self.y, ndigits),
+                round(self.z, ndigits))
 
     def dot(self, other):
         """
