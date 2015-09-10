@@ -87,12 +87,15 @@ from .exc import (
     NotSupported,
     ConnectionClosed,
     EmptySliceWarning,
+    ParseWarning,
+    UnsupportedCommand,
+    NegativeWeight,
     )
 from .vector import Vector, vector_range, line, lines, circle, filled, V, O, X, Y, Z
-from .block import Block, BLOCK_COLORS
+from .block import Block
 from .events import BlockHitEvent, PlayerPosEvent, IdleEvent
 from .connection import Connection
 from .player import Players, Player, HostPlayer
 from .world import World
-from .render import Model, ParseWarning, UnsupportedCommand, NegativeWeight
+from .render import Model
 

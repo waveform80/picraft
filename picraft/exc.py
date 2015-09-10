@@ -57,8 +57,16 @@ Exceptions
 
 .. autoexception:: BatchNotStarted
 
+Warnings
+========
+
 .. autoexception:: EmptySliceWarning
 
+.. autoexception:: ParseWarning
+
+.. autoexception:: UnsupportedCommand
+
+.. autoexception:: NegativeWeight
 """
 
 from __future__ import (
@@ -98,4 +106,13 @@ class BatchNotStarted(ConnectionError):
 
 class EmptySliceWarning(Warning):
     "Warning raised when a zero-length vector slice is passed to blocks"
+
+class ParseWarning(Warning):
+    "Base class for warnings encountered during parsing"
+
+class UnsupportedCommand(ParseWarning):
+    "Warning raised when an unsupported statement is encountered"
+
+class NegativeWeight(ParseWarning):
+    "Warning raised when a negative weight is encountered"
 

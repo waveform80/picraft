@@ -54,15 +54,6 @@ ModelFace
 .. autoclass:: ModelFace
     :members:
 
-
-Warnings
-========
-
-.. autoexception:: ParseWarning
-
-.. autoexception:: UnsupportedCommand
-
-.. autoexception:: NegativeWeight
 """
 
 from __future__ import (
@@ -75,22 +66,17 @@ str = type('')
 
 
 import io
-import os
 import warnings
 from collections import namedtuple, defaultdict
+from itertools import chain
 
-from .vector import Vector
+from .vector import Vector, filled, lines
 from .block import Block
-
-
-class ParseWarning(Warning):
-    "Base class for warnings encountered during parsing"
-
-class UnsupportedCommand(ParseWarning):
-    "Warning raised when an unsupported statement is encountered"
-
-class NegativeWeight(ParseWarning):
-    "Warning raised when a negative weight is encountered"
+from .exc import (
+    ParseWarning,
+    UnsupportedCommand,
+    NegativeWeight,
+    )
 
 
 COMMANDS = {
@@ -358,7 +344,8 @@ class Material(str):
     """
 
     def __new__(cls, *args):
-        assert len(args) == 1
+        if len(args) == 0:
+            raise ValueError('missing material name')
         return super(Material, cls).__new__(cls, args[0])
 
     def __repr__(self):
@@ -431,18 +418,15 @@ class Parser(object):
                     elif not command in COMMANDS:
                         raise ValueError('unknown command %s' % command)
                     else:
-                        yield self._parse(command, params)
-
-    def _parse(self, command, params):
-        return {
-            'v':      Vertex,
-            'vn':     VertexNormal,
-            'vp':     VertexParameter,
-            'vt':     VertexTexture,
-            'f':      FaceIndexes,
-            'g':      Group,
-            'usemtl': Material,
-            }[command](*params)
+                        yield {
+                            'v':      Vertex,
+                            'vn':     VertexNormal,
+                            'vp':     VertexParameter,
+                            'vt':     VertexTexture,
+                            'f':      FaceIndexes,
+                            'g':      Group,
+                            'usemtl': Material,
+                            }[command](*params)
 
 
 class ModelFace(object):
@@ -494,9 +478,7 @@ class ModelFace(object):
         """
         The sequence of vectors that makes up the face. These are assumed to be
         `coplanar`_ but this is not explicitly checked. Each point is
-        represented as a :class:`~picraft.vector.Vector` instance with the
-        Y-axis correctly swapped (Alias|Wavefront assumes the Z-axis is
-        vertical).
+        represented as a :class:`~picraft.vector.Vector` instance.
 
         .. _coplanar: https://en.wikipedia.org/wiki/Coplanarity
         """
@@ -523,9 +505,7 @@ class Model(object):
 
     Finally, the :meth:`render` method can be used to easily render the object
     in the Minecraft world at the specified scale, and with a given material
-    mapping. More complex renderings (e.g. group specific or group-based
-    materials) can be achieved by manually enumerating the :attr:`faces`
-    attribute.
+    mapping.
 
     .. _object file: https://en.wikipedia.org/wiki/Wavefront_.obj_file
     """
@@ -556,8 +536,10 @@ class Model(object):
                 self._materials.add(i)
                 active_material = i
             elif isinstance(i, FaceIndexes):
+                if active_material is None:
+                    self._materials.add(None)
                 vectors = [
-                    Vector(v.x, v.z, v.y)
+                    Vector(v.x, v.y, v.z)
                     for vi in i
                     for v in (vertexes[vi.v - 1 if vi.v > 0 else len(vertexes) + vi.v],)
                     ]
@@ -592,37 +574,178 @@ class Model(object):
         """
         return self._groups
 
-    def render(self, scale=1.0, materials=None, group=None):
+    def render(self, scale=1.0, materials=None, groups=None):
         """
-        Renders the loaded model as blocks in the Minecraft world. The optional
-        *scale* parameter (which defaults to 1.0) provides the multiplier that
-        should be applied to each vector in the model prior to rounding.
+        Renders the model as a :class:`dict` mapping vectors to block types.
+        Effectively this rounds the vertices of each face to integers (after
+        applying the *scale* multiplier, which defaults to 1.0), then calls
+        :func:`~picraft.vector.filled` and :func:`~picraft.vector.lines` to
+        obtain the complete coordinates of each face.
 
-        The *materials* parameter provides a mapping of material name to
-        :class:`~picraft.block.Block` types. If this argument is excluded, the
-        resulting mapping simply maps vectors to material names.
+        Each coordinate then needs to be mapped to a block type. By default
+        the material name is simply passed to the :class:`~picraft.block.Block`
+        constructor. This assumes that material names are valid Minecraft
+        block types (see :attr:`~picraft.block.Block.NAMES`).
 
-        Finally, the *group* parameter specifies which sub-component should be
-        rendered. If this is not specified, all faces in the :class:`Model`
-        are rendered.
+        You can override this mechanism with the *materials* parameter. This
+        can be set to a mapping (e.g. a :class:`dict`) which maps material
+        names to :class:`~picraft.block.Block` instances. For example::
+
+            from picraft import Model, Block
+
+            m = Model('airboat.obj')
+            d = m.render(materials={
+                'bluteal':  Block('diamond_block'),
+                'bronze':   Block('gold_block'),
+                'dkdkgrey': Block((64, 64, 64)),
+                'dkteal':   Block('#000080'),
+                'red':      Block('#ff0000'),
+                'silver':   Block.from_color('#ffffff'),
+                'black':    Block(id=35, data=15),
+                None:       Block('stone'),
+                })
+
+        .. note::
+
+            Some object files may include faces with no associated material.
+            In this case you will need to map ``None`` to a block type, as in
+            the example above.
+
+        Alternatively, *materials* can be a callable which will be called with
+        the :class:`ModelFace` being rendered, which should return a block
+        type. The following is equivalent to the default behaviour::
+
+            from picraft import Model, Block
+
+            m = Model('airboat.obj')
+            d = m.render(materials=lambda f: Block(f.material))
+
+        If you simply want to preview a shape without bothering with any
+        material mapping you can use this method to map any face to a single
+        material (in this case stone)::
+
+            from picraft import Model, Block
+
+            m = Model('airboat.obj')
+            d = m.render(materials=lambda f: Block('stone'))
+
+        If the *materials* mapping or callable returns ``None`` instead of a
+        :class:`~picraft.block.Block` instance, the corresponding blocks will
+        not be included in the result. This is a simple mechanism for excluding
+        parts of a model. The other mechanism for achieving this is the
+        *groups* parameter which specifies which sub-components of the model
+        should be rendered. This can be specified as a string (indicating that
+        only that sub-component should be rendered) or as a sequence of strings
+        (indicating that all specified sub-components should be rendered).
 
         The result is a mapping of :class:`~picraft.vector.Vector` to
-        something. If *materials* is provided, this will be whatever that
-        mapping returns (if the *materials* mapping returns ``None`` for a
-        given material, those vectors will be excluded from the output). If
-        *materials* is omitted, the returned mapping simply uses the original
-        material names.
-
-        Rendering the result in the main world should be as trivial as the
-        following code::
+        :class:`~picraft.block.Block` instances. Rendering the result in the
+        main world should be as trivial as the following code::
 
             from picraft import World, Model
 
             w = World()
-            m = Model('airboat.obj')
+            m = Model('airboat.obj').render(scale=2.0)
             with w.connection.batch_start():
-                for v, b in m.render(scale=20.0):
-                    w.blocks[v] = Block('stone')
+                for v, b in m.items():
+                    w.blocks[v] = b
+
+        Of course, you may choose to further transform the result first. This
+        can be accomplished by modifying the vectors as you set them::
+
+            from picraft import World, Model, Y
+
+            w = World()
+            m = Model('airboat.obj').render(scale=2.0)
+            with w.connection.batch_start():
+                for v, b in m.items():
+                    w.blocks[v + 10*Y] = b
+
+        Alternatively you may choose to use a dict-comprehension::
+
+            from picraft import Model, Vector
+
+            m = Model('airboat.obj').render(scale=2.0)
+            offset = Vector(y=10)
+            m = {v + offset: b for v, b in m.items()}
+
+        Note that the Alias|Wavefront `object file`_ format is a relatively
+        simple text based format that can be constructed by hand without
+        too much difficulty. Combined with the default mapping of material
+        names to block types, this enables another means of constructing
+        objects in the Minecraft world. For example, to construct a small
+        house:
+
+        .. code-block:: python
+            :caption: house.py
+
+            from picraft import Model, World
+
+            with World() as w:
+                with w.connection.batch_start():
+                    for v, b in Model('house.obj').render().items():
+                        w.blocks[v] = b
+
+        .. code-block:: text
+            :caption: house.obj
+
+            # This is an object file describing a house. First we define the
+            # required vertices with the "v" command, then reference these
+            # from faces (with the "f" command). Negative indices in the "f"
+            # command count back from the most recently defined vertices.
+
+            usemtl brick_block
+
+            g front-wall
+            v 0 1 0
+            v 8 1 0
+            v 8 4 0
+            v 0 4 0
+            v 3 1 0
+            v 5 1 0
+            v 3 3 0
+            v 5 3 0
+            f -8 -4 -2 -1 -3 -7 -6 -5
+
+            g back-wall
+            v 0 1 8
+            v 8 1 8
+            v 8 4 8
+            v 0 4 8
+            f -1 -2 -3 -4
+
+            g left-wall
+            f -12 -4 -1 -9
+
+            g right-wall
+            f -11 -3 -2 -10
+
+            g ceiling
+            f -10 -9 -1 -2
+
+        .. _object file: https://en.wikipedia.org/wiki/Wavefront_.obj_file
         """
-        pass
+        if materials is None:
+            materials = lambda f: Block(f.material)
+        if isinstance(groups, bytes):
+            groups = groups.decode('utf-8')
+        if groups is None:
+            faces = self.faces
+        elif isinstance(groups, str):
+            faces = self.groups[groups]
+        else:
+            faces = chain(*(self.groups[g] for g in groups))
+        result = {}
+        for face in faces:
+            try:
+                b = materials[face.material]
+            except KeyError:
+                raise KeyError('missing mapping for material "%s"' % face.material)
+            except TypeError:
+                b = materials(face)
+            if b is not None:
+                points = ((p * scale).round() for p in face.vectors)
+                for v in filled(lines(points)):
+                    result[v] = b
+        return result
 
