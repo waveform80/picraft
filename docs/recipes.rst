@@ -76,7 +76,8 @@ The script tracks the position and likely future position of the player as
 they walk through the world. If the script detects the player is about to walk
 onto air it changes the block to diamond:
 
-.. literalinclude:: recipe_bridge.py
+.. literalinclude:: bridge.py
+    :caption: bridge.py
 
 Note that the script starts by initializing the connection with the
 ``ignore_errors=True`` parameter. This causes the picraft library to act like
@@ -104,7 +105,8 @@ events that occurred since the last time your script polled the server. For
 example, the following script prints a message to the console when you hit a
 block, detailing the block's coordinates and the face that you hit:
 
-.. literalinclude:: events_poll.py
+.. literalinclude:: poll.py
+    :caption: poll.py
 
 This is fine for simple scripts but you can probably see how more complex
 scripts that check exactly which block has been hit start to involve long
@@ -113,7 +115,8 @@ creates a couple of blocks near the player on startup: a black block (which
 ends the script when hit), and a white block (which makes multi-colored blocks
 fall from the sky):
 
-.. literalinclude:: events_rain1.py
+.. literalinclude:: rain1.py
+    :caption: rain1.py
 
 The alternate method of event handling in picraft is to rely on picraft's
 built-in event loop. This involves "tagging" functions which will react to
@@ -122,14 +125,16 @@ running the :meth:`~picraft.events.Events.main_loop` method. This causes
 picraft to continually poll the server and call the tagged functions when their
 criteria are matched by a block-hit event:
 
-.. literalinclude:: events_rain2.py
+.. literalinclude:: rain2.py
+    :caption: rain2.py
     :emphasize-lines: 13,17
 
 One advantage of this method (other than slightly cleaner code) is that event
 handlers can easily be made multi-threaded (to run in parallel with each other)
 simply by modifying the decorator used:
 
-.. literalinclude:: events_rain3.py
+.. literalinclude:: rain3.py
+    :caption: rain3.py
     :emphasize-lines: 17
 
 Now you should find that the rain all falls simultaneously (more or less, given
@@ -158,14 +163,63 @@ degrees so the angle to turn each time is 180 divided by the number of sides.
 Given an origin and a side-length it's a simple matter to iterate over each
 side generating the necessary point:
 
-.. literalinclude:: recipe_shapes1.py
+.. literalinclude:: shapes1.py
+    :caption: shapes1.py
 
 Next we need a function which will iterate over the number of sides for each
 required polygon, using the :func:`~picraft.vector.lines` function to generate
 the points required to draw the shape. Then it's a simple matter to draw each
 polygon in turn, wiping it before displaying the next one:
 
-.. literalinclude:: recipe_shapes2.py
+.. literalinclude:: shapes2.py
+    :caption: shapes2.py
+
+
+Models
+======
+
+This recipe demonstrates drawing models defined by `object files`_. This is a
+venerable file format from Alias|Wavefront. It's a simple text-based format
+that defines the vertices, faces, and other aspects of a model, including the
+materials of the model. The picraft library includes a rudimentary parser and
+renderer for this format which can be used to render such models as blocks in
+the Minecraft world.
+
+Below is an example object file, which defines the walls and ceiling of a
+house.
+
+.. literalinclude:: house.obj
+    :caption: house.obj
+
+We can render this model with the following simple code:
+
+.. literalinclude:: house.py
+    :caption: house.py
+
+By default, the picraft renderer assumes that the material names are Minecraft
+block types (see :attr:`.Block.NAMES`). However, this is frequently not the
+case in which case you will need to "map" the material names to block types
+yourself. A materials map can be as simple as a :class:`dict` mapping material
+names to :class:`~picraft.block.Block` instances. For example:
+
+.. literalinclude:: materials.py
+    :caption: materials.py
+
+To find out what materials are defined on a model, you can query the
+:attr:`~picraft.render.Model.materials` attribute. Note that some faces may
+have no material associated with them, in which case their material is listed
+as ``None`` (not the blank string).
+
+A materials map can also be a function. This will be called with the face being
+rendered and must return a :class:`~picraft.block.Block` instance or ``None``
+(if you don't want that particular face to be rendered). This is useful for
+quickly previewing a shape without performing any material mapping; simply
+provide a function which always returns the same block type:
+
+.. literalinclude:: preview.py
+    :caption: preview.py
+
+.. _object files: https://en.wikipedia.org/wiki/Wavefront_.obj_file
 
 
 Animation
@@ -178,7 +232,8 @@ cube which rotates about the X axis somewhere in the air. Our first script uses
 within the cube, then uses the :meth:`~picraft.vector.Vector.rotate` method to
 rotate them about the X axis:
 
-.. literalinclude:: recipe_anim1.py
+.. literalinclude:: anim1.py
+    :caption: anim1.py
 
 As you can see in the script above we draw the first frame, wait for a bit,
 then wipe the frame by setting all coordinates in that frame's state back to
@@ -188,20 +243,22 @@ Although this approach works, it's obviously very long winded for lots of
 frames. What we want to do is calculate the state of each frame in a function.
 This next version demonstrates this approach; we use a generator function to
 yield the state of each frame in turn so we can iterate over the frames with
-a simple ``for`` loop.
+a simple :keyword:`for` loop.
 
 We represent the state of a frame of our animation as a dict which maps
 coordinates (in the form of :class:`~picraft.vector.Vector` instances) to
 :class:`~picraft.block.Block` instances:
 
-.. literalinclude:: recipe_anim2.py
+.. literalinclude:: anim2.py
+    :caption: anim2.py
 
 That's more like it, but the updates aren't terribly fast despite using the
 batch functionality. In order to improve this we should only update those
 blocks which have actually changed between each frame. Thankfully, because
 we're storing the state of each as a dict, this is quite easy:
 
-.. literalinclude:: recipe_anim3.py
+.. literalinclude:: anim3.py
+    :caption: anim3.py
 
 Note: this still isn't perfect. Ideally, we would identify contiguous blocks of
 coordinates to be updated which have the same block and set them all at the
@@ -219,7 +276,8 @@ class which will accept JPEGs from the camera's MJPEG stream, and render them
 as blocks in the Minecraft world. Then we need a class to construct the TV
 model itself and enable interaction with it:
 
-.. literalinclude:: recipe_tv.py
+.. literalinclude:: tv.py
+    :caption: tv.py
 
 Don't expect to be able to recognize much in the Minecraft TV; the resolution
 is extremely low and the color matching is far from perfect. Still, if you
