@@ -47,16 +47,6 @@ Block
 .. autoclass:: Block(id, data)
 
 
-BLOCK_COLORS
-============
-
-.. data:: BLOCK_COLORS
-
-    A set of the available colors that can be used with
-    :meth:`Block.from_color`.  Each color is represented as ``(red, green,
-    blue)`` tuple where each component is an integer between 0 and 255.
-
-
 Compatibility
 =============
 
@@ -153,33 +143,6 @@ def _read_block_color(filename_or_object):
             yield int(id), int(data), int2color(int(color, 16))
 
 
-_BLOCKS_DB = {
-    (id, data): (pi, pocket, name, description)
-    for (id, data, pi, pocket, name, description) in
-        _read_block_data(resource_stream(__name__, 'block.data'))
-    }
-
-_BLOCKS_BY_ID = {
-    id: (pi, pocket, name)
-    for (id, data), (pi, pocket, name, description) in _BLOCKS_DB.items()
-    if data == 0
-    }
-
-_BLOCKS_BY_NAME = {
-    name: id
-    for (id, data), (pi, pocket, name, description) in _BLOCKS_DB.items()
-    if data == 0
-    }
-
-_BLOCKS_BY_COLOR = {
-    color: (id, data)
-    for (id, data, color) in
-        _read_block_color(resource_stream(__name__, 'block.color'))
-    }
-
-BLOCK_COLORS = _BLOCKS_BY_COLOR.keys()
-
-
 class Block(namedtuple('Block', ('id', 'data'))):
     """
     Represents a block within the Minecraft world.
@@ -265,9 +228,46 @@ class Block(namedtuple('Block', ('id', 'data'))):
     .. autoattribute:: name
 
     .. autoattribute:: description
+
+    .. attribute:: COLORS
+
+        A class attribute containing a sequence of the colors available for
+        use with :meth:`from_color`.
+
+    .. attribute:: NAMES
+
+        A class attribute containing a sequence of the names available for
+        use with :meth:`from_name`.
     """
 
     __slots__ = ()
+
+    _BLOCKS_DB = {
+        (id, data): (pi, pocket, name, description)
+        for (id, data, pi, pocket, name, description) in
+            _read_block_data(resource_stream(__name__, 'block.data'))
+        }
+
+    _BLOCKS_BY_ID = {
+        id: (pi, pocket, name)
+        for (id, data), (pi, pocket, name, description) in _BLOCKS_DB.items()
+        if data == 0
+        }
+
+    _BLOCKS_BY_NAME = {
+        name: id
+        for (id, data), (pi, pocket, name, description) in _BLOCKS_DB.items()
+        if data == 0
+        }
+
+    _BLOCKS_BY_COLOR = {
+        color: (id, data)
+        for (id, data, color) in
+            _read_block_color(resource_stream(__name__, 'block.color'))
+        }
+
+    COLORS = _BLOCKS_BY_COLOR.keys()
+    NAMES = _BLOCKS_BY_NAME.keys()
 
     def __new__(cls, *args, **kwargs):
         if len(args) >= 1:
@@ -343,7 +343,7 @@ class Block(namedtuple('Block', ('id', 'data'))):
         if isinstance(name, bytes):
             name = name.decode('utf-8')
         try:
-            id_ = _BLOCKS_BY_NAME[name]
+            id_ = cls._BLOCKS_BY_NAME[name]
         except KeyError:
             raise ValueError('unknown name %s' % name)
         return cls(id_, data)
@@ -403,7 +403,7 @@ class Block(namedtuple('Block', ('id', 'data'))):
             if 0.0 <= r <= 1.0 and 0.0 <= g <= 1.0 and 0.0 <= b <= 1.0:
                 color = tuple(int(n * 255) for n in color)
         try:
-            id_, data = _BLOCKS_BY_COLOR[color]
+            id_, data = cls._BLOCKS_BY_COLOR[color]
         except KeyError:
             r, g, b = color
             if exact:
@@ -411,8 +411,8 @@ class Block(namedtuple('Block', ('id', 'data'))):
                     'no blocks match color #%06x' % (r << 16 | g << 8 | b))
             diff = lambda block_color: sqrt(
                     sum((c1 - c2) ** 2 for c1, c2 in zip(color, block_color)))
-            matched_color = sorted(_BLOCKS_BY_COLOR, key=diff)[0]
-            id_, data = _BLOCKS_BY_COLOR[matched_color]
+            matched_color = sorted(cls._BLOCKS_BY_COLOR, key=diff)[0]
+            id_, data = cls._BLOCKS_BY_COLOR[matched_color]
         return cls(id_, data)
 
     def __repr__(self):
@@ -427,7 +427,7 @@ class Block(namedtuple('Block', ('id', 'data'))):
         Returns a bool indicating whether the block is present in the Pi
         Edition of Minecraft.
         """
-        return _BLOCKS_BY_ID[self.id][0]
+        return self._BLOCKS_BY_ID[self.id][0]
 
     @property
     def pocket(self):
@@ -435,7 +435,7 @@ class Block(namedtuple('Block', ('id', 'data'))):
         Returns a bool indicating whether the block is present in the Pocket
         Edition of Minecraft.
         """
-        return _BLOCKS_BY_ID[self.id][1]
+        return self._BLOCKS_BY_ID[self.id][1]
 
     @property
     def name(self):
@@ -444,7 +444,7 @@ class Block(namedtuple('Block', ('id', 'data'))):
         can be used to construct a :class:`Block` instance with
         :meth:`from_name`.
         """
-        return _BLOCKS_BY_ID[self.id][2]
+        return self._BLOCKS_BY_ID[self.id][2]
 
     @property
     def description(self):
@@ -453,9 +453,9 @@ class Block(namedtuple('Block', ('id', 'data'))):
         unique and is only intended for human use.
         """
         try:
-            return _BLOCKS_DB[(self.id, self.data)][3]
+            return self._BLOCKS_DB[(self.id, self.data)][3]
         except KeyError:
-            return _BLOCKS_DB[(self.id, 0)][3]
+            return self._BLOCKS_DB[(self.id, 0)][3]
 
 
 class Blocks(object):
