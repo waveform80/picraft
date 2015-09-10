@@ -70,7 +70,7 @@ import warnings
 from collections import namedtuple, defaultdict
 from itertools import chain
 
-from .vector import Vector, filled, lines
+from .vector import Vector, vector_range, filled, lines
 from .block import Block
 from .exc import (
     ParseWarning,
@@ -498,10 +498,15 @@ class Model(object):
     opened in text mode such that it returns unicode strings rather than bytes
     in Python 3).
 
+    The optional *swap_yz* parameter specifies whether the Y and Z coordinates
+    of each vertex in the model will be swapped; some models require this to
+    render correctly in Minecraft, some do not.
+
     The :attr:`faces` attribute provides access to all object faces extracted
     from the file's content. The :attr:`materials` property enumerates all
     material names used by the object. The :attr:`groups` mapping maps group
-    names to subsets of the available faces.
+    names to subsets of the available faces. The :attr:`bounds` attribute
+    provides a range describing the bounding box of the unscaled model.
 
     Finally, the :meth:`render` method can be used to easily render the object
     in the Minecraft world at the specified scale, and with a given material
@@ -510,10 +515,11 @@ class Model(object):
     .. _object file: https://en.wikipedia.org/wiki/Wavefront_.obj_file
     """
 
-    def __init__(self, source):
+    def __init__(self, source, swap_yz=False):
         self._faces = []
         self._materials = set()
         self._groups = defaultdict(list)
+        self._swap_yz = swap_yz
         self._parse(source)
 
     def _parse(self, source):
@@ -539,6 +545,7 @@ class Model(object):
                 if active_material is None:
                     self._materials.add(None)
                 vectors = [
+                    Vector(v.x, v.z, v.y) if self._swap_yz else
                     Vector(v.x, v.y, v.z)
                     for vi in i
                     for v in (vertexes[vi.v - 1 if vi.v > 0 else len(vertexes) + vi.v],)
@@ -573,6 +580,31 @@ class Model(object):
         processing or rendering.
         """
         return self._groups
+
+    @property
+    def bounds(self):
+        """
+        Returns a vector range which completely encompasses the model at scale
+        1.0. This can be useful for determining scaling factors when rendering.
+
+        .. note::
+
+            The bounding box returned is `axis-aligned`_ and is not guaranteed
+            to be the minimal bounding box for the model.
+
+        .. _axis-aligned: https://en.wikipedia.org/wiki/Minimum_bounding_box#Axis-aligned_minimum_bounding_box
+        """
+        min_v = Vector(
+            min(v.x for f in self.faces for v in f.vectors),
+            min(v.y for f in self.faces for v in f.vectors),
+            min(v.z for f in self.faces for v in f.vectors),
+            ).round()
+        max_v = Vector(
+            max(v.x for f in self.faces for v in f.vectors),
+            max(v.y for f in self.faces for v in f.vectors),
+            max(v.z for f in self.faces for v in f.vectors),
+            ).round()
+        return vector_range(min_v, max_v + 1)
 
     def render(self, scale=1.0, materials=None, groups=None):
         """
