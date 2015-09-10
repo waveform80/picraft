@@ -52,7 +52,7 @@ except ImportError:
     pass
 
 __project__      = 'picraft'
-__version__      = '0.4'
+__version__      = '0.5'
 __author__       = 'Dave Jones'
 __author_email__ = 'dave@waveform.org.uk'
 __url__          = 'http://picraft.readthedocs.org/'

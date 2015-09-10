@@ -5,6 +5,25 @@ Change log
 ==========
 
 
+Release 0.5 (2015-09-10)
+========================
+
+Release 0.5 adds ever more new features:
+
+* The major news is the new obj loader and renderer in the
+  :class:`~picraft.render.Model` class. This includes lots of good stuff like
+  bounds calculation, scaling, material mapping by map or by callable,
+  sub-component querying by group, etc. It's also tolerably quick (`#10`_)
+* As part of this work a new function was added to calculate the coordinates
+  necessary to fill a polygon. This is the new :func:`~picraft.vector.filled`
+  function (`#12`_)
+* Lots more doc revisions, including new and fixed recipes, lots more
+  screenshots, and extensions to the chapter documenting vectors.
+
+.. _#10: https://github.com/waveform80/picraft/issues/10
+.. _#12: https://github.com/waveform80/picraft/issues/12
+
+
 Release 0.4 (2015-07-19)
 ========================
 
