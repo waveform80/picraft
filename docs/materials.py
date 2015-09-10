@@ -3,7 +3,7 @@ from picraft import World, Model, Block
 print('Loading model airboat.obj')
 m = Model('airboat.obj')
 print('Model has the following materials:')
-print('\n'.join(m.materials))
+print('\n'.join(s or '<None>' for s in m.materials))
 
 materials_map = {
     None:       Block('stone'),

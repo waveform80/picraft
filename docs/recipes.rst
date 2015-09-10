@@ -4,6 +4,13 @@
 Recipes
 =======
 
+This section introduces a variety of "recipes": small scripts that demonstrate
+how to achieve something using the picraft library. Suggestions for new recipes
+are gratefully received: please `e-mail the author`_!
+
+.. _e-mail the author: mailto:dave@waveform.org.uk
+
+
 Player Position
 ===============
 
@@ -29,8 +36,11 @@ Or we can use a bit of Python short-hand for this::
 If you want the player position to the nearest block use the
 :attr:`~picraft.player.Player.tile_pos` instead::
 
-    >>> world.player.pos
+    >>> world.player.tile_pos
     Vector(x=2, y=1, z=-1)
+
+.. image:: dont_look_down.png
+    :align: center
 
 
 Blocks
@@ -61,6 +71,9 @@ immediately surrounding blocks to stone::
     >>> p -= Y
     >>> world.blocks[p - (X + Z):p + (X + Z) + 1] = Block('stone')
 
+.. image:: blocks.png
+    :align: center
+
 .. _half-open: http://python-history.blogspot.co.uk/2013/10/why-python-uses-0-based-indexing.html
 
 
@@ -84,6 +97,9 @@ Note that the script starts by initializing the connection with the
 the mcpi library: errors in "set" calls are ignored, but the library reacts
 faster because of this. This is necessary in a script like this where rapid
 reaction to player behaviour is required.
+
+.. image:: bridge.png
+    :align: center
 
 
 .. _event_driven:
@@ -139,7 +155,12 @@ simply by modifying the decorator used:
 
 Now you should find that the rain all falls simultaneously (more or less, given
 the constraints of the Pi's bandwidth!) when you hit the white block multiple
-times.
+times. If you find the rain too slow, you can try using the ``ignore_errors``
+parameter as in the bridge recipe above but in this case you may need to
+introduce some pauses to the loop!
+
+.. image:: rain.png
+    :align: center
 
 
 Shapes
