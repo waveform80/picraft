@@ -1,3 +1,9 @@
+picraft (0.5-1ubuntu1) trusty; urgency=medium
+
+  * Ubuntu release of 0.5
+
+ -- Dave Jones <dave@waveform.org.uk>  Thu, 10 Sep 2015 23:49:20 +0100
+
 picraft (0.5-1) stable; urgency=low
 
   * The major news is the new obj loader and renderer in the "Model" class.
