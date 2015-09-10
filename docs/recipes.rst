@@ -195,12 +195,15 @@ polygon in turn, wiping it before displaying the next one:
 .. literalinclude:: shapes2.py
     :caption: shapes2.py
 
+.. image:: shapes.png
+    :align: center
+
 
 Models
 ======
 
 This recipe demonstrates drawing models defined by `object files`_. This is a
-venerable file format from Alias|Wavefront. It's a simple text-based format
+venerable file format from `Alias|Wavefront`_. It's a simple text-based format
 that defines the vertices, faces, and other aspects of a model, including the
 materials of the model. The picraft library includes a rudimentary parser and
 renderer for this format which can be used to render such models as blocks in
@@ -217,6 +220,9 @@ We can render this model with the following simple code:
 .. literalinclude:: house.py
     :caption: house.py
 
+.. image:: house.png
+    :align: center
+
 By default, the picraft renderer assumes that the material names are Minecraft
 block types (see :attr:`.Block.NAMES`). However, this is frequently not the
 case in which case you will need to "map" the material names to block types
@@ -225,6 +231,9 @@ names to :class:`~picraft.block.Block` instances. For example:
 
 .. literalinclude:: materials.py
     :caption: materials.py
+
+.. image:: airboat.png
+    :align: center
 
 To find out what materials are defined on a model, you can query the
 :attr:`~picraft.render.Model.materials` attribute. Note that some faces may
@@ -241,6 +250,7 @@ provide a function which always returns the same block type:
     :caption: preview.py
 
 .. _object files: https://en.wikipedia.org/wiki/Wavefront_.obj_file
+.. _Alias|Wavefront: https://en.wikipedia.org/wiki/Alias_Systems_Corporation
 
 
 Animation
