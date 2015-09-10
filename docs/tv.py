@@ -3,7 +3,7 @@ from __future__ import division
 import io
 import time
 import picamera
-from picraft import World, V, Block
+from picraft import World, V, X, Y, Z, Block
 from PIL import Image
 
 
@@ -57,6 +57,7 @@ class MinecraftTVScreen(object):
 
 class MinecraftTV(object):
     def __init__(self, world, origin=V(), size=(12, 8)):
+        self.world = world
         self.camera = picamera.PiCamera()
         self.camera.resolution = (64, int(64 / size[0] * size[1]))
         self.camera.framerate = 5

@@ -318,6 +318,9 @@ you should see a similar result on the in-game display.
 The script includes the ability to position and size the TV as you like, and
 you may like to experiment with adding new controls to it!
 
+.. image:: tv.png
+    :align: center
+
 .. _Martin O'Hanlon's excellent site: http://www.stuffaboutcode.com/
 .. _auto-bridge project: http://www.stuffaboutcode.com/2013/02/raspberry-pi-minecraft-auto-bridge.html
 .. _in-game piano project: http://www.stuffaboutcode.com/2013/06/raspberry-pi-minecraft-piano.html
