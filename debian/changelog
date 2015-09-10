@@ -1,3 +1,16 @@
+picraft (0.5-1) stable; urgency=low
+
+  * The major news is the new obj loader and renderer in the "Model" class.
+    This includes lots of good stuff like bounds calculation, scaling,
+    material mapping by map or by callable, sub-component querying by group,
+    etc. It's also tolerably quick (#10)
+  * As part of this work a new function was added to calculate the coordinates
+    necessary to fill a polygon. This is the new "filled" function (#12)
+  * Lots more doc revisions, including new and fixed recipes, lots more
+    screenshots, and extensions to the chapter documenting vectors.
+
+ -- Dave Jones <dave@waveform.org.uk>  Thu, 10 Sep 2015 23:47:17 +0100
+
 picraft (0.4-1ubuntu1) trusty; urgency=medium
 
   * Ubuntu release of 0.4
