@@ -108,28 +108,25 @@ Events
 ======
 
 The auto-bridge recipe above demonstrates a form of reacting to changes, in
-that case player position changing. There is a formal event handling mechanism
-in Minecraft, but at the time of writing the API only exposes the "block hit"
-event which occurs when a player hits a block with their sword (by right
-clicking).
+that case player position changing.
 
-The picraft library provides two different ways of working with events; you can
-select whichever one suits your particular application. The basic way of
-reacting to events is to periodically "poll" Minecraft for them (with the
-:meth:`~picraft.events.Events.poll` method). This will return a list of all
-events that occurred since the last time your script polled the server. For
-example, the following script prints a message to the console when you hit a
-block, detailing the block's coordinates and the face that you hit:
+However, the picraft library provides two different ways of working with
+events; you can select whichever one suits your particular application. The
+basic way of reacting to events is to periodically "poll" Minecraft for them
+(with the :meth:`~picraft.events.Events.poll` method). This will return a list
+of all events that occurred since the last time your script polled the server.
+For example, the following script prints a message to the console when you hit
+a block, detailing the block's coordinates and the face that you hit:
 
 .. literalinclude:: poll.py
     :caption: poll.py
 
-This is fine for simple scripts but you can probably see how more complex
-scripts that check exactly which block has been hit start to involve long
-series of ``if`` statements which look a bit ugly in code. The following script
-creates a couple of blocks near the player on startup: a black block (which
-ends the script when hit), and a white block (which makes multi-colored blocks
-fall from the sky):
+This is similar to the method used by the official mcpi library. It's fine for
+simple scripts but you can probably see how more complex scripts that check
+exactly which block has been hit start to involve long series of ``if``
+statements which look a bit ugly in code. The following script creates a couple
+of blocks near the player on startup: a black block (which ends the script when
+hit), and a white block (which makes multi-colored blocks fall from the sky):
 
 .. literalinclude:: rain1.py
     :caption: rain1.py
@@ -161,6 +158,11 @@ introduce some pauses to the loop!
 
 .. image:: rain.png
     :align: center
+
+You should also be aware that the picraft library supports a larger range of
+events than mcpi. Specifically, it has events for player position changes, and
+"idle" events. See :attr:`~picraft.events.Events.track_players` and
+:attr:`~picraft.events.Events.include_idle` respectively.
 
 
 Shapes
