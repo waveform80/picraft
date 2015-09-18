@@ -227,9 +227,9 @@ We can render this model with the following simple code:
 
 By default, the picraft renderer assumes that the material names are Minecraft
 block types (see :attr:`.Block.NAMES`). However, this is frequently not the
-case in which case you will need to "map" the material names to block types
-yourself. A materials map can be as simple as a :class:`dict` mapping material
-names to :class:`~picraft.block.Block` instances. For example:
+case, requiring you to "map" the material names to block types yourself. A
+materials map can be as simple as a :class:`dict` mapping material names to
+:class:`~picraft.block.Block` instances. For example:
 
 .. literalinclude:: materials.py
     :caption: materials.py
@@ -242,7 +242,7 @@ To find out what materials are defined on a model, you can query the
 have no material associated with them, in which case their material is listed
 as ``None`` (not the blank string).
 
-A materials map can also be a function. This will be called with the face being
+A materials map may also be a function. This will be called with the face being
 rendered and must return a :class:`~picraft.block.Block` instance or ``None``
 (if you don't want that particular face to be rendered). This is useful for
 quickly previewing a shape without performing any material mapping; simply
