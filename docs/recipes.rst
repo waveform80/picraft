@@ -208,8 +208,8 @@ This recipe demonstrates drawing models defined by `object files`_. This is a
 venerable file format from `Alias|Wavefront`_. It's a simple text-based format
 that defines the vertices, faces, and other aspects of a model, including the
 materials of the model. The picraft library includes a rudimentary parser and
-renderer for this format which can be used to render such models as blocks in
-the Minecraft world.
+renderer for this format (in the :class:`~picraft.render.Model` class) which
+can be used to render such models as blocks in the Minecraft world.
 
 Below is an example object file, which defines the walls and ceiling of a
 house.
