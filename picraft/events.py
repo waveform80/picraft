@@ -529,6 +529,12 @@ class Events(object):
             return f
         return decorator
 
+    def on_chat_post(self, thread=False, multi=True, message=None):
+        def decorator(f):
+            self._handlers.append(ChatPostHandler(f, thread, multi, message))
+            return f
+        return decorator
+
 
 class EventHandler(object):
     """
@@ -671,7 +677,7 @@ class ChatPostHandler(EventHandler):
             self.matches_message(event.message))
 
     def matches_message(self, message):
-        if message is None:
+        if self.message is None:
             return True
         if isinstance(self.message, str):
             return self.message == message
