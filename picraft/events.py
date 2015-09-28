@@ -185,7 +185,7 @@ class PlayerPosEvent(namedtuple('PlayerPosEvent', ('old_pos', 'new_pos', 'player
 class ChatPostEvent(namedtuple('ChatPostEvent', ('message', 'player'))):
     @classmethod
     def from_string(cls, connection, s):
-        p, m = s.split(',')
+        p, m = s.split(',', 1)
         return cls(m, Player(connection, int(p)))
 
     @property
