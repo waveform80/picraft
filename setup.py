@@ -69,6 +69,7 @@ __classifiers__ = [
     'Programming Language :: Python :: 2.7',
     'Programming Language :: Python :: 3.2',
     'Programming Language :: Python :: 3.3',
+    'Programming Language :: Python :: 3.4',
     'Topic :: Games/Entertainment',
     ]
 
@@ -86,12 +87,12 @@ __extra_requires__ = {
     }
 
 if sys.version_info[:2] == (3, 2):
+    # Particular versions are required for Python 3.2 compatibility
     __extra_requires__['doc'].extend([
-        # Particular versions are required for Python 3.2 compatibility. The
-        # ordering is reversed because that's what easy_install needs...
         'Jinja2<2.7',
         'MarkupSafe<0.16',
         ])
+    __extra_requires__['test'][1] = 'coverage<4.0dev'
 
 __entry_points__ = {
     }
