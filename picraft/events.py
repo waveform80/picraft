@@ -182,6 +182,22 @@ class PlayerPosEvent(namedtuple('PlayerPosEvent', ('old_pos', 'new_pos', 'player
                 self.old_pos, self.new_pos, self.player.player_id)
 
 
+class ChatPostEvent(namedtuple('ChatPostEvent', ('message', 'player'))):
+    @classmethod
+    def from_string(cls, connection, s):
+        p, m = s.split(',', 1)
+        return cls(m, Player(connection, int(p)))
+
+    @property
+    def __dict__(self):
+        # Ensure __dict__ property works in Python 3.3 and above.
+        return super(ChatPostEvent, self).__dict__
+
+    def __repr__(self):
+        return '<ChatPostEvent message=%s player=%d>' % (
+                self.message, self.player.player_id)
+
+
 class IdleEvent(namedtuple('IdleEvent', ())):
     """
     Event that fires in the event that no other events have occurred since the
@@ -349,7 +365,14 @@ class Events(object):
                 for e in s.split('|'):
                     yield BlockHitEvent.from_string(self._connection, e)
 
-        events = list(player_pos_events(self._track_players)) + list(block_hit_events())
+        def chat_post_events():
+            if self._connection.server_version == 'raspberry-juice':
+                s = self._connection.transact('events.chat.posts()')
+                if s:
+                    for e in s.split('|'):
+                        yield ChatPostEvent.from_string(self._connection, e)
+
+        events = list(player_pos_events(self._track_players)) + list(block_hit_events()) + list(chat_post_events())
 
         if events:
             return events
@@ -506,6 +529,12 @@ class Events(object):
             return f
         return decorator
 
+    def on_chat_post(self, thread=False, multi=True, message=None):
+        def decorator(f):
+            self._handlers.append(ChatPostHandler(f, thread, multi, message))
+            return f
+        return decorator
+
 
 class EventHandler(object):
     """
@@ -637,6 +666,24 @@ class BlockHitHandler(EventHandler):
                 "of strings" % face)
 
 
+class ChatPostHandler(EventHandler):
+    def __init__(self, action, thread, multi, message):
+        super(ChatPostHandler, self).__init__(action, thread, multi)
+        self.message = message
+
+    def matches(self, event):
+        return (
+            isinstance(event, ChatPostEvent) and
+            self.matches_message(event.message))
+
+    def matches_message(self, message):
+        if self.message is None:
+            return True
+        if isinstance(self.message, str):
+            return self.message == message
+        raise TypeError("%r is not a valid message test; expected string" % message)
+
+
 class IdleHandler(EventHandler):
     """
     This class associates a handler with an idle event.
@@ -644,4 +691,3 @@ class IdleHandler(EventHandler):
 
     def matches(self, event):
         return isinstance(event, IdleEvent)
-
