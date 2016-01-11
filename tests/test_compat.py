@@ -59,6 +59,7 @@ def test_range_equality():
     assert range(10, 11) == range(10, 9, -1)
     assert range(0, 10, 3) == range(0, 11, 3)
     assert range(0, 10, 3) != range(0, 13, 3)
+    assert range(0, 1) != range(0, 2)
     # Yeah ... this one's weird, but it matches Py3 behaviour ...
     assert range(10) != [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
 

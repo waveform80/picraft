@@ -97,7 +97,7 @@ if sys.version_info < (3, 3):
             if isinstance(other, range):
                 if len(self) == 0:
                     return len(other) == 0
-                elif len(self) == 1:
+                elif len(self) == len(other) == 1:
                     return self.start == other.start
                 else:
                     # If the other object is a (non-degenerate) range with

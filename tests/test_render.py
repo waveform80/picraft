@@ -49,7 +49,7 @@ from picraft.render import (
     Material,
     Parser,
     )
-from picraft import Model, NegativeWeight, UnsupportedCommand, vector_range, O
+from picraft import Model, NegativeWeight, UnsupportedCommand, vector_range, O, X, Y, Z
 try:
     from unittest import mock
 except ImportError:
@@ -194,4 +194,5 @@ f -1/1/1 -2/1/1 -3 -4"""))
     assert m.faces[0].vectors == ((0.0, 0.0, 1.0), (1.0, 0.0, 1.0), (1.0, 0.0, 0.0), (0.0, 0.0, 0.0))
     assert m.materials == {"brick"}
     assert list(m.groups.items()) == [("group1", [m.faces[0]])]
-    assert m.bounds == vector_range(O, O + 2)
+    assert m.bounds == vector_range(O, X + Z + 1)
+
