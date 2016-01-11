@@ -547,12 +547,12 @@ class Model(object):
             min(v.x for f in self.faces for v in f.vectors),
             min(v.y for f in self.faces for v in f.vectors),
             min(v.z for f in self.faces for v in f.vectors),
-            ).round()
+            ).floor()
         max_v = Vector(
             max(v.x for f in self.faces for v in f.vectors),
             max(v.y for f in self.faces for v in f.vectors),
             max(v.z for f in self.faces for v in f.vectors),
-            ).round()
+            ).floor()
         return vector_range(min_v, max_v + 1)
 
     def render(self, scale=1.0, materials=None, groups=None):
