@@ -214,51 +214,6 @@ class VertexTexture(namedtuple('VertexTexture', ('u', 'v', 'w'))):
         return super(VertexTexture, self).__dict__
 
 
-class PointIndex(namedtuple('PointIndex', ('v',))):
-    """
-    Represents a vertex reference in a point statement.
-    """
-
-    __slots__ = ()
-
-    def __new__(cls, v):
-        v = int(v)
-        return super(PointIndex, cls).__new__(cls, v)
-
-    @classmethod
-    def from_string(cls, s):
-        v = int(s)
-        return super(PointIndex, cls).__new__(cls, v)
-
-    @property
-    def __dict__(self):
-        return super(PointIndex, self).__dict__
-
-
-class LineIndex(namedtuple('LineIndex', ('v', 'vt'))):
-    """
-    Represents a vertex and optional texture reference in a line statement.
-    """
-
-    __slots__ = ()
-
-    def __new__(cls, v, vt=None):
-        v = int(v)
-        vt = vt if vt is None else int(vt)
-        return super(LineIndex, cls).__new__(cls, v, vt)
-
-    @classmethod
-    def from_string(cls, s):
-        v, vt = s.split('/', 1)
-        v = int(v)
-        vt = int(vt) if vt else None
-        return super(LineIndex, cls).__new__(cls, v, vt)
-
-    @property
-    def __dict__(self):
-        return super(LineIndex, self).__dict__
-
-
 class FaceIndex(namedtuple('FaceIndex', ('v', 'vt', 'vn'))):
     """
     Represents a vertex, optional texture, and optional normal reference in
@@ -276,12 +231,12 @@ class FaceIndex(namedtuple('FaceIndex', ('v', 'vt', 'vn'))):
     @classmethod
     def from_string(cls, s):
         s = s.split('/')
-        v = int(s[0])
-        vt = int(s[1]) if len(s) > 1 else None
-        vn = int(s[2]) if len(s) > 2 else None
+        v = s[0]
+        vt = s[1] if len(s) > 1 else None
+        vn = s[2] if len(s) > 2 else None
         if len(s) > 3:
             raise ValueError('too many values in face index')
-        return super(FaceIndex, cls).__new__(cls, v, vt, vn)
+        return cls.__new__(cls, v, vt, vn)
 
     @property
     def __dict__(self):
@@ -363,9 +318,8 @@ class Parser(object):
     with a filename or file-like object (which must return unicode strings in
     Python 3, as opposed to bytes), the instance acts as an iterable yielding
     :class:`Vertex`, :class:`VertexParameter`, :class:`VertexNormal`,
-    :class:`VertexTexture`, :class:`PointIndex`, :class:`LineIndex`,
-    :class:`FaceIndex`, :class:`Group`, and :class:`Material` instances
-    depending on the statement encountered.
+    :class:`VertexTexture`, :class:`FaceIndex`, :class:`Group`, and
+    :class:`Material` instances depending on the statement encountered.
 
     ASCII encoding of the source file is assumed (no other character sets are
     supported), and all other legitimate commands are recognized but ignored.
@@ -380,7 +334,6 @@ class Parser(object):
             self._source = io.open(source, 'r', encoding='ascii')
         else:
             self._source = source
-        self._line = 1
 
     def close(self):
         if self._opened:
@@ -393,13 +346,9 @@ class Parser(object):
     def __exit__(self, exc_type, exc_value, exc_tb):
         self.close()
 
-    @property
-    def line(self):
-        return self._line
-
     def __iter__(self):
         compound = []
-        for line in self._source:
+        for line_num, line in enumerate(self._source, start=1):
             line = line.rstrip()
             if line.endswith('\\'):
                 compound.append(line[:-1])
@@ -414,9 +363,11 @@ class Parser(object):
                         command, params = line, ''
                     params = params.split()
                     if command in IGNORED:
-                        warnings.warn(UnsupportedCommand('unsupported command %s' % command))
+                        warnings.warn(UnsupportedCommand(
+                            'line %d: unsupported command %s' % (line_num, command)))
                     elif not command in COMMANDS:
-                        raise ValueError('unknown command %s' % command)
+                        raise ValueError(
+                            'line %d: unknown command %s' % (line_num, command))
                     else:
                         yield {
                             'v':      Vertex,
@@ -444,10 +395,8 @@ class ModelFace(object):
     .. _coplanar: https://en.wikipedia.org/wiki/Coplanarity
     """
 
-    def __init__(self, vectors, material=None, groups=None):
+    def __init__(self, vectors, material, groups):
         self._vectors = tuple(vectors)
-        if groups is None:
-            groups = set()
         self._groups = frozenset(groups)
         self._material = material
 
