@@ -93,7 +93,7 @@ from .exc import (
     )
 from .vector import Vector, vector_range, line, lines, circle, filled, V, O, X, Y, Z
 from .block import Block
-from .events import BlockHitEvent, PlayerPosEvent, IdleEvent
+from .events import BlockHitEvent, PlayerPosEvent, IdleEvent, ChatPostEvent
 from .connection import Connection
 from .player import Players, Player, HostPlayer
 from .world import World

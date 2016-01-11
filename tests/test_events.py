@@ -38,10 +38,19 @@ str = type('')
 
 import pytest
 import io
+import re
 import picraft.events
 import threading
 import time
-from picraft import World, Vector, BlockHitEvent, PlayerPosEvent, IdleEvent, ConnectionClosed
+from picraft import (
+    World,
+    Vector,
+    BlockHitEvent,
+    PlayerPosEvent,
+    ChatPostEvent,
+    IdleEvent,
+    ConnectionClosed,
+    )
 try:
     from unittest import mock
 except ImportError:
@@ -134,6 +143,18 @@ def test_events_poll_idle():
     assert len(result) == 1
     assert isinstance(result[0], IdleEvent)
 
+def test_events_post_message():
+    conn = mock.MagicMock()
+    conn.server_version = 'raspberry-juice'
+    conn.transact.side_effect = ['', '1,Hello world!']
+    events = picraft.events.Events(conn)
+    result = events.poll()
+    assert len(result) == 1
+    assert result[0].message == 'Hello world!'
+    assert result[0].player.player_id == 1
+    conn.transact.assert_any_call('events.block.hits()')
+    conn.transact.assert_any_call('events.chat.posts()')
+
 def test_events_clear():
     conn = mock.MagicMock()
     events = picraft.events.Events(conn)
@@ -180,6 +201,20 @@ def test_events_hit_decorator():
     assert result[0].pos == Vector(1, 2, 3)
     assert result[0].face == 'x-'
     assert result[0].player.player_id == 5
+
+def test_events_chat_decorator():
+    conn = mock.MagicMock()
+    conn.server_version = 'raspberry-juice'
+    conn.transact.side_effect = ['', '1,Hello world!']
+    events = picraft.events.Events(conn)
+    result = []
+    @events.on_chat_post()
+    def handler(event):
+        result.append(event)
+    events.process()
+    assert len(result) == 1
+    assert result[0].message == 'Hello world!'
+    assert result[0].player.player_id == 1
 
 def test_events_multi_thread_handler():
     conn = mock.MagicMock()
@@ -327,6 +362,60 @@ def test_events_hit_handler_filter_face_bytes():
         result.append(event)
     events.process()
     assert len(result) == 0
+
+def test_events_chat_handler_filter_message():
+    conn = mock.MagicMock()
+    conn.server_version = 'raspberry-juice'
+    conn.transact.side_effect = ['', '1,teleport']
+    events = picraft.events.Events(conn)
+    result = []
+    @events.on_chat_post(message='teleport')
+    def handler(event):
+        result.append(event)
+    events.process()
+    assert len(result) == 1
+    assert result[0].message == 'teleport'
+    assert result[0].player.player_id == 1
+
+def test_events_chat_handler_filter_message_re():
+    conn = mock.MagicMock()
+    conn.server_version = 'raspberry-juice'
+    conn.transact.side_effect = ['', '1,teleport 0,0,0']
+    events = picraft.events.Events(conn)
+    result = []
+    @events.on_chat_post(message=re.compile(r'teleport \d+,\d+,\d+'))
+    def handler(event):
+        result.append(event)
+    events.process()
+    assert len(result) == 1
+    assert result[0].message == 'teleport 0,0,0'
+    assert result[0].player.player_id == 1
+
+def test_events_chat_handler_filter_message_bytes():
+    conn = mock.MagicMock()
+    conn.server_version = 'raspberry-juice'
+    conn.transact.side_effect = ['', '1,teleport']
+    events = picraft.events.Events(conn)
+    result = []
+    @events.on_chat_post(message=b'teleport')
+    def handler(event):
+        result.append(event)
+    events.process()
+    assert len(result) == 1
+    assert result[0].message == 'teleport'
+    assert result[0].player.player_id == 1
+
+def test_events_chat_handler_filter_message_bad():
+    conn = mock.MagicMock()
+    conn.server_version = 'raspberry-juice'
+    conn.transact.side_effect = ['', '1,teleport']
+    events = picraft.events.Events(conn)
+    result = []
+    @events.on_chat_post(message=1)
+    def handler(event):
+        result.append(event)
+    with pytest.raises(TypeError):
+        events.process()
 
 def test_events_main_loop():
     conn = mock.MagicMock()
