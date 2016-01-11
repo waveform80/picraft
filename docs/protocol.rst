@@ -98,14 +98,14 @@ The longer the client waits, the more likely it is to correctly report failed
 operations (in the case of slow systems). However, the longer the wait, the
 slower the response time (and performance) of the client.
 
-The official reference implementation simply ignores errors in commands that
-produce no response (providing the best performance, but the least safety).
-The picraft implementation provides a configurable timeout (including the
-ability to ignore errors like the reference implementation).
+The mcpi implementation simply ignores errors in commands that produce no
+response (providing the best performance, but the least safety).  The picraft
+implementation provides a configurable timeout but defaults to ignoring errors
+like the mcpi implementation because remote connections tend to require such
+long timeouts that the library's performance becomes unacceptable.
 
-Clients MAY either ignore errors (as the official API does) or implement some
-form or timeout to determine when operations are successful (as in this API by
-default).
+Clients MAY either ignore errors or implement some form or timeout to determine
+when operations are successful.
 
 Specific Commands
 -----------------
@@ -537,11 +537,13 @@ longer it will be before another command can be sent (given that responses are
 not tied to commands by something like a sequence number), resulting in poorer
 performance.
 
-The official reference implementation of the client (mcpi) doesn't wait at all
-and simply assumes that all commands which don't normally provide a response
-succeed. The picraft implementation provides a configurable timeout, or the
-option to ignore errors like the reference implementation (the default is to
-wait 0.2s in order to err on the side of safety).
+The mcpi implementation of the client doesn't wait at all and simply assumes
+that all commands which don't normally provide a response succeed. The picraft
+implementation provides a configurable timeout, or the option to ignore errors
+like the mcpi implementation. It defaults to acting in the same manner as the
+mcpi implementation partly for consistency and partly because such long
+timeouts are required with remote servers that the library's performance
+becomes unacceptable.
 
 What happens with unknown commands? Let's try another telnet session to find
 out::

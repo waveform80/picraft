@@ -4,10 +4,9 @@
 Conversion from mcpi
 ====================
 
-If you have existing scripts that use the reference implementation
-(minecraft-pi aka mcpi), and you wish to convert them to using the picraft
-library, this section contains details and examples covering equivalent
-functionality between the libraries.
+If you have existing scripts that use the mcpi implementation, and you wish to
+convert them to using the picraft library, this section contains details and
+examples covering equivalent functionality between the libraries.
 
 
 Minecraft.create
@@ -82,11 +81,11 @@ Minecraft.getBlockWithData
 
 Equivalent: :attr:`~picraft.world.World.blocks`
 
-Accessing the id of a block is rather different. There is no direct equivalent
-to ``getBlock``, just ``getBlockWithData`` (as there's no difference in
-operational cost so there's little point in retrieving a block id without the
-data). In mcpi this is done by executing a method; in picraft this is done by
-querying an attribute with a :class:`~picraft.vector.Vector`::
+There is no direct equivalent to ``getBlock``, just ``getBlockWithData`` (as
+there's no difference in operational cost so there's little point in retrieving
+a block id without the data). In mcpi this is done by executing a method; in
+picraft this is done by querying an attribute with a
+:class:`~picraft.vector.Vector`::
 
     >>> import mcpi.minecraft as minecraft
     >>> mc = minecraft.Minecraft.create()
@@ -103,9 +102,10 @@ querying an attribute with a :class:`~picraft.vector.Vector`::
 The id and data can be extracted from the :class:`~picraft.block.Block` tuple
 that is returned::
 
-    >>> w.blocks[Vector(0, -1, 0)].id
+    >>> b = w.blocks[Vector(0, -1, 0)]
+    >>> b.id
     2
-    >>> w.blocks[Vector(0, -1, 0)].data
+    >>> b.data
     0
 
 
@@ -114,9 +114,8 @@ Minecraft.setBlock
 
 Equivalent: :attr:`~picraft.world.World.blocks`
 
-Setting the id (and optionally data) of a block is also rather different. In
-picraft the same attribute is used as for accessing block ids; just *assign* a
-:class:`~picraft.block.Block` instance to the attribute, instead of querying
+In picraft the same attribute is used as for accessing block ids; just *assign*
+a :class:`~picraft.block.Block` instance to the attribute, instead of querying
 it::
 
     >>> import mcpi.minecraft as minecraft
@@ -139,10 +138,10 @@ Minecraft.setBlocks
 
 Equivalent: :attr:`~picraft.world.World.blocks`
 
-Again, the same attribute as for ``setBlock`` is used for ``setBlocks``; just
-pass a slice of :class:`vectors <picraft.vector.Vector>` instead of a single
-vector (the example below shows an easy method of generating such a slice by
-adding 1 to a vector for the upper end of the slice)::
+The same attribute as for ``setBlock`` is used for ``setBlocks``; just pass a
+slice of :class:`vectors <picraft.vector.Vector>` instead of a single vector
+(the example below shows an easy method of generating such a slice by adding 1
+to a vector for the upper end of the slice)::
 
     >>> import mcpi.minecraft as minecraft
     >>> mc = minecraft.Minecraft.create()
@@ -281,7 +280,8 @@ correctly recognizes line breaks in the message::
 Minecraft.setting
 =================
 
-Equivalent: :attr:`~picraft.world.World.immutable` and :attr:`~picraft.world.World.nametags_visible`
+Equivalent: :attr:`~picraft.world.World.immutable` and
+:attr:`~picraft.world.World.nametags_visible`
 
 The ``setting`` method is replaced with (write-only) properties with the
 equivalent names to the settings that can be used::
@@ -424,7 +424,7 @@ Minecraft.player.getDirection
 
 Equivalent: :attr:`~picraft.player.HostPlayer.direction`
 
-The ``player.getDuration`` method is replaced with the read-only
+The ``player.getDirection`` method is replaced with the read-only
 :attr:`~picraft.player.HostPlayer.duration` attribute::
 
     >>> import mcpi.minecraft as minecraft
@@ -543,7 +543,7 @@ Minecraft.entity.getDirection
 
 Equivalent: :attr:`~picraft.player.Player.direction`
 
-The ``entity.getDuration`` method is replaced with the read-only
+The ``entity.getDirection`` method is replaced with the read-only
 :attr:`~picraft.player.Player.duration` attribute::
 
     >>> import mcpi.minecraft as minecraft

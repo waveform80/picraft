@@ -80,11 +80,12 @@ class Connection(object):
     server, while *port* specifies the port to connect to (these typically take
     the values "127.0.0.1" and 4711 respectively).
 
-    The *timeout* parameter specifies the maximum time that the client will
-    wait after sending a command before assuming that the command has succeeded
-    (see the :ref:`protocol` section for more information). If *ignore_errors*
-    is ``True``, act like the official reference implementation and ignore all
-    errors for commands which do not return data.
+    The *timeout* parameter specifies the maximum time in seconds that the
+    client will wait after sending a command before assuming that the command
+    has succeeded when *ignore_errors* is False (see the :ref:`protocol`
+    section for more information). If *ignore_errors* is ``True`` (the
+    default), act like the mcpi implementation and ignore all errors for
+    commands which do not return data.
 
     Users will rarely need to construct a :class:`Connection` object
     themselves. An instance of this class is constructed by
@@ -115,10 +116,12 @@ class Connection(object):
 
     .. attribute:: ignore_errors
 
-        If ``False`` (the default), use the :attr:`timeout` to determine when
-        responses have been successful. If ``True`` assume any response without
-        an expected reply is successful (this is the behaviour of the reference
-        implementation; it is faster but less "safe").
+        If ``False``, use the :attr:`timeout` to determine when responses have
+        been successful; this is safer but requires such long timeouts when
+        using remote connections that it's not the default. If ``True`` (the
+        default) assume any response without an expected reply is successful
+        (this is the behaviour of the mcpi implementation; it is faster but
+        less "safe").
 
     .. attribute:: timeout
 
@@ -134,7 +137,7 @@ class Connection(object):
     """
 
     def __init__(
-            self, host, port, timeout=0.3, ignore_errors=False,
+            self, host, port, timeout=1.0, ignore_errors=True,
             encoding='ascii'):
         self._lock = threading.Lock()
         self._local = threading.local()
@@ -268,8 +271,8 @@ class Connection(object):
         defaults to "ascii").
 
         If a batch has been initiated, the contents of *buf* are appended to
-        the latest batch that was started (batches can be nested; see
-        :meth:`batch_start` for more information).
+        the batch (batches cannot be nested; see :meth:`batch_start` for more
+        information).
         """
         if hasattr(self._local, 'batch'):
             self._local.batch.append(buf)
