@@ -114,7 +114,7 @@ class MinecraftTV(object):
             o + V(0, 1, 1):o + self.size - V(0, 2, 2) + 1] = Block('#000000')
 
 
-with World(ignore_errors=True) as world:
+with World() as world:
     p = world.player.tile_pos
     tv = MinecraftTV(world, origin=p + 8*X + 2*Y, size=(20, 14))
     tv.main_loop()

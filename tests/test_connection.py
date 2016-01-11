@@ -108,7 +108,7 @@ def test_connection_send():
 def test_connection_send_error():
     with mock.patch('socket.socket'), mock.patch('select.select'):
         select.select.side_effect = [[False], [True]]
-        conn = Connection('myhost', 1234)
+        conn = Connection('myhost', 1234, ignore_errors=False)
         conn._rfile.readline.return_value = b'Fail\n'
         with pytest.raises(ConnectionError):
             conn.send('foo()')
@@ -116,7 +116,7 @@ def test_connection_send_error():
 def test_connection_transact():
     with mock.patch('socket.socket'), mock.patch('select.select'):
         select.select.side_effect = [[False], [True]]
-        conn = Connection('myhost', 1234)
+        conn = Connection('myhost', 1234, ignore_errors=False)
         conn._wfile.write.reset_mock()
         conn._rfile.readline.return_value = b'bar\n'
         result = conn.transact('foo()')

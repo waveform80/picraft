@@ -150,9 +150,7 @@ simply by modifying the decorator used:
 
 Now you should find that the rain all falls simultaneously (more or less, given
 the constraints of the Pi's bandwidth!) when you hit the white block multiple
-times. If you find the rain too slow, you can try using the ``ignore_errors``
-parameter as in the bridge recipe above but in this case you may need to
-introduce some pauses to the loop!
+times.
 
 .. image:: rain.png
     :align: center

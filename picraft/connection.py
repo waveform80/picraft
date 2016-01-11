@@ -127,6 +127,7 @@ class Connection(object):
 
         The length of time in seconds to wait for a response (positive or
         negative) from the server when :attr:`ignore_errors` is ``False``.
+        Defaults to 1 second.
 
     .. attribute:: encoding
 
