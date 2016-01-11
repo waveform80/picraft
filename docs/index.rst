@@ -9,8 +9,7 @@ Table of Contents
    :maxdepth: 1
    :numbered:
 
-   install2
-   install3
+   install
    quickstart
    conversion
    vectors

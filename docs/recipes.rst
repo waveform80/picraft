@@ -201,6 +201,8 @@ polygon in turn, wiping it before displaying the next one:
     :align: center
 
 
+.. _models:
+
 Models
 ======
 

@@ -705,55 +705,7 @@ class Model(object):
         simple text based format that can be constructed by hand without
         too much difficulty. Combined with the default mapping of material
         names to block types, this enables another means of constructing
-        objects in the Minecraft world. For example, to construct a small
-        house:
-
-        .. code-block:: python
-            :caption: house.py
-
-            from picraft import Model, World
-
-            with World() as w:
-                with w.connection.batch_start():
-                    for v, b in Model('house.obj').render().items():
-                        w.blocks[v] = b
-
-        .. code-block:: text
-            :caption: house.obj
-
-            # This is an object file describing a house. First we define the
-            # required vertices with the "v" command, then reference these
-            # from faces (with the "f" command). Negative indices in the "f"
-            # command count back from the most recently defined vertices.
-
-            usemtl brick_block
-
-            g front-wall
-            v 0 1 0
-            v 8 1 0
-            v 8 4 0
-            v 0 4 0
-            v 3 1 0
-            v 5 1 0
-            v 3 3 0
-            v 5 3 0
-            f -8 -4 -2 -1 -3 -7 -6 -5
-
-            g back-wall
-            v 0 1 8
-            v 8 1 8
-            v 8 4 8
-            v 0 4 8
-            f -1 -2 -3 -4
-
-            g left-wall
-            f -12 -4 -1 -9
-
-            g right-wall
-            f -11 -3 -2 -10
-
-            g ceiling
-            f -10 -9 -1 -2
+        objects in the Minecraft world. For example, see :ref:`models`.
 
         .. _object file: https://en.wikipedia.org/wiki/Wavefront_.obj_file
         """

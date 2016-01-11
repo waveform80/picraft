@@ -29,10 +29,10 @@ The following illustration shows the directions of each of the axes:
     :align: center
 
 Positive rotation in Minecraft also follows the `right-hand rule`_. For
-example, positive rotation about the Y axis proceeds clockwise along the X-Z
-plane. Again, this is easy to see by applying the rule: make a fist with your
-right hand, then point the thumb vertically (positive direction along the Y
-axis). Your other fingers now indicate the positive direction of rotation
+example, positive rotation about the Y axis proceeds anti-clockwise along the
+X-Z plane. Again, this is easy to see by applying the rule: make a fist with
+your right hand, then point the thumb vertically (positive direction along the
+Y axis). Your other fingers now indicate the positive direction of rotation
 around that axis.
 
 Vector-vector operations
