@@ -1,4 +1,5 @@
 from random import randint
+from time import sleep
 from picraft import World, X, Y, Z, Vector, Block
 
 world = World()
@@ -24,6 +25,7 @@ def make_it_rain(event):
             world.blocks[rain] = Block('air')
             rain -= Y
             world.blocks[rain] = Block('wool', randint(1, 15))
+            sleep(0.1)
 
 world.events.main_loop()
 

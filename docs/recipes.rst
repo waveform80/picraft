@@ -92,11 +92,9 @@ onto air it changes the block to diamond:
 .. literalinclude:: bridge.py
     :caption: bridge.py
 
-Note that the script starts by initializing the connection with the
-``ignore_errors=True`` parameter. This causes the picraft library to act like
-the mcpi library: errors in "set" calls are ignored, but the library reacts
-faster because of this. This is necessary in a script like this where rapid
-reaction to player behaviour is required.
+Note that the script uses a list to keep track of the blocks which are present
+in the bridge, popping off old blocks when the bridge has more than 10 blocks
+in it. This list is also used to "clean up" the bridge when the script exits.
 
 .. image:: bridge.png
     :align: center

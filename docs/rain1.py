@@ -1,4 +1,5 @@
 from random import randint
+from time import sleep
 from picraft import World, X, Y, Z, Vector, Block
 
 world = World()
@@ -22,5 +23,6 @@ while running:
                     world.blocks[rain] = Block('air')
                     rain -= Y
                     world.blocks[rain] = Block('wool', randint(1, 15))
+                    sleep(0.1)
         elif event.pos == black_pos:
             running = False
