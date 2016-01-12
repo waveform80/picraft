@@ -49,7 +49,15 @@ from picraft.render import (
     Material,
     Parser,
     )
-from picraft import Model, NegativeWeight, UnsupportedCommand, vector_range, O, X, Y, Z
+from picraft import (
+    Model,
+    NegativeWeight,
+    UnsupportedCommand,
+    Vector,
+    Block,
+    vector_range,
+    O, X, Y, Z,
+    )
 try:
     from unittest import mock
 except ImportError:
@@ -196,3 +204,71 @@ f -1/1/1 -2/1/1 -3 -4"""))
     assert list(m.groups.items()) == [("group1", [m.faces[0]])]
     assert m.bounds == vector_range(O, X + Z + 1)
 
+def test_model_render_defaults():
+    m = Model(io.StringIO("""
+usemtl brick_block
+
+v 0 0 0
+v 4 0 0
+v 4 0 4
+v 0 0 4
+f -1 -2 -3 -4"""))
+    b = Block('brick_block')
+    assert m.render() == {
+        v: b for v in vector_range(O, 4*X + 4*Z + 1)
+        }
+
+def test_model_render_materials_dict():
+    m = Model(io.StringIO("""
+usemtl brick
+
+v 0 0 0
+v 4 0 0
+v 4 0 4
+v 0 0 4
+f -1 -2 -3 -4"""))
+    b = Block('brick_block')
+    assert m.render(materials={'brick': b}) == {
+        v: b for v in vector_range(O, 4*X + 4*Z + 1)
+        }
+
+def test_model_render_groups():
+    m = Model(io.StringIO("""
+usemtl brick_block
+
+g group1
+v 0 0 0
+v 4 0 0
+v 4 0 4
+v 0 0 4
+f -1 -2 -3 -4
+
+g group2
+v 0 1 0
+v 4 1 0
+v 4 1 4
+v 0 1 4
+f -1 -2 -3 -4
+"""))
+    b = Block('brick_block')
+    assert m.render(groups='group1') == {
+        v: b for v in vector_range(O, 4*X + 4*Z + 1)
+        }
+    assert m.render(groups=b'group1') == {
+        v: b for v in vector_range(O, 4*X + 4*Z + 1)
+        }
+    assert m.render(groups={'group1'}) == {
+        v: b for v in vector_range(O, 4*X + 4*Z + 1)
+        }
+
+def test_model_render_missing_material():
+    m = Model(io.StringIO("""
+usemtl brick
+
+v 0 0 0
+v 4 0 0
+v 4 0 4
+v 0 0 4
+f -1 -2 -3 -4"""))
+    with pytest.raises(KeyError):
+        m.render(materials={})

@@ -29,8 +29,9 @@
 
 """
 The events module defines the :class:`Events` class, which provides methods for
-querying events in the Minecraft world, and :class:`BlockHitEvent` which is the
-only event type currently supported.
+querying events in the Minecraft world, and the :class:`BlockHitEvent`,
+:class:`PlayerPosEvent`, :class:`ChatPostEvent`, and :class:`IdleEvent` classes
+which represent the various event types.
 
 .. note::
 
@@ -274,6 +275,12 @@ class Events(object):
     ids to the :attr:`track_players` attribute. If you wish to include idle
     events (which fire when nothing else is produced in response to
     :meth:`poll`) then set :attr:`include_idle` to ``True``.
+
+    .. note::
+
+        If you are using a Raspberry Juice server, chat post events are also
+        tracked by default. Chat post events are only supported with Raspberry
+        Juice servers; Minecraft Pi edition doesn't support chat post events.
 
     Finally, the :attr:`poll_gap` attribute specifies how long to pause during
     each iteration of :meth:`main_loop` to permit event handlers some time to
