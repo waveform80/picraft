@@ -61,6 +61,13 @@ PlayerPosEvent
     :members:
 
 
+ChatPostEvent
+=============
+
+.. autoclass:: ChatPostEvent(message, player)
+    :members:
+
+
 IdleEvent
 =========
 
