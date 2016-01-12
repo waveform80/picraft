@@ -1054,6 +1054,8 @@ def lines(points, closed=True):
             for v in islice(line(start, point), 1, None):
                 yield v
         start = point
+    else:
+        raise ValueError('no points specified')
     if closed and first != point:
         for v in islice(line(point, first), 1, None):
             yield v

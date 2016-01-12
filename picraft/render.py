@@ -73,7 +73,6 @@ from itertools import chain
 from .vector import Vector, vector_range, filled, lines
 from .block import Block
 from .exc import (
-    ParseWarning,
     UnsupportedCommand,
     NegativeWeight,
     )
@@ -475,7 +474,6 @@ class Model(object):
         vertexes = []
         textures = []
         normals = []
-        groups = defaultdict(list)
         active_groups = set()
         active_material = None
         for i in Parser(source):

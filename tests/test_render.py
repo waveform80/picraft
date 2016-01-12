@@ -272,3 +272,4 @@ v 0 0 4
 f -1 -2 -3 -4"""))
     with pytest.raises(KeyError):
         m.render(materials={})
+
