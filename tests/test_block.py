@@ -173,6 +173,16 @@ def test_blocks_set_many_same():
     picraft.block.Blocks(conn)[v_from:v_to] = Block(0, 0)
     conn.send.assert_called_once_with('world.setBlocks(1,2,3,1,2,4,0,0)')
 
+def test_blocks_set_many_same_stepped():
+    conn = mock.MagicMock()
+    v_from = Vector(1, 2, 3)
+    v_to = Vector(2, 3, 5)
+    v_step = Vector(2, 2, 2)
+    picraft.block.Blocks(conn)[v_from:v_to:v_step] = Block(0, 0)
+    for v in vector_range(v_from, v_to, v_step):
+        conn.send.assert_any_call(
+                'world.setBlock(%d,%d,%d,0,0)' % (v.x, v.y, v.z))
+
 def test_blocks_set_many_different():
     conn = mock.MagicMock()
     v_from = Vector(1, 2, 3)
@@ -186,3 +196,4 @@ def test_blocks_set_many_different():
         picraft.block.Blocks(conn)[v_from:v_to] = blocks[1:]
     with pytest.raises(ValueError):
         picraft.block.Blocks(conn)[v_from:v_to] = blocks * 2
+
