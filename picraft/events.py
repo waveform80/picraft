@@ -774,11 +774,12 @@ class ChatPostHandler(EventHandler):
             return True
         if isinstance(self.message, str):
             return self.message == message
-        if hasattr(self.message, 'match'):
+        try:
             return self.message.match(message)
-        raise TypeError(
-                "%r is not a valid message test; expected string"
-                "or regular expression" % message)
+        except AttributeError:
+            raise TypeError(
+                    "%r is not a valid message test; expected string"
+                    "or regular expression" % message)
 
 
 class IdleHandler(EventHandler):

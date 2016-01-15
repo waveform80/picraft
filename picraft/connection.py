@@ -275,9 +275,9 @@ class Connection(object):
         the batch (batches cannot be nested; see :meth:`batch_start` for more
         information).
         """
-        if hasattr(self._local, 'batch'):
+        try:
             self._local.batch.append(buf)
-        else:
+        except AttributeError:
             with self._lock:
                 self._send(buf)
                 if not self.ignore_errors:
@@ -320,10 +320,13 @@ class Connection(object):
             with :meth:`batch_send` or :meth:`batch_forget` depending on
             whether an exception is raised within the enclosed block.
         """
-        if hasattr(self._local, 'batch'):
+        try:
+            self._local.batch
+        except AttributeError:
+            self._local.batch = []
+            return self
+        else:
             raise BatchStarted('batch already started')
-        self._local.batch = []
-        return self
 
     def batch_send(self):
         """
@@ -336,7 +339,9 @@ class Connection(object):
         If no batch is currently in progress, a
         :exc:`~picraft.exc.BatchNotStarted` exception will be raised.
         """
-        if not hasattr(self._local, 'batch'):
+        try:
+            self._local.batch
+        except AttributeError:
             raise BatchNotStarted('no batch in progress')
         try:
             if self._local.batch:
@@ -362,9 +367,10 @@ class Connection(object):
         If no batch is currently in progress, a
         :exc:`~picraft.exc.BatchNotStarted` exception will be raised.
         """
-        if not hasattr(self._local, 'batch'):
+        try:
+            del self._local.batch
+        except AttributeError:
             raise BatchNotStarted('no batch in progress')
-        del self._local.batch
 
     def __enter__(self):
         return self

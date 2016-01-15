@@ -498,32 +498,44 @@ class Blocks(object):
                 self._connection.transact(
                     'world.getBlockWithData(%d,%d,%d)' % (index.x, index.y, index.z)))
 
+    def _set_blocks(self, vrange, block):
+        assert vrange.step == Vector(1, 1, 1)
+        self._connection.send(
+            'world.setBlocks(%d,%d,%d,%d,%d,%d,%d,%d)' % (
+                vrange.start.x, vrange.start.y, vrange.start.z,
+                vrange.stop.x - 1, vrange.stop.y - 1, vrange.stop.z - 1,
+                block.id, block.data))
+
+    def _set_block_loop(self, vrange, blocks):
+        for v, b in zip_longest(vrange, blocks):
+            if v is None:
+                raise ValueError('too many blocks for vector range')
+            if b is None:
+                raise ValueError('not enough blocks for vector range')
+            self._connection.send(
+                'world.setBlock(%d,%d,%d,%d,%d)' % (
+                    v.x, v.y, v.z, b.id, b.data))
+
     def __setitem__(self, index, value):
         if isinstance(index, slice):
             index = vector_range(index.start, index.stop, index.step)
         if isinstance(index, vector_range):
-            vr = index
-            if not vr:
+            vrange = index
+            if not vrange:
                 warnings.warn(EmptySliceWarning(
                     "ignoring empty slice passed to blocks"))
-            elif (
-                    abs(vr.step) == Vector(1, 1, 1) and
-                    hasattr(value, 'id') and
-                    hasattr(value, 'data')):
-                self._connection.send(
-                    'world.setBlocks(%d,%d,%d,%d,%d,%d,%d,%d)' % (
-                        vr.start.x, vr.start.y, vr.start.z,
-                        vr.stop.x - vr.step.x, vr.stop.y - vr.step.y, vr.stop.z - vr.step.z,
-                        value.id, value.data))
             else:
-                for v, b in zip_longest(vr, value):
-                    if v is None:
-                        raise ValueError('too many blocks for vector range')
-                    if b is None:
-                        raise ValueError('not enough blocks for vector range')
-                    self._connection.send(
-                        'world.setBlock(%d,%d,%d,%d,%d)' % (
-                            v.x, v.y, v.z, b.id, b.data))
+                try:
+                    block_id, block_data = value.id, value.data
+                except AttributeError:
+                    # Assume multiple blocks have been specified for the range
+                    self._set_block_loop(vrange, value)
+                else:
+                    # We're dealing with a single block for a range
+                    if abs(vrange.step) == Vector(1, 1, 1):
+                        self._set_blocks(vrange, value)
+                    else:
+                        self._set_block_loop(vrange, [value] * len(vrange))
         else:
             self._connection.send(
                 'world.setBlock(%d,%d,%d,%d,%d)' % (
