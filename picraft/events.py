@@ -89,8 +89,11 @@ import logging
 import threading
 import time
 from collections import namedtuple, Container
+from weakref import WeakSet
+from functools import update_wrapper
+from types import FunctionType
 
-from .exc import ConnectionClosed
+from .exc import ConnectionClosed, NoHandlersWarning
 from .vector import Vector
 from .player import Player
 
@@ -292,6 +295,7 @@ class Events(object):
     def __init__(self, connection, poll_gap=0.1, include_idle=False):
         self._connection = connection
         self._handlers = []
+        self._handler_instances = WeakSet()
         self._poll_gap = poll_gap
         self._include_idle = include_idle
         self._track_players = {}
@@ -454,9 +458,112 @@ class Events(object):
                 if handler.matches(event):
                     handler.execute(event)
 
+    def has_handlers(self, cls):
+        """
+        Decorator for registering a class as containing picraft event handlers.
+
+        If you are writing a class which contains methods that you wish to
+        use as event handlers for picraft events, you must decorate the class
+        with ``@has_handlers``. This will ensure that picraft tracks instances
+        of the class and dispatches events to each instance that exists when
+        the event occurs.
+
+        For example::
+
+            from picraft import World, Block, Vector, X, Y, Z
+
+            world = World()
+
+            @world.events.has_handlers
+            class HitMe(object):
+                def __init__(self, pos):
+                    self.pos = pos
+                    self.been_hit = False
+                    world.blocks[self.pos] = Block('diamond_block')
+
+                @world.events.on_block_hit()
+                def was_i_hit(self, event):
+                    if event.pos == self.pos:
+                        self.been_hit = True
+                        print('Block at %s was hit' % str(self.pos))
+
+            p = world.player.tile_pos
+            block1 = HitMe(p + 2*X)
+            block2 = HitMe(p + 2*Z)
+            world.events.main_loop()
+
+        Class-based handlers are an advanced feature and have some notable
+        limitations. For instance, in the example above the ``on_block_hit``
+        handler couldn't be declared with the block's position because this was
+        only known at instance creation time, not at class creation time (which
+        was when the handler was registered).
+
+        Furthermore, class-based handlers must be regular instance methods
+        (those which accept the instance, self, as the first argument); they
+        cannot be class methods or static methods.
+
+        .. note::
+
+            The ``@has_handlers`` decorator takes no arguments and shouldn't
+            be called, unlike event handler decorators.
+        """
+        # Search the class for handler methods, appending the class to the
+        # handler's list of associated classes (if you're thinking why is this
+        # a collection, consider that a method can be associated with multiple
+        # classes either by inheritance or direct assignment)
+        handlers_found = 0
+        for item in dir(cls):
+            item = getattr(cls, item, None)
+            if item: # PY2
+                item = getattr(item, 'im_func', item)
+            if item and isinstance(item, FunctionType):
+                try:
+                    item._picraft_classes.add(cls)
+                    handlers_found += 1
+                except AttributeError:
+                    pass
+        if not handlers_found:
+            warnings.warn(NoHandlersWarning('no handlers found in %s' % cls))
+            return cls
+        # Replace __init__ on the class with a closure that adds every instance
+        # constructed to self._handler_instances. As this is a WeakSet,
+        # instances that die will be implicitly removed
+        old_init = getattr(cls, '__init__', None)
+        def __init__(this, *args, **kwargs):
+            if old_init:
+                old_init(this, *args, **kwargs)
+            self._handler_instances.add(this)
+        if old_init:
+            update_wrapper(__init__, old_init)
+        cls.__init__ = __init__
+        return cls
+
+    def _handler_closure(self, f):
+        def handler(event):
+            if not f._picraft_classes:
+                # The handler is a straight-forward function; just call it
+                f(event)
+            else:
+                # The handler is an unbound method (yes, I know these don't
+                # really exist in Python 3; it's a function which is expecting
+                # to be called from an object instance if you like). Here we
+                # search the set of instances of classes which were registered
+                # as having handlers (by @has_handlers)
+                for cls in f._picraft_classes:
+                    for inst in self._handler_instances:
+                        # Check whether the instance has the right class; note
+                        # that we *don't* use isinstance() here as we want an
+                        # exact match
+                        if inst.__class__ == cls:
+                            # Bind the function to the instance via its
+                            # descriptor
+                            f.__get__(inst, cls)(event)
+        update_wrapper(handler, f)
+        return handler
+
     def on_idle(self, thread=False, multi=True):
         """
-        Decorator for registering a function as an idle handler.
+        Decorator for registering a function/method as an idle handler.
 
         This decorator is used to mark a function as an event handler which
         will be called when no other event handlers have been called in an
@@ -467,13 +574,16 @@ class Events(object):
         is set to ``True``.
         """
         def decorator(f):
-            self._handlers.append(IdleHandler(f, thread, multi))
+            self._handlers.append(
+                    IdleHandler(self._handler_closure(f), thread, multi))
+            f._picraft_classes = set()
             return f
         return decorator
 
     def on_player_pos(self, thread=False, multi=True, old_pos=None, new_pos=None):
         """
-        Decorator for registering a function as a position change handler.
+        Decorator for registering a function/method as a position change
+        handler.
 
         This decorator is used to mark a function as an event handler which
         will be called for any events indicating that a player's position has
@@ -510,13 +620,16 @@ class Events(object):
         player position events.
         """
         def decorator(f):
-            self._handlers.append(PlayerPosHandler(f, thread, multi, old_pos, new_pos))
+            self._handlers.append(
+                    PlayerPosHandler(self._handler_closure(f),
+                        thread, multi, old_pos, new_pos))
+            f._picraft_classes = set()
             return f
         return decorator
 
     def on_block_hit(self, thread=False, multi=True, pos=None, face=None):
         """
-        Decorator for registering a function as a block hit handler.
+        Decorator for registering a function/method as a block hit handler.
 
         This decorator is used to mark a function as an event handler which
         will be called for any events indicating a block has been hit while
@@ -562,13 +675,16 @@ class Events(object):
         with unthreaded handlers).
         """
         def decorator(f):
-            self._handlers.append(BlockHitHandler(f, thread, multi, pos, face))
+            self._handlers.append(
+                    BlockHitHandler(self._handler_closure(f),
+                        thread, multi, pos, face))
+            f._picraft_classes = set()
             return f
         return decorator
 
     def on_chat_post(self, thread=False, multi=True, message=None):
         """
-        Decorator for registering a function as a chat event handler.
+        Decorator for registering a function/method as a chat event handler.
 
         This decorator is used to mark a function as an event handler which
         will be called for events indicating a chat message was posted to
@@ -614,7 +730,10 @@ class Events(object):
         with unthreaded handlers).
         """
         def decorator(f):
-            self._handlers.append(ChatPostHandler(f, thread, multi, message))
+            self._handlers.append(
+                    ChatPostHandler(self._handler_closure(f),
+                        thread, multi, message))
+            f._picraft_classes = set()
             return f
         return decorator
 
@@ -646,18 +765,21 @@ class EventHandler(object):
         """
         if self.thread:
             if self.multi:
-                threading.Thread(target=self.action, args=(event,)).start()
+                threading.Thread(target=self._execute_handler, args=(event,)).start()
             elif not self._thread:
-                self._thread = threading.Thread(target=self.execute_single, args=(event,))
+                self._thread = threading.Thread(target=self._execute_single, args=(event,))
                 self._thread.start()
         else:
-            self.action(event)
+            self._execute_handler(event)
 
-    def execute_single(self, event):
+    def _execute_single(self, event):
         try:
-            self.action(event)
+            self._execute_handler(event)
         finally:
             self._thread = None
+
+    def _execute_handler(self, event):
+        self.action(event)
 
     def matches(self, event):
         """

@@ -107,6 +107,9 @@ class BatchNotStarted(ConnectionError):
 class EmptySliceWarning(Warning):
     "Warning raised when a zero-length vector slice is passed to blocks"
 
+class NoHandlersWarning(Warning):
+    "Warning raised when a class with no handlers is declared as has_handlers"
+
 class ParseWarning(Warning):
     "Base class for warnings encountered during parsing"
 
