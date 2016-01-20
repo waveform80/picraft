@@ -1159,11 +1159,8 @@ def pairwise(iterable):
 
 def filled(points):
     """
-    Generates the coordinates necessary to fill the space enclosed by the
-    specified *points*. A simple brute-force algorithm is used that simply
-    generates all the lines connecting all specified points. However, duplicate
-    elimination is used to ensure that no point within the filled space is
-    returned twice.
+    Generator function which yields the coordinates necessary to fill the space
+    enclosed by the specified *points*.
 
     This function can be applied to anything that returns a sequence of points.
     For example, to create a filled triangle::
@@ -1196,6 +1193,10 @@ def filled(points):
          Vector(x=2, y=3, z=0), Vector(x=3, y=0, z=0), Vector(x=3, y=-1, z=0),
          Vector(x=3, y=-2, z=0), Vector(x=3, y=1, z=0), Vector(x=3, y=2, z=0),
          Vector(x=4, y=0, z=0), Vector(x=4, y=-1, z=0), Vector(x=4, y=1, z=0)]
+
+    A simple brute-force algorithm is used that simply generates all the lines
+    connecting all specified points. However, duplicate elimination is used to
+    ensure that no point within the filled space is yielded twice.
 
     Note that if you pass the coordinates of a polyhedron which contains holes
     or gaps compared to its convex hull, this function *may* fill those holes

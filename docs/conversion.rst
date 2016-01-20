@@ -322,7 +322,7 @@ player::
     >>> w.player.pos = Vector(12, 12, -8)
 
 One advantage of this implementation is that adjusting the player's position
-relatively to their current one becomes simple::
+relative to their current one becomes simple::
 
     >>> w.player.pos += Vector(y=20)
 
@@ -425,7 +425,7 @@ Minecraft.player.getDirection
 Equivalent: :attr:`~picraft.player.HostPlayer.direction`
 
 The ``player.getDirection`` method is replaced with the read-only
-:attr:`~picraft.player.HostPlayer.duration` attribute::
+:attr:`~picraft.player.HostPlayer.direction` attribute::
 
     >>> import mcpi.minecraft as minecraft
     >>> mc = minecraft.Minecraft.create()

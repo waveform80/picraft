@@ -43,8 +43,8 @@ If you want the player position to the nearest block use the
     :align: center
 
 
-Blocks
-======
+Changing the World
+==================
 
 The state of blocks in the world can be queried and changed by reading and
 writing to the :attr:`~picraft.world.World.blocks` attribute. This is indexed
