@@ -386,6 +386,7 @@ def test_vector_lines():
 
 def test_vector_circle():
     assert set(circle(O, X)) == {-X, Y, X, -Y}
+    assert set(circle(X, X)) == {O, X+Y, 2*X, X-Y}
     assert set(circle(O, 2*X)) == {-2*X, -X+Y, 2*Y, X+Y, 2*X, X-Y, -2*Y, -X-Y}
     assert set(circle(O, 2*X, X+Y)) == {-2*X, -X+Y, 2*Y, X+Y, 2*X, X-Y, -2*Y, -X-Y}
 
@@ -394,4 +395,5 @@ def test_vector_filled_poly():
 
 def test_vector_filled_circle():
     assert set(filled(circle(O, X))) == {-X, Y, X, -Y, O}
+    assert set(filled(circle(X, X))) == {O, X+Y, X, 2*X, X-Y}
     assert set(filled(circle(O, 2*X))) == {-2*X, -X+Y, 2*Y, X+Y, 2*X, X-Y, -2*Y, -X-Y, -X, Y, X, -Y, O}

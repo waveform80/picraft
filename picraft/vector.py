@@ -951,11 +951,10 @@ def sign(v):
 
 def line(start, end):
     """
-    A three-dimensional implementation of `Bresenham's line algorithm`_,
-    derived largely from `Bob Pendelton's implementation`_ (public domain).
-    Given the end points of the line as the *start* and *end* vectors, this
-    generator function yields the coordinate of each block (inclusive of the
-    *start* and *end* vectors) that should be filled in to render the line.
+    Generates the coordinates of a line joining the *start* and *end*
+    :class:`Vector` instances inclusive. This is a generator function; points
+    are yielded from *start*, proceeding to *end*. If you don't require all
+    points you may terminate the generator at any point.
 
     For example::
 
@@ -971,6 +970,10 @@ def line(start, end):
          Vector(x=8, y=4, z=0),
          Vector(x=9, y=5, z=0),
          Vector(x=10, y=5, z=0)]
+
+    This is a three-dimensional implementation of `Bresenham's line
+    algorithm`_, derived largely from `Bob Pendelton's implementation`_ (public
+    domain).
 
     .. _Bresenham's line algorithm: https://en.wikipedia.org/wiki/Bresenham%27s_line_algorithm
     .. _Bob Pendelton's implementation: ftp://ftp.isc.org/pub/usenet/comp.sources.unix/volume26/line3d
@@ -1017,9 +1020,9 @@ def line(start, end):
 
 def lines(points, closed=True):
     """
-    Extension of the :func:`line` function which returns all vectors necessary
-    to render the lines connecting the specified *points* (which is an iterable
-    of :class:`Vector` instances).
+    Generator function which extends the :func:`line` function; this yields all
+    vectors necessary to render the lines connecting the specified *points*
+    (which is an iterable of :class:`Vector` instances).
 
     If the optional *closed* parameter is ``True`` (the default) the last point
     in the *points* sequence will be connected to the first point. Otherwise,
@@ -1064,16 +1067,17 @@ def lines(points, closed=True):
 
 def circle(center, radius, plane=Y):
     """
-    Generates the coordinates of a three-dimensional circle centered at the
-    vector *center*. The *radius* parameter is a vector specifying the distance
-    of the circumference from the center. The optional *plane* parameter
-    specifies another vector which, in combination with the *radius* vector,
-    gives the plane that the circle exists within.
+    Generator function which yields the coordinates of a three-dimensional
+    circle centered at the :class:`Vector` *center*. The *radius* parameter is
+    a vector specifying the distance of the circumference from the center. The
+    optional *plane* parameter (which defaults to the Y unit vector) specifies
+    another vector which, in combination with the *radius* vector, gives the
+    plane that the circle exists within.
 
     For example, to create a circle centered at (0, 10, 0), with a radius of 5
     units, existing in the X-Y plane::
 
-        >>> list(circle(O, 5*X, Y))
+        >>> list(circle(O, 5*X))
         [Vector(x=-5, y=0, z=0), Vector(x=-5, y=1, z=0), Vector(x=-4, y=2, z=0),
          Vector(x=-4, y=3, z=0), Vector(x=-5, y=-1, z=0), Vector(x=-4, y=-2, z=0),
          Vector(x=-4, y=-3, z=0), Vector(x=-3, y=4, z=0), Vector(x=-3, y=-4, z=0),
@@ -1088,7 +1092,7 @@ def circle(center, radius, plane=Y):
     To create another circle with the same center and radius, but existing in
     the X-Z (ground) plane::
 
-        >>> list(circle(O, 5*X, Z))
+        >>> list(circle(O, 5*X, plane=Z))
         [Vector(x=-5, y=0, z=0), Vector(x=-5, y=0, z=1), Vector(x=-4, y=0, z=2),
          Vector(x=-4, y=0, z=3), Vector(x=-5, y=0, z=-1), Vector(x=-4, y=0, z=-2),
          Vector(x=-4, y=0, z=-3), Vector(x=-3, y=0, z=4), Vector(x=-3, y=0, z=-4),
@@ -1130,17 +1134,20 @@ def circle(center, radius, plane=Y):
         top_point = (radial_point + circum_v)
         bottom_point = (radial_point - circum_v)
         if last_points is not None:
-            for p in line(last_points[0], top_point):
-                result.add(center + p)
+            top_last, bottom_last = last_points
+            for p in line(top_last, top_point):
+                p += center
+                result.add(p)
                 if len(result) > result_len:
                     result_len += 1
                     yield p
-            for p in line(last_points[1], bottom_point):
-                result.add(center + p)
+            for p in line(bottom_last, bottom_point):
+                p += center
+                result.add(p)
                 if len(result) > result_len:
                     result_len += 1
                     yield p
-        last_points = (top_point, bottom_point)
+        last_points = top_point, bottom_point
 
 
 def pairwise(iterable):
