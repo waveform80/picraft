@@ -1,3 +1,23 @@
+picraft (0.6-1) stable; urgency=low
+
+  * A new "sphere" generator function was added (#13)
+  * The "blocks" attribute was updated to permit arbitrary sequences of
+    vectors to be queried and assigned
+  * Event decorators can now be used in classes with the new "@has_handlers"
+    decorator (#14)
+  * Installation instructions have been simplified, along with several recipes
+    and code examples throughout the docs (#15, #16)
+  * When used with a Raspberry Juice server, chat events can now be monitored
+    and reacted to using event decorators (#19); many thanks to GitHub user
+    wh11e7rue for not just suggesting the idea but providing a fantastically
+    complete pull-request implementing it!
+  * The default for "ignore_errors" was changed so that picraft's network
+    behaviour now matches mcpi's by default (#18)
+  * A silly bug in "circle" prevented the center parameter from working
+    correctly
+
+ -- Dave Jones <dave@waveform.org.uk>  Thu, 21 Jan 2016 23:17:49 +0000
+
 picraft (0.5-1ubuntu1) trusty; urgency=medium
 
   * Ubuntu release of 0.5
