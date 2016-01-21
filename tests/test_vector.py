@@ -39,7 +39,7 @@ str = type('')
 import pytest
 import math
 from conftest import fp_equal, fp_vectors_equal
-from picraft import Vector, vector_range, line, lines, circle, filled, O, X, Y, Z
+from picraft import Vector, vector_range, line, lines, circle, sphere, filled, O, X, Y, Z, V
 from picraft.vector import rmod, rdiv, sign
 from picraft.compat import range
 
@@ -373,6 +373,7 @@ def test_vector_sign():
 def test_vector_line():
     assert list(line(O, O)) == [O]
     assert list(line(O, 4*X)) == [O, X, 2*X, 3*X, 4*X]
+    assert list(line(4*X, O)) == [4*X, 3*X, 2*X, X, O]
     assert list(line(O, Vector(3, 1, 0))) == [O, X, 2*X + Y, 3*X + Y]
     assert list(line(O, Vector(1, 2, 3))) == [O, Y + Z, Vector(1, 1, 2), Vector(1, 2, 3)]
 
@@ -383,12 +384,38 @@ def test_vector_lines():
     assert list(lines([O, 4*X, Vector(1, 2, 3)], closed=False)) == [
             O, X, 2*X, 3*X, 4*X, Vector(3, 1, 1), Vector(2, 1, 2),
             Vector(1, 2, 3)]
+    with pytest.raises(ValueError):
+        list(lines([]))
 
 def test_vector_circle():
     assert set(circle(O, X)) == {-X, Y, X, -Y}
     assert set(circle(X, X)) == {O, X+Y, 2*X, X-Y}
     assert set(circle(O, 2*X)) == {-2*X, -X+Y, 2*Y, X+Y, 2*X, X-Y, -2*Y, -X-Y}
     assert set(circle(O, 2*X, X+Y)) == {-2*X, -X+Y, 2*Y, X+Y, 2*X, X-Y, -2*Y, -X-Y}
+    with pytest.raises(ValueError):
+        set(circle(O, 2))
+
+def test_vector_sphere():
+    assert set(sphere(O, 1)) == {-X, X, -Y, Y, -Z, Z}
+    # Yeah, it's a pre-calculated test ... oh well
+    assert set(sphere(O, 2)) == {
+        V(-2 , -1 , 0)  , V(-2 , 0  , -1) , V(-2 , 0  , 0)  ,
+        V(-2 , 0  , 1)  , V(-2 , 1  , 0)  , V(-1 , -2 , 0)  ,
+        V(-1 , -1 , -1) , V(-1 , -1 , 0)  , V(-1 , -1 , 1)  ,
+        V(-1 , 0  , -2) , V(-1 , 0  , -1) , V(-1 , 0  , 1)  ,
+        V(-1 , 0  , 2)  , V(-1 , 1  , -1) , V(-1 , 1  , 0)  ,
+        V(-1 , 1  , 1)  , V(-1 , 2  , 0)  , V(0  , -2 , -1) ,
+        V(0  , -2 , 0)  , V(0  , -2 , 1)  , V(0  , -1 , -2) ,
+        V(0  , -1 , -1) , V(0  , -1 , 1)  , V(0  , -1 , 2)  ,
+        V(0  , 0  , -2) , V(0  , 0  , 2)  , V(0  , 1  , -2) ,
+        V(0  , 1  , -1) , V(0  , 1  , 1)  , V(0  , 1  , 2)  ,
+        V(0  , 2  , -1) , V(0  , 2  , 0)  , V(0  , 2  , 1)  ,
+        V(1  , -2 , 0)  , V(1  , -1 , -1) , V(1  , -1 , 0)  ,
+        V(1  , -1 , 1)  , V(1  , 0  , -2) , V(1  , 0  , -1) ,
+        V(1  , 0  , 1)  , V(1  , 0  , 2)  , V(1  , 1  , -1) ,
+        V(1  , 1  , 0)  , V(1  , 1  , 1)  , V(1  , 2  , 0)  ,
+        V(2  , -1 , 0)  , V(2  , 0  , -1) , V(2  , 0  , 0)  ,
+        V(2  , 0  , 1)  , V(2  , 1  , 0)}
 
 def test_vector_filled_poly():
     assert set(filled(lines([O, 2*X, 2*Y]))) == {O, X, 2*X, Y, X+Y, 2*Y}

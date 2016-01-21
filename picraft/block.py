@@ -108,11 +108,7 @@ import io
 import warnings
 from math import sqrt
 from collections import namedtuple
-try:
-    # Py2 compat
-    from itertools import izip_longest as zip_longest
-except ImportError:
-    from itertools import zip_longest
+from itertools import cycle
 
 from pkg_resources import resource_stream
 from .exc import EmptySliceWarning
@@ -530,11 +526,7 @@ class Blocks(object):
                 block.id, block.data))
 
     def _set_block_loop(self, vrange, blocks):
-        for v, b in zip_longest(vrange, blocks):
-            if v is None:
-                raise ValueError('too many blocks for vector range')
-            if b is None:
-                raise ValueError('not enough blocks for vector range')
+        for v, b in zip(vrange, blocks):
             self._connection.send(
                 'world.setBlock(%d,%d,%d,%d,%d)' % (
                     v.x, v.y, v.z, b.id, b.data))
@@ -559,7 +551,7 @@ class Blocks(object):
                     if abs(vrange.step) == Vector(1, 1, 1):
                         self._set_blocks(vrange, value)
                     else:
-                        self._set_block_loop(vrange, [value] * len(vrange))
+                        self._set_block_loop(vrange, (value,) * len(vrange))
         else:
             try:
                 value.id, value.data
@@ -573,7 +565,7 @@ class Blocks(object):
                 except AttributeError:
                     # Assume a single block has been specified for a collection
                     # of vectors
-                    self._set_block_loop(index, [value] * len(index))
+                    self._set_block_loop(index, cycle((value,)))
                 else:
                     # A single block for a single vector
                     self._connection.send(

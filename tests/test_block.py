@@ -201,10 +201,6 @@ def test_blocks_set_vrange_different():
     for v in vector_range(v_from, v_to):
         conn.send.assert_any_call(
                 'world.setBlock(%d,%d,%d,1,1)' % (v.x, v.y, v.z))
-    with pytest.raises(ValueError):
-        picraft.block.Blocks(conn)[v_from:v_to] = blocks[1:]
-    with pytest.raises(ValueError):
-        picraft.block.Blocks(conn)[v_from:v_to] = blocks * 2
 
 def test_blocks_set_sequence_same():
     conn = mock.MagicMock()
@@ -222,7 +218,3 @@ def test_blocks_set_sequence_different():
     for v in l:
         conn.send.assert_any_call(
                 'world.setBlock(%d,%d,%d,1,1)' % (v.x, v.y, v.z))
-    with pytest.raises(ValueError):
-        picraft.block.Blocks(conn)[l] = blocks[1:]
-    with pytest.raises(ValueError):
-        picraft.block.Blocks(conn)[l] = blocks * 2

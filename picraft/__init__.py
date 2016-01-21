@@ -91,7 +91,7 @@ from .exc import (
     UnsupportedCommand,
     NegativeWeight,
     )
-from .vector import Vector, vector_range, line, lines, circle, filled, V, O, X, Y, Z
+from .vector import Vector, vector_range, line, lines, circle, sphere, filled, V, O, X, Y, Z
 from .block import Block
 from .events import BlockHitEvent, PlayerPosEvent, IdleEvent, ChatPostEvent
 from .connection import Connection

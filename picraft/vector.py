@@ -971,6 +971,12 @@ def line(start, end):
          Vector(x=9, y=5, z=0),
          Vector(x=10, y=5, z=0)]
 
+    To draw the resulting line you can simply assign a block to the collection
+    of vectors generated (or assign a sequence of blocks of equal length if you
+    want the line to have varying block types)::
+
+        >>> world.blocks[line(O, V(10, 5, 0))] = Block('stone')
+
     This is a three-dimensional implementation of `Bresenham's line
     algorithm`_, derived largely from `Bob Pendelton's implementation`_ (public
     domain).
@@ -1045,7 +1051,14 @@ def lines(points, closed=True):
          Vector(x=0, y=0, z=1),
          Vector(x=0, y=0, z=0)]
 
-    To create a filled polygon, see the :func:`filled` function.
+    To draw the resulting polygon you can simply assign a block to the
+    collection of vectors generated (or assign a sequence of blocks of equal
+    length if you want the polygon to have varying block types)::
+
+        >>> world.blocks[lines(points)] = Block('stone')
+
+    To generate the coordinates of a filled polygon, see the :func:`filled`
+    function.
     """
     first = None
     start = None
@@ -1074,8 +1087,8 @@ def circle(center, radius, plane=Y):
     another vector which, in combination with the *radius* vector, gives the
     plane that the circle exists within.
 
-    For example, to create a circle centered at (0, 10, 0), with a radius of 5
-    units, existing in the X-Y plane::
+    For example, to generate the coordinates of a circle centered at (0, 10,
+    0), with a radius of 5 units, existing in the X-Y plane::
 
         >>> list(circle(O, 5*X))
         [Vector(x=-5, y=0, z=0), Vector(x=-5, y=1, z=0), Vector(x=-4, y=2, z=0),
@@ -1089,8 +1102,8 @@ def circle(center, radius, plane=Y):
          Vector(x=5, y=1, z=0), Vector(x=5, y=0, z=0), Vector(x=4, y=-2, z=0),
          Vector(x=5, y=-1, z=0)]
 
-    To create another circle with the same center and radius, but existing in
-    the X-Z (ground) plane::
+    To generate another set of coordinates with the same center and radius, but
+    existing in the X-Z (ground) plane::
 
         >>> list(circle(O, 5*X, plane=Z))
         [Vector(x=-5, y=0, z=0), Vector(x=-5, y=0, z=1), Vector(x=-4, y=0, z=2),
@@ -1103,6 +1116,12 @@ def circle(center, radius, plane=Y):
          Vector(x=4, y=0, z=3), Vector(x=4, y=0, z=-3), Vector(x=4, y=0, z=2),
          Vector(x=5, y=0, z=1), Vector(x=5, y=0, z=0), Vector(x=4, y=0, z=-2),
          Vector(x=5, y=0, z=-1)]
+
+    To draw the resulting circle you can simply assign a block to the
+    collection of vectors generated (or assign a sequence of blocks of equal
+    length if you want the circle to have varying block types)::
+
+        >>> world.blocks[circle(O, 5*X)] = Block('stone')
 
     The algorithm used by this function is based on a straight-forward
     differences of roots method, extended to three dimensions. This produces
@@ -1122,8 +1141,11 @@ def circle(center, radius, plane=Y):
     .. _midpoint circle algorithm: https://en.wikipedia.org/wiki/Midpoint_circle_algorithm
     .. _author: mailto:dave@waveform.org.uk
     """
-    if radius.angle_between(plane) != 90:
-        plane = radius.cross(-(radius.cross(plane)))
+    try:
+        if radius.angle_between(plane) != 90:
+            plane = radius.cross(-(radius.cross(plane)))
+    except AttributeError:
+        raise ValueError('radius must be a Vector instance')
     perp = plane.unit
     r = radius.magnitude**2
     last_points = None
@@ -1148,6 +1170,55 @@ def circle(center, radius, plane=Y):
                     result_len += 1
                     yield p
         last_points = top_point, bottom_point
+
+
+def sphere(center, radius):
+    """
+    Generator function which yields the coordinates of a hollow sphere. The
+    *center* :class:`Vector` specifies the center of the sphere, and *radius*
+    is a scalar number of blocks giving the distance from the center to the
+    edge of the sphere.
+
+    For example to create the coordinates of a sphere centered at the origin
+    with a radius of 5 units::
+
+        >>> list(sphere(O, 5))
+
+    To draw the resulting sphere you can simply assign a block to the
+    collection of vectors generated (or assign a sequence of blocks of equal
+    length if you want the sphere to have varying block types)::
+
+        >>> world.blocks[sphere(O, 5)] = Block('stone')
+
+    The algorithm generates concentric circles covering the sphere's surface,
+    advancing along the X, Y, and Z axes with duplicate elimination to prevent
+    repeated coordinates being yielded. Three axes are required to eliminate
+    gaps in the surface.
+    """
+    r = radius**2
+    last_points = None
+    result = set()
+    result_len = 0
+    for radial_point in range(-radius, radius + 1):
+        circum_dist = int(round(math.sqrt(r - radial_point**2)))
+        for p in circle(X * radial_point, Z * circum_dist):
+            p += center
+            result.add(p)
+            if len(result) > result_len:
+                result_len += 1
+                yield p
+        for p in circle(Y * radial_point, Z * circum_dist, plane=X):
+            p += center
+            result.add(p)
+            if len(result) > result_len:
+                result_len += 1
+                yield p
+        for p in circle(Z * radial_point, X * circum_dist):
+            p += center
+            result.add(p)
+            if len(result) > result_len:
+                result_len += 1
+                yield p
 
 
 def pairwise(iterable):
@@ -1193,6 +1264,12 @@ def filled(points):
          Vector(x=2, y=3, z=0), Vector(x=3, y=0, z=0), Vector(x=3, y=-1, z=0),
          Vector(x=3, y=-2, z=0), Vector(x=3, y=1, z=0), Vector(x=3, y=2, z=0),
          Vector(x=4, y=0, z=0), Vector(x=4, y=-1, z=0), Vector(x=4, y=1, z=0)]
+
+    To draw the resulting filled object you can simply assign a block to the
+    collection of vectors generated (or assign a sequence of blocks of equal
+    length if you want the object to have varying block types)::
+
+        >>> world.blocks[filled(lines(triangle))] = Block('stone')
 
     A simple brute-force algorithm is used that simply generates all the lines
     connecting all specified points. However, duplicate elimination is used to

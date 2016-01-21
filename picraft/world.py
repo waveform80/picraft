@@ -241,8 +241,7 @@ class World(object):
         querying the property, a sequence of :class:`~picraft.block.Block`
         objects is returned, When setting a slice of vectors you can either
         pass a sequence of :class:`~picraft.block.Block` objects or a single
-        :class:`~picraft.block.Block` object. The sequence must be equal to
-        the number of blocks represented by the slice::
+        :class:`~picraft.block.Block` object::
 
             >>> world.blocks[Vector(0,0,0):Vector(2,1,1)]
             [<Block "grass" id=2 data=0>,<Block "grass" id=2 data=0>]
