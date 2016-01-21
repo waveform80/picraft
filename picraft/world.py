@@ -260,6 +260,22 @@ class World(object):
 
         .. _half-open: http://python-history.blogspot.co.uk/2013/10/why-python-uses-0-based-indexing.html
 
+        Finally, you can query an arbitrary collection of vectors. In this case
+        a sequence of blocks will be returned in the same order as the
+        collection of vectors. You can also use this when setting blocks::
+
+            >>> d = {
+            ...     Vector(): Block('air'),
+            ...     Vector(x=1): Block('air'),
+            ...     Vector(z=1): Block('stone'),
+            ...     }
+            >>> l = list(d)
+            >>> l
+            [<Vector x=0, y=0, z=0>,<Vector x=1, y=0, z=0>,<Vector x=0, y=0, z=1>]
+            >>> world.blocks[l]
+            [<Block "grass" id=2 data=0>,<Block "grass" id=2 data=0>,<Block "grass" id=2 data=0>]
+            >>> world.blocks[d.keys()] = d.values()
+
         .. warning::
 
             Querying or setting sequences of blocks can be extremely slow as a

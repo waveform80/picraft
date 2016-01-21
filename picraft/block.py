@@ -468,35 +468,58 @@ class Blocks(object):
     def __repr__(self):
         return '<Blocks>'
 
+    def _get_blocks(self, vrange):
+        return [
+            Block.from_string('%d,0' % int(i))
+            for i in self._connection.transact(
+                'world.getBlocks(%d,%d,%d,%d,%d,%d)' % (
+                vrange.start.x, vrange.start.y, vrange.start.z,
+                vrange.stop.x - vrange.step.x,
+                vrange.stop.y - vrange.step.y,
+                vrange.stop.z - vrange.step.z)
+                ).split(',')
+            ]
+
+    def _get_block_loop(self, vrange):
+        return [
+            Block.from_string(
+                self._connection.transact(
+                    'world.getBlockWithData(%d,%d,%d)' %
+                    (v.x, v.y, v.z)))
+            for v in vrange
+            ]
+
     def __getitem__(self, index):
         if isinstance(index, slice):
             index = vector_range(index.start, index.stop, index.step)
         if isinstance(index, vector_range):
-            vr = index
-            if not vr:
+            vrange = index
+            if not vrange:
                 warnings.warn(EmptySliceWarning(
                     "ignoring empty slice passed to blocks"))
             elif (
-                    abs(vr.step) == Vector(1, 1, 1) and vr.order == 'zxy' and
+                    abs(vrange.step) == Vector(1, 1, 1) and
+                    vrange.order == 'zxy' and
                     self._connection.server_version == 'raspberry-juice'):
-                return [
-                    Block.from_string('%d,0' % int(i))
-                    for i in self._connection.transact(
-                        'world.getBlocks(%d,%d,%d,%d,%d,%d)' % (
-                        vr.start.x, vr.start.y, vr.start.z,
-                        vr.stop.x - vr.step.x, vr.stop.y - vr.step.y, vr.stop.z - vr.step.z)).split(',')
-                    ]
+                # Query for a simple unbroken range (getBlocks fast-path)
+                # against a Raspberry Juice server
+                return self._get_blocks(vrange)
             else:
-                return [
-                    Block.from_string(
-                        self._connection.transact(
-                            'world.getBlockWithData(%d,%d,%d)' % (v.x, v.y, v.z)))
-                    for v in vr
-                    ]
+                # Query for any other type of range (non-unit step, wrong
+                # order, etc.)
+                return self._get_block_loop(vrange)
         else:
-            return Block.from_string(
-                self._connection.transact(
-                    'world.getBlockWithData(%d,%d,%d)' % (index.x, index.y, index.z)))
+            try:
+                index.x, index.y, index.z
+            except AttributeError:
+                # Query for an arbitrary collection of vectors
+                return self._get_block_loop(index)
+            else:
+                # Query for a single vector
+                return Block.from_string(
+                    self._connection.transact(
+                        'world.getBlockWithData(%d,%d,%d)' %
+                        (index.x, index.y, index.z)))
 
     def _set_blocks(self, vrange, block):
         assert vrange.step == Vector(1, 1, 1)
@@ -526,20 +549,36 @@ class Blocks(object):
                     "ignoring empty slice passed to blocks"))
             else:
                 try:
-                    block_id, block_data = value.id, value.data
+                    value.id, value.data
                 except AttributeError:
                     # Assume multiple blocks have been specified for the range
                     self._set_block_loop(vrange, value)
                 else:
-                    # We're dealing with a single block for a range
+                    # We're dealing with a single block for a simple unbroken
+                    # range (setBlocks fast-path)
                     if abs(vrange.step) == Vector(1, 1, 1):
                         self._set_blocks(vrange, value)
                     else:
                         self._set_block_loop(vrange, [value] * len(vrange))
         else:
-            self._connection.send(
-                'world.setBlock(%d,%d,%d,%d,%d)' % (
-                    index.x, index.y, index.z, value.id, value.data))
+            try:
+                value.id, value.data
+            except AttributeError:
+                # Assume multiple blocks have been specified with a collection
+                # of vectors
+                self._set_block_loop(index, value)
+            else:
+                try:
+                    index.x, index.y, index.z
+                except AttributeError:
+                    # Assume a single block has been specified for a collection
+                    # of vectors
+                    self._set_block_loop(index, [value] * len(index))
+                else:
+                    # A single block for a single vector
+                    self._connection.send(
+                        'world.setBlock(%d,%d,%d,%d,%d)' % (
+                            index.x, index.y, index.z, value.id, value.data))
 
 
 AIR                 = Block(0)
