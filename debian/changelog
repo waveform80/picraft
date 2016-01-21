@@ -1,3 +1,9 @@
+picraft (0.6-1ubuntu1) trusty; urgency=medium
+
+  * Ubuntu release of 0.6
+
+ -- Dave Jones <dave@waveform.org.uk>  Thu, 21 Jan 2016 23:24:27 +0000
+
 picraft (0.6-1) stable; urgency=low
 
   * A new "sphere" generator function was added (#13)
