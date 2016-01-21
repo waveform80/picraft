@@ -52,14 +52,14 @@ except ImportError:
     pass
 
 __project__      = 'picraft'
-__version__      = '0.5'
+__version__      = '0.6'
 __author__       = 'Dave Jones'
 __author_email__ = 'dave@waveform.org.uk'
 __url__          = 'http://picraft.readthedocs.org/'
 __platforms__    = 'ALL'
 
 __classifiers__ = [
-    'Development Status :: 3 - Alpha',
+    'Development Status :: 4 - Beta',
     'Environment :: Console',
     'Environment :: X11 Applications',
     'Intended Audience :: Developers',

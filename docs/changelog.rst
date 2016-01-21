@@ -5,6 +5,39 @@ Change log
 ==========
 
 
+Release 0.6 (2016-01-21)
+========================
+
+Release 0.6 adds some new features:
+
+* A new :func:`~picraft.vector.sphere` generator function was added (`#13`_)
+* The :attr:`~picraft.world.World.blocks` attribute was updated to permit
+  arbitrary sequences of vectors to be queried and assigned
+* Event decorators can now be used in classes with the new
+  :meth:`~picraft.events.Events.has_handlers` decorator (`#14`_)
+* Installation instructions have been simplified, along with several recipes
+  and code examples throughout the docs (`#15`_, `#16`_)
+* When used with a Raspberry Juice server, chat events can now be monitored and
+  reacted to using event decorators (`#19`_); many thanks to GitHub user
+  wh11e7rue for not just suggesting the idea but providing a fantastically
+  complete pull-request implementing it!
+
+And fixes some bugs:
+
+* The default for ``ignore_errors`` was changed so that picraft's network
+  behaviour now matches mcpi's by default (`#18`_)
+* A silly bug in :func:`~picraft.vector.circle` prevented the *center*
+  parameter from working correctly
+
+.. _#13: https://github.com/waveform80/picraft/issues/13
+.. _#14: https://github.com/waveform80/picraft/issues/14
+.. _#15: https://github.com/waveform80/picraft/issues/15
+.. _#16: https://github.com/waveform80/picraft/issues/16
+.. _#17: https://github.com/waveform80/picraft/issues/17
+.. _#18: https://github.com/waveform80/picraft/issues/18
+.. _#19: https://github.com/waveform80/picraft/issues/19
+
+
 Release 0.5 (2015-09-10)
 ========================
 

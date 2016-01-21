@@ -94,6 +94,13 @@ circle
 
 .. autofunction:: circle
 
+
+sphere
+======
+
+.. autofunction:: sphere
+
+
 filled
 ======
 
