@@ -11,9 +11,9 @@ Table of Contents
 
    install
    quickstart
-   conversion
-   vectors
    recipes
+   vectors
+   conversion
    faq
    api
    api_world
