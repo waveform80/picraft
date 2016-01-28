@@ -9,8 +9,8 @@ the two things you need to learn in picraft are vectors, vector ranges, and
 blocks. The three things ... look, I'll just come in again.
 
 Firstly, ensure that you have a `Minecraft game`_ running on your Pi. Now start
-a terminal, start Python within the terminal, import the picraft library and
-start a connection to the Minecraft world::
+Python, import the picraft library, and start a connection to the Minecraft
+world::
 
     >>> from picraft import *
     >>> world = World()
@@ -61,11 +61,22 @@ We can also construct one by listing all 3 coordinates explicitly::
     >>> Vector(0, 5, 0)
     Vector(x=0, y=5, z=0)
 
+There are also several short-hands for the X, Y, and Z "unit vectors" (vectors
+with a length of 1 aligned with each axis), and it's worth noting that most
+mathematical operations can be applied to vectors::
+
+    >>> Vector(y=1)
+    Vector(x=0, y=1, z=0)
+    >>> Y
+    Vector(x=0, y=1, z=0)
+    >>> 5*Y
+    Vector(x=0, y=5, z=0)
+
 We can use the :attr:`~picraft.world.World.blocks` attribute to discover the
 type of each block in the world. For example, we can find out what sort of
 block we're currently standing on::
 
-    >>> world.blocks[world.player.tile_pos - Vector(y=1)]
+    >>> world.blocks[world.player.tile_pos - Y]
     <Block "grass" id=2 data=0>
 
 We can assign values to this property to change the sort of block we're
@@ -80,13 +91,13 @@ id manually, or by name::
 
 Now we'll change the block beneath our feet::
 
-    >>> world.blocks[world.player.tile_pos - Vector(y=1)] = Block('stone')
+    >>> world.blocks[world.player.tile_pos - Y] = Block('stone')
 
 We can query the state of many blocks surrounding us by providing a vector
 slice to the :attr:`~picraft.world.World.blocks` attribute. To make things
 a little easier we'll store the base position first::
 
-    >>> v = world.player.tile_pos - Vector(y=1)
+    >>> v = world.player.tile_pos - Y
     >>> world.blocks[v - Vector(1, 0, 1):v + Vector(2, 1, 2)]
     [<Block "grass" id=2 data=0>,
      <Block "grass" id=2 data=0>,
@@ -151,7 +162,7 @@ We can also re-write the example before this (the blocks surrounding the one
 the player is standing on) in several different ways::
 
     >>> v = world.player.tile_pos
-    >>> list(vector_range(v - 1, v + 2 - Vector(y=2)))
+    >>> list(vector_range(v - 1, v + 2 - (2*Y)))
     [Vector(x=-3, y=14, z=2),
      Vector(x=-3, y=14, z=3),
      Vector(x=-3, y=14, z=4),
@@ -166,31 +177,28 @@ We can change the state of many blocks at once similarly by assigning a new
 :class:`~picraft.block.Block` object to a slice of blocks::
 
     >>> v = world.player.tile_pos
-    >>> world.blocks[v - 1:v + 2 - Vector(y=2)] = Block('stone')
+    >>> world.blocks[v - 1:v + 2 - (2*Y)] = Block('stone')
 
 This is a relatively quick operation, as it only involves a single network
 call. However, re-writing the state of multiple blocks with different values
 is more time consuming::
 
-    >>> world.blocks[v - 1:v + 2 - Vector(y=2)] = [
+    >>> world.blocks[v - 1:v + 2 - (2*Y)] = [
     ...     Block('wool', data=i) for i in range(9)]
 
-You should notice that the example above takes a few seconds to process (each
-block requires a separate network transaction and due to deficiencies in the
-:ref:`Minecraft network protocol <protocol>`, each transaction takes a while to
-execute). This can be accomplished considerably more quickly by batching
-multiple requests together::
+You should notice that the example above takes longer to process. This can be
+accomplished considerably more quickly by batching multiple requests together::
 
-    >>> world.blocks[v - 1:v + 2 - Vector(y=2)] = Block('stone')
+    >>> world.blocks[v - 1:v + 2 - (2*Y)] = Block('stone')
     >>> with world.connection.batch_start():
-    ...     world.blocks[v - 1:v + 2 - Vector(y=2)] = [
+    ...     world.blocks[v - 1:v + 2 - (2*Y)] = [
     ...         Block('wool', data=i) for i in range(9)]
 
 Finally, the state of the Minecraft world can be saved and restored easily with
 the :attr:`~picraft.world.World.checkpoint` object::
 
     >>> world.checkpoint.save()
-    >>> world.blocks[v - 1:v + 2 - Vector(y=2)] = Block('stone')
+    >>> world.blocks[v - 1:v + 2 - (2*Y)] = Block('stone')
     >>> world.checkpoint.restore()
 
 In order to understand vectors, it can help to visualize them. Pick a
@@ -223,9 +231,9 @@ In order to visualize the three different axes of vectors we'll now draw them
 each. Here we also use a capability of the :class:`~picraft.block.Block`
 constructor to create a block with a particular color::
 
-    >>> world.blocks[v:v + Vector(x=5) + 1] = Block('#ff0000')
-    >>> world.blocks[v:v + Vector(y=5) + 1] = Block('#00ff00')
-    >>> world.blocks[v:v + Vector(z=5) + 1] = Block('#0000ff')
+    >>> world.blocks[v:v + (5*X) + 1] = Block('#ff0000')
+    >>> world.blocks[v:v + (5*Y) + 1] = Block('#00ff00')
+    >>> world.blocks[v:v + (5*Z) + 1] = Block('#0000ff')
 
 .. image:: quick4.png
     :align: center
