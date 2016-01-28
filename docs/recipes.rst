@@ -138,7 +138,7 @@ criteria are matched by a block-hit event:
 
 .. literalinclude:: rain2.py
     :caption: rain2.py
-    :emphasize-lines: 13,17
+    :emphasize-lines: 14,18
 
 One advantage of this method (other than slightly cleaner code) is that event
 handlers can easily be made multi-threaded (to run in parallel with each other)
@@ -146,7 +146,7 @@ simply by modifying the decorator used:
 
 .. literalinclude:: rain3.py
     :caption: rain3.py
-    :emphasize-lines: 17
+    :emphasize-lines: 18
 
 Now you should find that the rain all falls simultaneously (more or less, given
 the constraints of the Pi's bandwidth!) when you hit the white block multiple
