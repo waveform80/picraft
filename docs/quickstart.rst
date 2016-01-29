@@ -4,27 +4,19 @@
 Quick Start
 ===========
 
-The first thing you need to learn in picraft is vectors, and vector ranges. Er,
-the two things you need to learn in picraft are vectors, vector ranges, and
-blocks. The three things ... look, I'll just come in again.
-
-Firstly, ensure that you have a `Minecraft game`_ running on your Pi. Now start
-Python, import the picraft library, and start a connection to the Minecraft
-world::
+Start a `Minecraft game`_ and start Python. First, we'll connect Python to the
+Minecraft world and post a message to the chat console::
 
     >>> from picraft import *
     >>> world = World()
+    >>> world.say('Hello, world!')
 
 The :class:`~picraft.world.World` class is the usual starting point for picraft
 scripts. It provides access to the blocks that make up the world, the players
 within the world, methods to save and restore the state of the world, and the
-ability to print things to the chat console. Let's start by printing something
-to the console::
+ability to print things to the chat console.
 
-    >>> world.say('Hello, world!')
-
-You should see "Hello, world!" appear in the chat console of the Minecraft
-game.  Next, we can query where we're standing with the
+Next, we can query where we're standing with the
 :attr:`~picraft.player.HostPlayer.pos` attribute of the
 :attr:`~picraft.world.World.player` attribute::
 
@@ -33,16 +25,20 @@ game.  Next, we can query where we're standing with the
 
 This tells us that our character is standing at the 3-dimensional coordinates
 -2.49, 18.0, -4.22 (approximately). In the Minecraft world, the X and Z
-coordinates (the first and last) form the "ground plane". In other words you
-can think of X as going left to right, and Z as going further to nearer. The Y
-axis represents height (it goes up and down). We can find out our player's
-coordinates rounded to the nearest block with the
+coordinates (the first and last) form the "ground plane".
+
+.. image:: block_faces.*
+    :align: center
+
+In other words you, can think of X as going left to right, and Z as going
+further to nearer. The Y axis represents height (it goes up and down). We can
+find out our player's coordinates rounded to the nearest block with the
 :attr:`~picraft.player.HostPlayer.tile_pos` attribute::
 
     >>> world.player.tile_pos
     Vector(x=-3, y=18, z=-5)
 
-Therefore, we can make our character jump in the air by adding a certain amount
+We can make our character jump in the air by adding a certain amount
 to the player's Y coordinate. To do this we need to construct a
 :class:`~picraft.vector.Vector` with a positive Y value and add it to the
 :attr:`~picraft.player.HostPlayer.tile_pos` attribute::
@@ -72,6 +68,14 @@ mathematical operations can be applied to vectors::
     >>> 5*Y
     Vector(x=0, y=5, z=0)
 
+There's also a short-hand for Vector (V), and another representing the origin
+coordinates (O)::
+
+    >>> V(y=1)
+    Vector(x=0, y=1, z=0)
+    >>> O
+    Vector(x=0, y=0, z=0)
+
 We can use the :attr:`~picraft.world.World.blocks` attribute to discover the
 type of each block in the world. For example, we can find out what sort of
 block we're currently standing on::
@@ -82,7 +86,7 @@ block we're currently standing on::
 We can assign values to this property to change the sort of block we're
 standing on. In order to do this we need to construct a new
 :class:`~picraft.block.Block` instance which can be done by specifying the
-id manually, or by name::
+id number, or by name::
 
     >>> Block(1)
     <Block "stone" id=1 data=0>
@@ -141,11 +145,11 @@ are applied to *all* its elements::
 This makes construction of such ranges or slices considerably easier. For
 example, to construct a vertical range of vectors from the origin (0, 0, 0) to
 (0, 10, 0) we first assign the origin to ``v`` which we use for the start of
-the range, then add ``Vector(y=10)`` to it, and finally add one to compensate
+the range, then add ``10*Y`` to it, and finally add one to compensate
 for the half-open nature of the range::
 
     >>> v = Vector()
-    >>> list(vector_range(v, v + Vector(y=10) + 1))
+    >>> list(vector_range(v, v + (10*Y) + 1))
     [Vector(x=0, y=0, z=0),
      Vector(x=0, y=1, z=0),
      Vector(x=0, y=2, z=0),

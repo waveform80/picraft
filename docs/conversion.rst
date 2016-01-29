@@ -56,7 +56,10 @@ attribute with a slice of vectors, just as with the equivalent to
     >>> w = World()
     >>> v1 = Vector(0, -1, 0)
     >>> v2 = Vector(0, 5, 0)
-    >>> w.blocks[v1:v2 + 1] = Block('air')
+    >>> w.blocks[v1:v2 + 1]
+    [<Block "grass" id=2 data=0>,<Block "grass" id=2 data=0>,<Block "grass" id=2 data=0>,
+    <Block "grass" id=2 data=0>,<Block "grass" id=2 data=0>,<Block "grass" id=2 data=0>,
+    <Block "grass" id=2 data=0>]
 
 .. note::
 
