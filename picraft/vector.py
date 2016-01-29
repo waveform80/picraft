@@ -29,9 +29,9 @@
 
 """
 The vector module defines the :class:`Vector` class, which is the usual method
-of represent coordinates or vectors when dealing with the Minecraft world. It
-also provides functions like :func:`vector_range` for generating sequences of
-vectors.
+of representing coordinates or vectors when dealing with the Minecraft world.
+It also provides functions like :func:`vector_range` for generating sequences
+of vectors.
 
 .. note::
 
@@ -134,7 +134,7 @@ class Vector(namedtuple('Vector', ('x', 'y', 'z'))):
     This :func:`~collections.namedtuple` derivative represents a 3-dimensional
     vector with :attr:`x`, :attr:`y`, :attr:`z` components. Instances can be
     constructed in a number of ways: by explicitly specifying the x, y, and z
-    components (optionally with keyword identifiers), or leaving the empty to
+    components (optionally with keyword identifiers), or leaving them empty to
     default to 0::
 
         >>> Vector(1, 1, 1)
@@ -196,7 +196,7 @@ class Vector(namedtuple('Vector', ('x', 'y', 'z'))):
         manipulate the :attr:`x`, :attr:`y`, and :attr:`z` attributes; instead
         you must create a new vector (for example, by adding two vectors
         together). The advantage of this is that vector instances can be
-        members of :class:`set` or keys in a :class:`dict`.
+        members of a :class:`set` or keys in a :class:`dict`.
 
     .. [1] I realize math purists will hate this (and demand that abs() should
        be magnitude and * should invoke matrix multiplication), but the
@@ -476,7 +476,7 @@ class Vector(namedtuple('Vector', ('x', 'y', 'z'))):
 
             >>> Vector(1, 2, 3).distance_to(Vector(2, 2, 2))
             1.4142135623730951
-            >>> Vector().distance_to(X)
+            >>> O.distance_to(X)
             1.0
 
         .. _Pythagoras' theorem: http://en.wikipedia.org/wiki/Pythagorean_theorem
@@ -613,7 +613,7 @@ negY = V(y=-1)
 negZ = V(z=-1)
 
 
-# TODO Yes, I'm being lazy with total_ordering ... probably ought to define all
+# XXX Yes, I'm being lazy with total_ordering ... probably ought to define all
 # six comparison methods but I haven't got time right now ...
 
 @total_ordering
@@ -728,9 +728,9 @@ class vector_range(Sequence):
         self._order = order
         self._ranges = [
             range(
-                getattr(self.start, axis),
-                getattr(self.stop, axis),
-                getattr(self.step, axis))
+                getattr(start, axis),
+                getattr(stop, axis),
+                getattr(step, axis))
             for axis in order
             ]
         self._indexes = [
