@@ -262,11 +262,6 @@ Once again, we can make use of a batch to speed this up::
 .. image:: quick5.png
     :align: center
 
-This concludes the quick tour of the picraft library. Conversion instructions
-from mcpi can be found in the next chapter, followed by picraft recipes in the
-chapter after that. Finally, the API reference can be found at the end of the
-manual.
-
 
 .. _Minecraft game: https://www.raspberrypi.org/documentation/usage/minecraft/README.md
 .. _half-open: http://python-history.blogspot.co.uk/2013/10/why-python-uses-0-based-indexing.html
