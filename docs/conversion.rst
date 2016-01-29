@@ -663,3 +663,12 @@ construction, and additional properties::
     u'Orange Wool'
     >>> Block.from_color('#ffffff').description
     u'White Wool'
+
+Compatibility constants are also provided::
+
+    >>> from picraft import block
+    >>> block.DIAMOND_BLOCK
+    <Block "diamond_block" id=57 data=0>
+    >>> block.STONE
+    <Block "stone" id=1 data=0>
+
