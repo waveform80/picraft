@@ -324,6 +324,8 @@ class Parser(object):
     supported), and all other legitimate commands are recognized but ignored.
     Such commands will cause an :exc:`UnsupportedCommand` warning to be raised
     but this is ignored by default.
+
+    .. _specification: www.cs.utah.edu/~boulos/cs3505/obj_spec.pdf
     """
     def __init__(self, source):
         if isinstance(source, bytes):
