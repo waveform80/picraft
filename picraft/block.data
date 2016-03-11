@@ -356,6 +356,8 @@
    195  0     0   0       jungle_door                     Jungle Door Block
    196  0     0   0       acacia_door                     Acacia Door Block
    197  0     0   0       dark_oak_door                   Dark Oak Door Block
+   246  0     1   1       glowing_obsidian                Glowing Obsidian
+   247  0     1   1       nether_reactor_core             Nether Reactor Core
    256  0     0   1       iron_shovel                     Iron Shovel
    257  0     0   1       iron_pickaxe                    Iron Pickaxe
    258  0     0   1       iron_axe                        Iron Axe
