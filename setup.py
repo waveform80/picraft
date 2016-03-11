@@ -36,12 +36,12 @@ from setuptools import setup, find_packages
 
 if sys.version_info[0] == 2:
     if not sys.version_info >= (2, 7):
-        raise ValueError('This package requires Python 2.7 or above')
+        raise ValueError('This package requires Python 2.7 or newer')
 elif sys.version_info[0] == 3:
     if not sys.version_info >= (3, 2):
-        raise ValueError('This package requires Python 3.2 or above')
+        raise ValueError('This package requires Python 3.2 or newer')
 else:
-    raise ValueError('What version of Python is this?!')
+    raise ValueError('Unrecognized major version of Python')
 
 HERE = os.path.abspath(os.path.dirname(__file__))
 
@@ -123,6 +123,7 @@ def main():
             extras_require       = __extra_requires__,
             entry_points         = __entry_points__,
             )
+
 
 if __name__ == '__main__':
     main()
