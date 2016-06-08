@@ -141,6 +141,7 @@ def test_player_direction():
 
 def test_player_mcpi():
     conn = mock.MagicMock()
+    conn._directions = {}
     conn.server_version = 'minecraft-pi'
     with pytest.raises(NotSupported):
         Player(conn, 1).heading

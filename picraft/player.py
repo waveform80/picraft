@@ -68,7 +68,7 @@ str = type('')
 
 
 from .exc import ConnectionError, NotSupported
-from .vector import Vector
+from .vector import Vector, X, Y, Z
 
 
 class Players(object):
@@ -190,14 +190,32 @@ class BasePlayer(object):
 
         .. warning::
 
-            Player heading is only supported on Raspberry Juice.
+            Player heading is only *fully* supported on Raspberry Juice. On
+            Minecraft Pi, it can be emulated by activating tracking for the
+            player (see :attr:`~picraft.events.Events.track_players`) and
+            periodically calling :meth:`~picraft.events.Events.poll`. However,
+            this will only tell you what heading the player *moved* along, not
+            necessarily what direction they're facing.
         """
-        if self._connection.server_version != 'raspberry-juice':
-            raise NotSupported(
-                'cannot query heading on server version: %s' %
-                self._connection.server_version)
-        return float(
-            self._connection.transact(self._cmd('getRotation')))
+        if self._connection.server_version == 'raspberry-juice':
+            return float(
+                self._connection.transact(self._cmd('getRotation')))
+        else:
+            pid = 1 if self._player_id is None else self._player_id
+            try:
+                d = self._connection._directions[pid].replace(y=0)
+            except KeyError:
+                raise NotSupported(
+                    'cannot query heading on server version: %s or player '
+                    'id %d is not currently tracked' %
+                    (self._connection.server_version, pid))
+            else:
+                result = d.angle_between(Z)
+                # |d×Z|=|d||Z|sin(t), ergo if y-component of d×Z is negative,
+                # the result is >180
+                if d.cross(Z).y < 0:
+                    result += 180
+                return result
 
     @property
     def pitch(self):
@@ -230,15 +248,26 @@ class BasePlayer(object):
 
         .. warning::
 
-            Player direction is only supported on Raspberry Juice.
+            Player direction is only *fully* supported on Raspberry Juice. On
+            Minecraft Pi, it can be emulated by activating tracking for the
+            player (see :attr:`~picraft.events.Events.track_players`) and
+            periodically calling :meth:`~picraft.events.Events.poll`. However,
+            this will only tell you what direction the player *moved* in, not
+            necessarily what direction they're facing.
         """
-        if self._connection.server_version != 'raspberry-juice':
-            raise NotSupported(
-                'cannot query direction on server version: %s' %
-                self._connection.server_version)
-        return Vector.from_string(
-            self._connection.transact(self._cmd('getDirection')),
-            type=float)
+        if self._connection.server_version == 'raspberry-juice':
+            return Vector.from_string(
+                self._connection.transact(self._cmd('getDirection')),
+                type=float)
+        else:
+            pid = 1 if self._player_id is None else self._player_id
+            try:
+                return self._connection._directions[pid].unit
+            except KeyError:
+                raise NotSupported(
+                    'cannot query direction on server version: %s or player '
+                    'id %d is not currently tracked' %
+                    (self._connection.server_version, pid))
 
 
 class Player(BasePlayer):

@@ -149,6 +149,7 @@ class Connection(object):
         self._socket.connect((host, port))
         self._rfile = self._socket.makefile('rb', -1)
         self._wfile = self._socket.makefile('wb', 0) # no buffering for writes
+        self._directions = {} # temp space for calculated direction
         self.timeout = timeout
         self.encoding = encoding
         # Determine what version of Minecraft we're talking to. Sadly, nobody

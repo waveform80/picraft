@@ -331,7 +331,14 @@ class Events(object):
                         'track_players value must be a player id '
                         'or a sequence of player ids')
             self._track_players = {
-                value: Player(self._connection, value).pos
+                value: Player(self._connection, value).pos.round(1)
+                }
+        if self._connection.server_version != 'raspberry-juice':
+            # Filter out calculated directions for untracked players
+            self._connection._directions = {
+                pid: delta
+                for (pid, delta) in self._connection._directions.items()
+                if pid in self._track_players
                 }
     track_players = property(_get_track_players, _set_track_players, doc="""\
         The set of player ids for which movement should be tracked.
@@ -397,6 +404,10 @@ class Events(object):
                 player = Player(self._connection, pid)
                 new_pos = player.pos.round(1)
                 if old_pos != new_pos:
+                    if self._connection.server_version != 'raspberry-juice':
+                        # Calculate directions for tracked players on platforms
+                        # which don't provide it natively
+                        self._connection._directions[pid] = new_pos - old_pos
                     yield PlayerPosEvent(old_pos, new_pos, player)
                 positions[pid] = new_pos
 
