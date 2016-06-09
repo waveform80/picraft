@@ -88,6 +88,7 @@ str = type('')
 import logging
 import threading
 import time
+import warnings
 from collections import namedtuple, Container
 from weakref import WeakSet
 from functools import update_wrapper
