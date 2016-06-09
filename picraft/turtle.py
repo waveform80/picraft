@@ -304,11 +304,50 @@ class Turtle(object):
 
 
 
+# default turtle constructed when the straight function interface is used
+
 def _default_turtle():
     global _TURTLE
     if _TURTLE is None:
         _TURTLE = Turtle()
     return _TURTLE
 
-
-
+home = lambda: _default_turtle().home()
+clear = lambda: _default_turtle().clear()
+reset = lambda: _default_turtle().reset()
+pos = lambda: _default_turtle().pos()
+xcor = lambda: _default_turtle().xcor()
+ycor = lambda: _default_turtle().ycor()
+zcor = lambda: _default_turtle().zcor()
+goto = lambda x, y=None, z=None: _default_turtle().goto(x, y, z)
+distance = lambda x, y=None, z=None: _default_turtle().distance(x, y, z)
+heading = lambda: _default_turtle.heading()
+setheading = lambda to_angle: _default_turtle.setheading(to_angle)
+forward = lambda distance: _default_turtle().forward(distance)
+backward = lambda distance: _default_turtle().backward(distance)
+right = lambda angle: _default_turtle().right(angle)
+left = lambda angle: _default_turtle().left(angle)
+down = lambda angle: _default_turtle().down(angle)
+up = lambda angle: _default_turtle(angle)
+isdown = lambda: _default_turtle().isdown()
+pendown = lambda: _default_turtle().pendown()
+penup = lambda: _default_turtle().penup()
+isvisible = lambda: _default_turtle().isvisible()
+showturtle = lambda: _default_turtle().showturtle()
+hideturtle = lambda: _default_turtle().hideturtle()
+block = lambda *args: _default_turtle().block(*args)
+penblock = lambda *args: _default_turtle().penblock(*args)
+fillblock = lambda *args: _default_turtle().fillblock(*args)
+position = pos
+setpos = goto
+setposition = goto
+seth = setheading
+fd = forward
+bk = backward
+back = backward
+rt = right
+lt = left
+st = showturtle
+ht = hideturtle
+pd = pendown
+pu = penup
