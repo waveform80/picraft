@@ -36,7 +36,8 @@ from __future__ import (
 str = type('')
 
 
-from threading import Lock
+from threading import Lock, local
+from collections import namedtuple
 
 from .world import World
 from .vector import Vector, O, X, Y, Z, vector_range, line
@@ -48,6 +49,62 @@ _SCREEN = None # The global TurtleScreen() used by default
 _TURTLE = None # The global Turtle() used by default
 
 
+class TurtleCache(object):
+    def __init__(self, world):
+        self._world = world
+        self._lock = Lock()
+        self._cache = {}
+        self._batch = local()
+
+    def __enter__(self):
+        try:
+            self._batch.level += 1
+        except AttributeError:
+            self._batch.level = 1
+            self._batch.state = {}
+        return self
+
+    def __exit__(self, exc_type, exc_value, exc_tb):
+        self._batch.level -= 1
+        if self._batch.level == 0:
+            state = self._batch.state
+            del self._batch.level, self._batch.state
+            self.__setitem__(state.keys(), state.values())
+
+    def __getitem__(self, positions):
+        try:
+            # no need for thread lock, as we're getting a thread local
+            batch = self._batch.state
+        except AttributeError:
+            batch = {} # no active batch
+        with self._lock:
+            unknown = set(positions) - set(self._cache.keys()) - set(batch.keys())
+            if unknown:
+                self._cache.update({
+                    v: b
+                    for v, b in zip(unknown, self._world.blocks[unknown])
+                    })
+            return {
+                v: batch.get(v, self._cache[v])
+                for v in positions
+                }
+
+    def __setitem__(self, positions, blocks):
+        try:
+            # no need for thread lock, as we're updating a thread local
+            self._batch.state.update({v: b for (v, b) in zip(positions, blocks)})
+        except AttributeError:
+            with self._lock:
+                diff = {
+                    v: b
+                    for v, b in zip(positions, blocks)
+                    if b != self._cache[v]
+                    }
+                with self._world.connection.batch_start():
+                    self._world.blocks[diff.keys()] = diff.values()
+                self._cache.update(diff)
+
+
 class TurtleScreen(object):
     def __init__(self, world=None):
         global _WORLD
@@ -56,65 +113,30 @@ class TurtleScreen(object):
                 _WORLD = World()
             world = _WORLD
         self._world = world
-        self._lock = Lock()
-        self._original = {} # state of the world without any turtles / drawings
-        self._current = {} # state of the world with drawings and turtles
-
-    @property
-    def lock(self):
-        return self._lock
+        self._blocks = TurtleCache(world)
 
     @property
     def world(self):
         return self._world
 
-    def original(self, around=None, radius=1):
-        with self._lock:
-            if around is None:
-                return self._original.copy()
-            else:
-                was_empty = not self._original
-                around = vector_range(around - radius, around + radius + 1)
-                unknown = set(around) - set(self._original.keys())
-                if unknown:
-                    if self._world.connection.server_version == 'raspberry-juice':
-                        # optimization: cost of getting a cuboid range of
-                        # blocks is the same as that of getting a single block
-                        # in raspberry juice
-                        to_update = {
-                            v: b
-                            for v, b in zip(around, self._world.blocks[around])
-                            if v not in self._original
-                            }
-                    else:
-                        to_update = {
-                            v: b
-                            for v, b in zip(unknown, self._world.blocks[unknown])
-                            }
-                    self._original.update(to_update)
-                    self._current.update(to_update)
-                return {
-                    v: self._original[v]
-                    for v in around
-                    }
+    @property
+    def blocks(self):
+        return self._blocks
 
-    def update(self, state):
-        with self._lock:
-            missing = {
-                v: self._world.blocks[v]
-                for v in state
-                if v not in self._original
-                }
-            self._original.update(missing)
-            self._current.update(missing)
-            d = {
-                v: b
-                for v, b in state.items()
-                if b != self._current[v]
-                }
-            with self._world.connection.batch_start():
-                self._world.blocks[d.keys()] = d.values()
-            self._current.update(d)
+    def draw(self, state):
+        self.blocks[state.keys()] = state.values()
+
+
+TurtleState = namedtuple('TurtleState', (
+    'position',
+    'heading',
+    'visible',
+    'pendown',
+    'penblock',
+    'fillblock',
+    'changed',
+    'action',
+    ))
 
 
 class Turtle(object):
@@ -126,67 +148,96 @@ class Turtle(object):
             screen = _SCREEN
         self._screen = screen
         self._home = self._screen.world.player.tile_pos - Y
-        self._position = self._home
-        self._last_position = self._position
-        self._heading = Z # always a unit vector
-        self._visible = True
-        self._pendown = True
-        self._penblock = Block('stone')
-        self._fillblock = Block('stone')
-        self._canvas = {} # blocks drawn by this turtle
+        self._state = TurtleState(
+            position=self._home,
+            heading=Z,
+            visible=True,
+            pendown=True,
+            penblock=Block('stone'),
+            fillblock=Block('stone'),
+            changed=None,
+            action=None,
+            )
+        self._last_position = self._home
+        self._history = [] # undo buffer
         self._update()
 
+    def _commit(self, changes, action):
+        if changes:
+            self._history.append(self._state._replace(
+                changed=self._screen.blocks[changes.keys()], # reverse diff
+                action=action
+                ))
+            self._screen.draw(changes)
+
+    def _draw_turtle(self):
+        head = (self._state.position + self._state.heading).round()
+        arm_v = self._state.heading.cross(Y).unit
+        if arm_v == O:
+            arm_v = X
+        left_arm = (self._state.position + arm_v).round()
+        right_arm = (self._state.position - arm_v).round()
+        state = {
+            v: Block('wool', 15)
+            for v in (head, left_arm, right_arm)
+            }
+        if self._state.pendown:
+            state[self._state.position] = self._state.penblock
+        self._commit(state, 'turtle')
+
+    def _undraw_turtle(self):
+        with self._screen.blocks:
+            while self._history and self._history[-1].action == 'turtle':
+                self._screen.draw(self._history.pop().changed)
+
     def _update(self):
-        # original state of world (i.e. without the turtle)
-        state = self._screen.original(around=self._last_position, radius=1)
-        state.update(self._screen.original(around=self._position, radius=1))
-        state.update(self._canvas)
-        # calculate "after" state which is based upon canvas state
-        if self._visible:
-            head = (self._position + self._heading).round()
-            arm_v = self._heading.cross(Y).unit
-            if arm_v == O:
-                arm_v = X
-            left_arm = (self._position + arm_v).round()
-            right_arm = (self._position - arm_v).round()
-            b = Block('wool', 15)
-            if self._pendown:
-                for v in line(self._last_position, self._position):
-                    self._canvas[v] = self._penblock
-                    state[v] = self._penblock
-            state[head] = b
-            state[left_arm] = b
-            state[right_arm] = b
-        # calculate which blocks actually need changing and apply the minimal
-        # set of changes
-        self._screen.update(state)
-        self._last_position = self._position
+        with self._screen.blocks:
+            self._undraw_turtle()
+            if self._state.pendown and self._state.position != self._last_position:
+                self._commit({
+                    v: self._state.penblock
+                    for v in line(self._last_position, self._state.position)
+                    }, 'line')
+            if self._state.visible:
+                self._draw_turtle()
+            self._last_position = self._state.position
+
+    def undo(self):
+        with self._screen.blocks:
+            self._undraw_turtle()
+            self._state = self._history.pop()
+            self._last_position = self._state.position
+            self._screen.draw(self._state.changed)
+            if self._state.visible:
+                self._draw_turtle()
 
     def home(self):
-        self._position = self._home
-        self._heading = Z
+        self._state = self._state._replace(
+            position=self._home,
+            heading=Z)
         self._update()
 
     def clear(self):
-        self._canvas = {}
-        self._screen.update(self._screen.original())
-        self._update()
+        with self._screen.blocks:
+            while self._history:
+                self._screen.draw(self._history.pop().changed)
+            self._update()
 
     def reset(self):
         self.clear()
         self.home()
 
     def pos(self):
-        return self._position
+        return self._state.position
 
     def xcor(self):
-        return self._position.x
+        return self._state.position.x
 
     def ycor(self):
-        return self._position.y
+        return self._state.position.y
 
     def zcor(self):
-        return self._position.z
+        return self._state.position.z
 
     def goto(self, x, y=None, z=None):
         if isinstance(x, Turtle):
@@ -197,7 +248,7 @@ class Turtle(object):
             except (TypeError, ValueError) as exc:
                 pass
             other = Vector(x, y, z)
-        self._position = other
+        self._state = self._state._replace(position=other)
         self._update()
 
     def distance(self, x, y=None, z=None):
@@ -209,32 +260,40 @@ class Turtle(object):
             except (TypeError, ValueError) as exc:
                 pass
             other = Vector(x, y, z)
-        return self._position.distance_to(other)
+        return self._state.position.distance_to(other)
 
     def heading(self):
-        result = self._heading.angle_between(Z)
-        if self._heading.cross(Z).y < 0:
+        result = self._state.heading.angle_between(Z)
+        if self._state.heading.cross(Z).y < 0:
             result += 180
         return result
 
     def setheading(self, to_angle):
-        self._heading = Z.rotate(to_angle, about=Y)
+        self._state = self._state._replace(heading=Z.rotate(to_angle, about=Y))
         self._update()
 
     def forward(self, distance):
-        self._position = (self._position + distance * self._heading).round()
+        self._state = self._state._replace(
+            position=(self._state.position + distance * self._state.heading).round()
+            )
         self._update()
 
     def backward(self, distance):
-        self._position = (self._position - distance * self._heading).round()
+        self._state = self._state._replace(
+            position=(self._state.position - distance * self._state.heading).round()
+            )
         self._update()
 
     def right(self, angle):
-        self._heading = self._heading.rotate(-angle, about=Y)
+        self._state = self._state._replace(
+            heading=self._state.heading.rotate(-angle, about=Y)
+            )
         self._update()
 
     def left(self, angle):
-        self._heading = self._heading.rotate(angle, about=Y)
+        self._state = self._state._replace(
+            heading=self._state.heading.rotate(angle, about=Y)
+            )
         self._update()
 
     def down(self, angle):
@@ -244,25 +303,25 @@ class Turtle(object):
         pass
 
     def isdown(self):
-        return self._pendown
+        return self._state.pendown
 
     def pendown(self):
-        self._pendown = True
+        self._state = self._state._replace(pendown=True)
         self._update()
 
     def penup(self):
-        self._pendown = False
+        self._state = self._state._replace(pendown=False)
         self._update()
 
     def isvisible(self):
-        return self._visible
+        return self._state.visible
 
     def showturtle(self):
-        self._visible = True
+        self._state = self._state._replace(visible=True)
         self._update()
 
     def hideturtle(self):
-        self._visible = False
+        self._state = self._state._replace(visible=False)
         self._update()
 
     def block(self, *args):
@@ -274,19 +333,19 @@ class Turtle(object):
 
     def penblock(self, *args):
         if not args:
-            return self._penblock
+            return self._state.penblock
         elif isinstance(args[0], Block):
-            self._penblock = Block
+            self._state.penblock = Block
         else:
-            self._penblock = Block(*args)
+            self._state.penblock = Block(*args)
 
     def fillblock(self, *args):
         if not args:
-            return self._fillblock
+            return self._state.fillblock
         elif isinstance(args[0], Block):
-            self._fillblock = Block
+            self._state.fillblock = Block
         else:
-            self._fillblock = Block(*args)
+            self._state.fillblock = Block(*args)
 
     position = pos
     setpos = goto
