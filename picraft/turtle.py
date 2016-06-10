@@ -397,6 +397,7 @@ hideturtle = lambda: _default_turtle().hideturtle()
 block = lambda *args: _default_turtle().block(*args)
 penblock = lambda *args: _default_turtle().penblock(*args)
 fillblock = lambda *args: _default_turtle().fillblock(*args)
+undo = lambda: _default_turtle().undo()
 position = pos
 setpos = goto
 setposition = goto
