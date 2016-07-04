@@ -44,12 +44,19 @@ from .vector import Vector, O, X, Y, Z, vector_range, line
 from .block import Block
 
 
-_WORLD = None # The global World() used by default
-_SCREEN = None # The global TurtleScreen() used by default
-_TURTLE = None # The global Turtle() used by default
-
-
 class TurtleCache(object):
+    """
+    A representation of the world's blocks with implicit, thread-safe caching.
+
+    Using the cache as a context manager starts a batch operation which builds
+    up state changes until the termination of the ``with`` block. If the block
+    is terminated without an exception being raised, all changes are applied
+    to the world.
+
+    Requesting the state of blocks will always read from the cache and, if
+    a batch is active, from the (as yet uncommitted) changes made by the batch.
+    Note that batches are stored in thread-local state.
+    """
     def __init__(self, world):
         self._world = world
         self._lock = Lock()
@@ -69,7 +76,8 @@ class TurtleCache(object):
         if self._batch.level == 0:
             state = self._batch.state
             del self._batch.level, self._batch.state
-            self.__setitem__(state.keys(), state.values())
+            if exc_type is None:
+                self.__setitem__(state.keys(), state.values())
 
     def __getitem__(self, positions):
         try:
@@ -107,11 +115,8 @@ class TurtleCache(object):
 
 class TurtleScreen(object):
     def __init__(self, world=None):
-        global _WORLD
         if world is None:
-            if _WORLD is None:
-                _WORLD = World()
-            world = _WORLD
+            world = _default_world()
         self._world = world
         self._blocks = TurtleCache(world)
 
@@ -125,6 +130,9 @@ class TurtleScreen(object):
 
     def draw(self, state):
         self.blocks[state.keys()] = state.values()
+
+    def chat(self, message):
+        self._world.say(message)
 
 
 TurtleState = namedtuple('TurtleState', (
@@ -141,11 +149,8 @@ TurtleState = namedtuple('TurtleState', (
 
 class Turtle(object):
     def __init__(self, screen=None):
-        global _SCREEN
         if screen is None:
-            if _SCREEN is None:
-                _SCREEN = TurtleScreen()
-            screen = _SCREEN
+            screen = _default_screen()
         self._screen = screen
         self._home = self._screen.world.player.tile_pos - Y
         self._state = TurtleState(
@@ -362,14 +367,64 @@ class Turtle(object):
     pu = penup
 
 
+class TurtlePlayer(object):
+    def __init__(self, screen=None, player_id=None):
+        if screen is None:
+            screen = _default_screen()
+        self._screen = screen
+        if player_id is None:
+            self._player = self._screen.world.player
+        else:
+            self._player = self._screen.world.players[player_id]
 
-# default turtle constructed when the straight function interface is used
+    def where(self):
+        return self._player.pos
+
+    def teleport(self, x, y=None, z=None):
+        if isinstance(x, Turtle):
+            other = x.pos()
+        else:
+            try:
+                x, y, z = x
+            except (TypeError, ValueError) as exc:
+                pass
+            other = Vector(x, y, z)
+        self._player.pos = other
+
+    def jump(self, height=2):
+        self.teleport(self._player.pos + height * Y)
+
+
+# default objects constructed when the straight function interface is used
+
+_WORLD = None # The global World() used by default
+_SCREEN = None # The global TurtleScreen() used by default
+_TURTLE = None # The global Turtle() used by default
+_PLAYER = None # The global TurtlePlayer() used by default
+
+def _default_world():
+    global _WORLD
+    if _WORLD is None:
+        _WORLD = World()
+    return _WORLD
+
+def _default_screen():
+    global _SCREEN
+    if _SCREEN is None:
+        _SCREEN = TurtleScreen()
+    return _SCREEN
 
 def _default_turtle():
     global _TURTLE
     if _TURTLE is None:
         _TURTLE = Turtle()
     return _TURTLE
+
+def _default_player():
+    global _PLAYER
+    if _PLAYER is None:
+        _PLAYER = TurtlePlayer()
+    return _PLAYER
 
 home = lambda: _default_turtle().home()
 clear = lambda: _default_turtle().clear()
@@ -411,3 +466,7 @@ st = showturtle
 ht = hideturtle
 pd = pendown
 pu = penup
+where = lambda: _default_player().where()
+teleport = lambda x, y=None, z=None: _default_player().teleport(x, y, z)
+jump = lambda height=2: _default_player().jump(height)
+chat = lambda message: _default_screen.chat(message)
