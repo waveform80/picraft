@@ -229,8 +229,10 @@ class Turtle(object):
             self._update()
 
     def reset(self):
-        self.clear()
-        self.home()
+        with self._screen.blocks:
+            self.clear()
+            self._last_position = self._home
+            self.home()
 
     def pos(self):
         return self._state.position
