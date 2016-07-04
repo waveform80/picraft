@@ -148,12 +148,14 @@ TurtleState = namedtuple('TurtleState', (
 
 
 class Turtle(object):
-    def __init__(self, screen=None):
+    def __init__(self, screen=None, pos=None):
         if screen is None:
             screen = _default_screen()
+        if pos is None:
+            pos = screen.world.player.tile_pos - Y
         self._screen = screen
         self._state = TurtleState(
-            position=self._screen.world.player.tile_pos - Y,
+            position=pos,
             heading=Z,
             visible=True,
             pendown=True,
