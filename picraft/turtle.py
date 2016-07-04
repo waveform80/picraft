@@ -152,27 +152,26 @@ class Turtle(object):
         if screen is None:
             screen = _default_screen()
         self._screen = screen
-        self._home = self._screen.world.player.tile_pos - Y
         self._state = TurtleState(
-            position=self._home,
+            position=self._screen.world.player.tile_pos - Y,
             heading=Z,
             visible=True,
             pendown=True,
             penblock=Block('stone'),
             fillblock=Block('stone'),
-            changed=None,
-            action=None,
+            changed={},
+            action='home',
             )
-        self._last_position = self._home
-        self._history = [] # undo buffer
-        self._update()
+        self._last_position = self._state.position
+        self._history = [self._state] # undo buffer
+        self._draw_turtle()
 
     def _commit(self, changes, action):
+        self._history.append(self._state._replace(
+            changed=self._screen.blocks[changes.keys()], # reverse diff
+            action=action
+            ))
         if changes:
-            self._history.append(self._state._replace(
-                changed=self._screen.blocks[changes.keys()], # reverse diff
-                action=action
-                ))
             self._screen.draw(changes)
 
     def _draw_turtle(self):
@@ -203,6 +202,8 @@ class Turtle(object):
                     v: self._state.penblock
                     for v in line(self._last_position, self._state.position)
                     }, 'line')
+            else:
+                self._commit({}, 'move')
             if self._state.visible:
                 self._draw_turtle()
             self._last_position = self._state.position
@@ -210,28 +211,29 @@ class Turtle(object):
     def undo(self):
         with self._screen.blocks:
             self._undraw_turtle()
-            self._state = self._history.pop()
-            self._last_position = self._state.position
-            self._screen.draw(self._state.changed)
+            if self._history[-1].action != 'home':
+                self._screen.draw(self._history.pop().changed)
+                self._state = self._history[-1]
+                self._last_position = self._state.position
             if self._state.visible:
                 self._draw_turtle()
 
     def home(self):
         self._state = self._state._replace(
-            position=self._home,
+            position=self._history[0].position,
             heading=Z)
         self._update()
 
     def clear(self):
         with self._screen.blocks:
-            while self._history:
+            while self._history[-1].action != 'home':
                 self._screen.draw(self._history.pop().changed)
             self._update()
 
     def reset(self):
         with self._screen.blocks:
             self.clear()
-            self._last_position = self._home
+            self._last_position = self._history[0].position
             self.home()
 
     def pos(self):
