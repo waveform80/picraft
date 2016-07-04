@@ -386,7 +386,7 @@ class TurtlePlayer(object):
 
     def teleport(self, x, y=None, z=None):
         if isinstance(x, Turtle):
-            other = x.pos()
+            other = x.pos() + Y
         else:
             try:
                 x, y, z = x
