@@ -147,6 +147,8 @@ TurtleState = namedtuple('TurtleState', (
     'action',    # home/move/turtle
     ))
 
+clamp = lambda value, min_value, max_value: min(max_value, max(min_value, value))
+
 
 class Turtle(object):
     def __init__(self, screen=None, pos=None):
@@ -292,7 +294,7 @@ class Turtle(object):
         return result
 
     def setelevation(self, to_angle):
-        self._state = self._state._replace(elevation=to_angle)
+        self._state = self._state._replace(elevation=clamp(to_angle, -90, 90))
         self._update()
 
     def setheading(self, to_angle):
@@ -327,13 +329,13 @@ class Turtle(object):
 
     def down(self, angle):
         self._state = self._state._replace(
-            elevation=self._state.elevation - angle
+            elevation=clamp(self._state.elevation - angle, -90, 90)
             )
         self._update()
 
     def up(self, angle):
         self._state = self._state._replace(
-            elevation=self._state.elevation + angle
+            elevation=clamp(self._state.elevation + angle, -90, 90)
             )
         self._update()
 
@@ -475,7 +477,7 @@ backward = lambda distance: _default_turtle().backward(distance)
 right = lambda angle: _default_turtle().right(angle)
 left = lambda angle: _default_turtle().left(angle)
 down = lambda angle: _default_turtle().down(angle)
-up = lambda angle: _default_turtle(angle)
+up = lambda angle: _default_turtle().up(angle)
 isdown = lambda: _default_turtle().isdown()
 pendown = lambda: _default_turtle().pendown()
 penup = lambda: _default_turtle().penup()
