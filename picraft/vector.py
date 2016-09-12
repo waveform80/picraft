@@ -241,7 +241,7 @@ class Vector(namedtuple('Vector', ('x', 'y', 'z'))):
     .. autoattribute:: unit
     """
 
-    __slots__ = ()
+    __slots__ = () # workaround python issue #24931
 
     def __new__(cls, x=0, y=0, z=0):
         return super(Vector, cls).__new__(cls, x, y, z)
@@ -250,13 +250,6 @@ class Vector(namedtuple('Vector', ('x', 'y', 'z'))):
     def from_string(cls, s, type=int):
         x, y, z = s.split(',')
         return cls(type(x), type(y), type(z))
-
-    @property
-    def __dict__(self):
-        # This is required to work around a subtle issue encountered in Python
-        # 3.3 and above. In these versions (probably deliberately), the
-        # __dict__ property is not inherited by namedtuple descendents
-        return super(Vector, self).__dict__
 
     def __str__(self):
         return '%s,%s,%s' % (self.x, self.y, self.z)

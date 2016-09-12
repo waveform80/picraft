@@ -136,14 +136,15 @@ class TurtleScreen(object):
 
 
 TurtleState = namedtuple('TurtleState', (
-    'position',
-    'heading',
-    'visible',
-    'pendown',
-    'penblock',
-    'fillblock',
-    'changed',
-    'action',
+    'position',  # Vector
+    'heading',   # Vector
+    'elevation', # angle (-90..90)
+    'visible',   # bool
+    'pendown',   # bool
+    'penblock',  # Block
+    'fillblock', # Block
+    'changed',   # Vector->Block map
+    'action',    # home/move/turtle
     ))
 
 
@@ -157,6 +158,7 @@ class Turtle(object):
         self._state = TurtleState(
             position=pos,
             heading=Z,
+            elevation=0.0,
             visible=True,
             pendown=True,
             penblock=Block('stone'),
@@ -176,11 +178,16 @@ class Turtle(object):
         if changes:
             self._screen.draw(changes)
 
-    def _draw_turtle(self):
-        head = (self._state.position + self._state.heading).round()
+    def _draw_vectors(self):
         arm_v = self._state.heading.cross(Y).unit
         if arm_v == O:
             arm_v = X
+        head_v = self._state.heading.rotate(self._state.elevation, about=arm_v)
+        return arm_v, head_v
+
+    def _draw_turtle(self):
+        arm_v, head_v = self._draw_vectors()
+        head = (self._state.position + head_v).round()
         left_arm = (self._state.position + arm_v).round()
         right_arm = (self._state.position - arm_v).round()
         state = {
@@ -223,7 +230,9 @@ class Turtle(object):
     def home(self):
         self._state = self._state._replace(
             position=self._history[0].position,
-            heading=Z)
+            heading=Z,
+            elevation=0.0,
+            )
         self._update()
 
     def clear(self):
@@ -273,25 +282,34 @@ class Turtle(object):
             other = Vector(x, y, z)
         return self._state.position.distance_to(other)
 
+    def elevation(self):
+        return self._state.elevation
+
     def heading(self):
         result = self._state.heading.angle_between(Z)
         if self._state.heading.cross(Z).y < 0:
             result += 180
         return result
 
+    def setelevation(self, to_angle):
+        self._state = self._state._replace(elevation=to_angle)
+        self._update()
+
     def setheading(self, to_angle):
         self._state = self._state._replace(heading=Z.rotate(to_angle, about=Y))
         self._update()
 
     def forward(self, distance):
+        arm_v, head_v = self._draw_vectors()
         self._state = self._state._replace(
-            position=(self._state.position + distance * self._state.heading).round()
+            position=(self._state.position + distance * head_v).round()
             )
         self._update()
 
     def backward(self, distance):
+        arm_v, head_v = self._draw_vectors()
         self._state = self._state._replace(
-            position=(self._state.position - distance * self._state.heading).round()
+            position=(self._state.position - distance * head_v).round()
             )
         self._update()
 
@@ -308,10 +326,16 @@ class Turtle(object):
         self._update()
 
     def down(self, angle):
-        pass
+        self._state = self._state._replace(
+            elevation=self._state.elevation - angle
+            )
+        self._update()
 
     def up(self, angle):
-        pass
+        self._state = self._state._replace(
+            elevation=self._state.elevation + angle
+            )
+        self._update()
 
     def isdown(self):
         return self._state.pendown
@@ -361,6 +385,7 @@ class Turtle(object):
     position = pos
     setpos = goto
     setposition = goto
+    sete = setelevation
     seth = setheading
     fd = forward
     bk = backward
@@ -441,8 +466,10 @@ ycor = lambda: _default_turtle().ycor()
 zcor = lambda: _default_turtle().zcor()
 goto = lambda x, y=None, z=None: _default_turtle().goto(x, y, z)
 distance = lambda x, y=None, z=None: _default_turtle().distance(x, y, z)
-heading = lambda: _default_turtle.heading()
-setheading = lambda to_angle: _default_turtle.setheading(to_angle)
+elevation = lambda: _default_turtle().elevation()
+heading = lambda: _default_turtle().heading()
+setelevation = lambda to_angle: _default_turtle().setelevation(to_angle)
+setheading = lambda to_angle: _default_turtle().setheading(to_angle)
 forward = lambda distance: _default_turtle().forward(distance)
 backward = lambda distance: _default_turtle().backward(distance)
 right = lambda angle: _default_turtle().right(angle)
@@ -462,6 +489,7 @@ undo = lambda: _default_turtle().undo()
 position = pos
 setpos = goto
 setposition = goto
+sete = setelevation
 seth = setheading
 fd = forward
 bk = backward
@@ -475,4 +503,4 @@ pu = penup
 where = lambda: _default_player().where()
 teleport = lambda x, y=None, z=None: _default_player().teleport(x, y, z)
 jump = lambda height=2: _default_player().jump(height)
-chat = lambda message: _default_screen.chat(message)
+chat = lambda message: _default_screen().chat(message)
