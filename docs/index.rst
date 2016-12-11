@@ -12,6 +12,7 @@ Table of Contents
    install
    quickstart
    recipes
+   turtle
    vectors
    conversion
    faq
@@ -23,6 +24,7 @@ Table of Contents
    api_connection
    api_player
    api_render
+   api_turtle
    api_exc
    protocol
    changelog

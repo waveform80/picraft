@@ -1,0 +1,105 @@
+.. _turtle:
+
+===============
+Turtle Graphics
+===============
+
+.. module:: picraft.turtle
+
+Turtle graphics is a popular way for introducing programming to kids. It was
+part of the original Logo programming language developed by Wally Feurzig and
+Seymour Papert in 1966.
+
+The :mod:`turtle` module in Python's standard library provides a classic
+implementation which moves a triangular turtle around a graphical window
+drawing geometric shapes.
+
+The picraft turtle module is similar, but instead of a two-dimensional
+graphical window, its canvas is the Minecraft world. The module provides an
+object-oriented interface for advanced users that want to control multiple
+turtles and a simpler procedural interface for newer programmers.
+
+Overview of available Turtle and TurtleScreen methods
+=====================================================
+
+Turtle methods
+--------------
+
+Turtle motion
+    Move and draw
+        | :func:`forward` | :func:`fd`
+        | :func:`backward` | :func:`bk` | :func:`back`
+        | :func:`left` | :func:`lt`
+        | :func:`right` | :func:`rt`
+        | :func:`up`
+        | :func:`down` | :func:`dn`
+        | :func:`goto` | :func:`setpos` | :func:`setposition`
+        | :func:`setx`
+        | :func:`sety`
+        | :func:`setz`
+        | :func:`setheading` | :func:`seth`
+        | :func:`setelevation` | :func:`sete`
+        | :func:`home`
+
+    Tell Turtle's state
+        | :func:`position` | :func:`pos`
+        | :func:`towards`
+        | :func:`heading`
+        | :func:`elevation`
+
+
+Methods of Turtle and corresponding functions
+=============================================
+
+Turtle motion
+-------------
+
+.. autofunction:: fd
+.. autofunction:: forward
+
+.. autofunction:: back
+.. autofunction:: bk
+.. autofunction:: backward
+
+.. autofunction:: lt
+.. autofunction:: left
+
+.. autofunction:: rt
+.. autofunction:: right
+
+.. autofunction:: up
+
+.. autofunction:: dn
+.. autofunction:: down
+
+.. autofunction:: setpos
+.. autofunction:: setposition
+.. autofunction:: goto
+
+.. autofunction:: setx
+
+.. autofunction:: sety
+
+.. autofunction:: setz
+
+.. autofunction:: seth
+.. autofunction:: setheading
+
+.. autofunction:: sete
+.. autofunction:: setelevation
+
+.. autofunction:: home
+
+.. autofunction:: undo
+
+Tell Turtle's state
+-------------------
+
+.. autofunction:: position
+.. autofunction:: pos
+
+.. autofunction:: towards
+
+.. autofunction:: heading
+
+.. autofunction:: elevation

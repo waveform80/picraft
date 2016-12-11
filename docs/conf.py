@@ -32,6 +32,7 @@ import sys
 import os
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
 on_rtd = os.environ.get('READTHEDOCS', None) == 'True'
+os.environ['PICRAFTDOCS'] = 'True' # dirty hack for turtle.py
 import setup as _setup
 
 # -- General configuration ------------------------------------------------

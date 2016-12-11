@@ -479,8 +479,8 @@ class Vector(namedtuple('Vector', ('x', 'y', 'z'))):
     def angle_between(self, other):
         """
         Returns the angle between this vector and the *other* vector on a plane
-        that contains both vectors. The result is measured in degrees. For
-        example::
+        that contains both vectors. The result is measured in degrees between 0
+        and 180. For example::
 
             >>> X.angle_between(Y)
             90.0

@@ -36,6 +36,10 @@ from __future__ import (
 str = type('')
 
 
+import re
+import os
+import math
+import inspect
 from threading import Lock, local
 from collections import namedtuple
 
@@ -144,7 +148,7 @@ TurtleState = namedtuple('TurtleState', (
     'penblock',  # Block
     'fillblock', # Block
     'changed',   # Vector->Block map
-    'action',    # home/move/turtle
+    'action',    # home/move/line/turtle
     ))
 
 clamp = lambda value, min_value, max_value: min(max_value, max(min_value, value))
@@ -173,6 +177,12 @@ class Turtle(object):
         self._draw_turtle()
 
     def _commit(self, changes, action):
+        """
+        Given *changes*, a mapping of vectors to blocks, and *action*, a string
+        describing the change, append a new state to the undo history with the
+        original state of the affected blocks, and draw the changes to the
+        screen.
+        """
         self._history.append(self._state._replace(
             changed=self._screen.blocks[changes.keys()], # reverse diff
             action=action
@@ -181,6 +191,10 @@ class Turtle(object):
             self._screen.draw(changes)
 
     def _draw_vectors(self):
+        """
+        Calculates and returns the arm and head unit vectors based on the
+        current heading and elevation.
+        """
         arm_v = self._state.heading.cross(Y).unit
         if arm_v == O:
             arm_v = X
@@ -188,6 +202,10 @@ class Turtle(object):
         return arm_v, head_v
 
     def _draw_turtle(self):
+        """
+        Draw the turtle's head and arms, and the pen block, committing the
+        resulting changes as an undo history entry with the action "turtle".
+        """
         arm_v, head_v = self._draw_vectors()
         head = (self._state.position + head_v).round()
         left_arm = (self._state.position + arm_v).round()
@@ -201,11 +219,21 @@ class Turtle(object):
         self._commit(state, 'turtle')
 
     def _undraw_turtle(self):
+        """
+        If the last action in the undo history is "turtle" (indicating that the
+        last action taken was to draw the turtle), remove it and revert the
+        affected blocks to their prior state.
+        """
         with self._screen.blocks:
             while self._history and self._history[-1].action == 'turtle':
                 self._screen.draw(self._history.pop().changed)
 
     def _update(self):
+        """
+        Commit the difference between the ephemeral state (``_state``) and the
+        last recorded position to the undo history as a line (if the pen is
+        down) or a move (if it's not).
+        """
         with self._screen.blocks:
             self._undraw_turtle()
             if self._state.pendown and self._state.position != self._last_position:
@@ -220,6 +248,16 @@ class Turtle(object):
             self._last_position = self._state.position
 
     def undo(self):
+        """
+        Undo (repeatedly) the last turtle action(s)::
+
+            >>> for i in range(4):
+            ...     turtle.fd(5)
+            ...     turtle.lt(90)
+            ...
+            >>> for i in range(8):
+            ...     turtle.undo()
+        """
         with self._screen.blocks:
             self._undraw_turtle()
             if self._history[-1].action != 'home':
@@ -230,6 +268,26 @@ class Turtle(object):
                 self._draw_turtle()
 
     def home(self):
+        """
+        Move the turtle to its starting position (this is usually beneath where
+        the player was standing when the turtle was spawned), and set its
+        heading to its start orientation (0 degrees heading, 0 degrees
+        elevation)::
+
+            >>> turtle.heading()
+            90.0
+            >>> turtle.elevation
+            45.0
+            >>> turtle.position()
+            Vector(x=2, y=-1, z=16)
+            >>> turtle.home()
+            >>> turtle.position()
+            Vector(x=0, y=-1, z=0)
+            >>> turtle.heading()
+            0.0
+            >>> turtle.elevation()
+            0.0
+        """
         self._state = self._state._replace(
             position=self._history[0].position,
             heading=Z,
@@ -250,6 +308,13 @@ class Turtle(object):
             self.home()
 
     def pos(self):
+        """
+        Return the turtle's current location (x, y, z) as a
+        :class:`~picraft.vector.Vector`::
+
+            >>> turtle.pos()
+            Vector(x=2, y=-1, z=18)
+        """
         return self._state.position
 
     def xcor(self):
@@ -261,7 +326,66 @@ class Turtle(object):
     def zcor(self):
         return self._state.position.z
 
+    def towards(self, x, y=None, z=None):
+        """
+        :param float x: the target x coordinate or a turtle / triple /
+                        :class:`~picraft.vector.Vector` of numbers
+        :param float y: the target y coordinate or ``None``
+        :param float z: the target z coordinate or ``None``
+
+        Return the angle between the line from the turtle's position to the
+        position specified within the plane common to both::
+
+            >>> turtle.home()
+            >>> turtle.forward(5)
+            >>> turtle.towards(0, 0, 0)
+            180.0
+            >>> turtle.left(90)
+            >>> turtle.forward(5)
+            >>> turtle.towards(0, 0, 0)
+            225.0
+
+        If *y* and *z* are ``None``, *x* must be a triple of coordinates, a
+        :class:`~picraft.vector.Vector`, or another Turtle.
+        """
+        if isinstance(x, Turtle):
+            other = x.pos()
+        else:
+            try:
+                x, y, z = x
+            except (TypeError, ValueError) as exc:
+                pass
+            other = Vector(x, y, z)
+        v = (other - self._state.position).replace(y=0).unit
+        return math.degrees(math.atan2(-v.x, v.z))
+
     def goto(self, x, y=None, z=None):
+        """
+        :param float x: the new x coordinate or a turtle / triple /
+                        :class:`~picraft.vector.Vector` of numbers
+        :param float y: the new y coordinate or ``None``
+        :param float z: the new z coordinate or ``None``
+
+        Moves the turtle to an absolute position. If the pen is down, draws
+        a line between the current position and the newly specified position.
+        Does not change the turtle's orientation::
+
+            >>> tp = turtle.pos()
+            >>> tp
+            Vector(x=2, y=-1, z=16)
+            >>> turtle.setpos(4, -1, 16)
+            >>> turtle.pos()
+            Vector(x=4, y=-1, z=16)
+            >>> turtle.setpos((0, -1, 16))
+            >>> turtle.pos()
+            Vector(x=0, y=-1, z=16)
+            >>> turtle.setpos(tp)
+            >>> turtle.pos()
+            Vector(x=2, y=-1, z=16)
+
+        If *y* and *z* are ``None``, *x* must be a triple of coordinates, a
+        :class:`~picraft.vector.Vector`, or another Turtle.
+        """
         if isinstance(x, Turtle):
             other = x.pos()
         else:
@@ -272,6 +396,51 @@ class Turtle(object):
             other = Vector(x, y, z)
         self._state = self._state._replace(position=other)
         self._update()
+
+    def setx(self, x):
+        """
+        :param float x: the new x coordinate
+
+        Set the turtle's first coordinate to *x*; leave the second and third
+        coordinates unchanged::
+
+            >>> turtle.position()
+            Vector(x=2, y=-1, z=16)
+            >>> turtle.setx(5)
+            >>> turtle.position()
+            Vector(x=5, y=-1, z=16)
+        """
+        self.goto(pos().replace(x=x))
+
+    def sety(self, y):
+        """
+        :param float y: the new y coordinate
+
+        Set the turtle's second coordinate to *y*; leave the first and third
+        coordinates unchanged::
+
+            >>> turtle.position()
+            Vector(x=2, y=-1, z=16)
+            >>> turtle.sety(5)
+            >>> turtle.position()
+            Vector(x=2, y=5, z=16)
+        """
+        self.goto(pos().replace(y=y))
+
+    def setz(self, z):
+        """
+        :param float z: the new z coordinate
+
+        Set the turtle's third coordinate to *z*; leave the first and second
+        coordinates unchanged::
+
+            >>> turtle.position()
+            Vector(x=2, y=-1, z=16)
+            >>> turtle.setz(5)
+            >>> turtle.position()
+            Vector(x=2, y=-1, z=5)
+        """
+        self.goto(pos().replace(z=z))
 
     def distance(self, x, y=None, z=None):
         if isinstance(x, Turtle):
@@ -285,23 +454,90 @@ class Turtle(object):
         return self._state.position.distance_to(other)
 
     def elevation(self):
+        """
+        Return the turtle's current elevation (its orientation away from the
+        ground plane, X-Z)::
+
+            >>> turtle.home()
+            >>> turtle.up(90)
+            >>> turtle.elevation()
+            90.0
+        """
         return self._state.elevation
 
     def heading(self):
+        """
+        Return the turtle's current heading (its orientation along the ground
+        plane, X-Z)::
+
+            >>> turtle.home()
+            >>> turtle.right(90)
+            >>> turtle.heading()
+            90.0
+        """
         result = self._state.heading.angle_between(Z)
         if self._state.heading.cross(Z).y < 0:
             result += 180
         return result
 
     def setelevation(self, to_angle):
+        """
+        :param float to_angle: the new elevation
+
+        Set the elevation of the turtle away from the ground plane (X-Z) to
+        *to_angle*. At 0 degrees elevation, the turtle moves along the ground
+        plane (X-Z). At 90 degrees elevation, the turtle moves vertically
+        upward, and at -90 degrees, the turtle moves vertically downward::
+
+            >>> turtle.setelevation(90)
+            >>> turtle.elevation()
+            90.0
+        """
         self._state = self._state._replace(elevation=clamp(to_angle, -90, 90))
         self._update()
 
     def setheading(self, to_angle):
+        """
+        :param float to_angle: the new heading
+
+        Set the orientation of the turtle on the ground plane (X-Z) to
+        *to_angle*. The common directions in degrees correspond to the
+        following axis directions:
+
+        ======= ====
+        heading axis
+        ======= ====
+        0       +Z
+        90      +X
+        180     -Z
+        270     -X
+        ======= ====
+
+        ::
+
+            >>> turtle.setheading(90)
+            >>> turtle.heading()
+            90.0
+        """
         self._state = self._state._replace(heading=Z.rotate(to_angle, about=Y))
         self._update()
 
     def forward(self, distance):
+        """
+        :param float distance: the number of blocks to move forward.
+
+        Move the turtle forward by the specified *distance*, in the direction
+        the turtle is headed::
+
+            >>> turtle.position()
+            Vector(x=2, y=-1, z=13)
+            >>> turtle.forward(5)
+            >>> turtle.position()
+            Vector(x=2, y=-1, z=18)
+            >>> turtle.forward(-2)
+            >>> turtle.position()
+            Vector(x=2, y=-1, z=16)
+        """
         arm_v, head_v = self._draw_vectors()
         self._state = self._state._replace(
             position=(self._state.position + distance * head_v).round()
@@ -309,6 +545,22 @@ class Turtle(object):
         self._update()
 
     def backward(self, distance):
+        """
+        :param float distance: the number of blocks to move back.
+
+        Move the turtle backward by the specified *distance*, opposite to the
+        direction the turtle is headed. Does not change the turtle's heading::
+
+            >>> turtle.heading()
+            0.0
+            >>> turtle.position()
+            Vector(x=2, y=-1, z=18)
+            >>> turtle.backward(2)
+            >>> turtle.position()
+            Vector(x=2, y=-1, z=16)
+            >>> turtle.heading()
+            0.0
+        """
         arm_v, head_v = self._draw_vectors()
         self._state = self._state._replace(
             position=(self._state.position - distance * head_v).round()
@@ -316,24 +568,68 @@ class Turtle(object):
         self._update()
 
     def right(self, angle):
+        """
+        :param float angle: the number of degrees to turn clockwise.
+
+        Turns the turtle right (clockwise) by *angle* degrees::
+
+            >>> turtle.heading()
+            0.0
+            >>> turtle.right(90)
+            >>> turtle.heading()
+            90.0
+        """
         self._state = self._state._replace(
             heading=self._state.heading.rotate(-angle, about=Y)
             )
         self._update()
 
     def left(self, angle):
+        """
+        :param float angle: the number of degrees to turn counter clockwise.
+
+        Turns the turtle left (counter-clockwise) by *angle* degrees::
+
+            >>> turtle.heading()
+            90.0
+            >>> turtle.left(90)
+            >>> turtle.heading()
+            0.0
+        """
         self._state = self._state._replace(
             heading=self._state.heading.rotate(angle, about=Y)
             )
         self._update()
 
     def down(self, angle):
+        """
+        :param float angle: the number of degrees to reduce elevation by.
+
+        Turns the turtle's nose (its elevation) down by *angle* degrees::
+
+            >>> turtle.elevation()
+            0.0
+            >>> turtle.down(45)
+            >>> turtle.elevation()
+            -45.0
+        """
         self._state = self._state._replace(
             elevation=clamp(self._state.elevation - angle, -90, 90)
             )
         self._update()
 
     def up(self, angle):
+        """
+        :param float angle: the number of degrees to increase elevation by.
+
+        Turns the turtle's nose (its elevation) up by *angle* degrees::
+
+            >>> turtle.elevation()
+            -45.0
+            >>> turtle.up(45)
+            >>> turtle.elevation()
+            0.0
+        """
         self._state = self._state._replace(
             elevation=clamp(self._state.elevation + angle, -90, 90)
             )
@@ -394,6 +690,7 @@ class Turtle(object):
     back = backward
     rt = right
     lt = left
+    dn = down
     st = showturtle
     ht = hideturtle
     pd = pendown
@@ -459,50 +756,46 @@ def _default_player():
         _PLAYER = TurtlePlayer()
     return _PLAYER
 
-home = lambda: _default_turtle().home()
-clear = lambda: _default_turtle().clear()
-reset = lambda: _default_turtle().reset()
-pos = lambda: _default_turtle().pos()
-xcor = lambda: _default_turtle().xcor()
-ycor = lambda: _default_turtle().ycor()
-zcor = lambda: _default_turtle().zcor()
-goto = lambda x, y=None, z=None: _default_turtle().goto(x, y, z)
-distance = lambda x, y=None, z=None: _default_turtle().distance(x, y, z)
-elevation = lambda: _default_turtle().elevation()
-heading = lambda: _default_turtle().heading()
-setelevation = lambda to_angle: _default_turtle().setelevation(to_angle)
-setheading = lambda to_angle: _default_turtle().setheading(to_angle)
-forward = lambda distance: _default_turtle().forward(distance)
-backward = lambda distance: _default_turtle().backward(distance)
-right = lambda angle: _default_turtle().right(angle)
-left = lambda angle: _default_turtle().left(angle)
-down = lambda angle: _default_turtle().down(angle)
-up = lambda angle: _default_turtle().up(angle)
-isdown = lambda: _default_turtle().isdown()
-pendown = lambda: _default_turtle().pendown()
-penup = lambda: _default_turtle().penup()
-isvisible = lambda: _default_turtle().isvisible()
-showturtle = lambda: _default_turtle().showturtle()
-hideturtle = lambda: _default_turtle().hideturtle()
-block = lambda *args: _default_turtle().block(*args)
-penblock = lambda *args: _default_turtle().penblock(*args)
-fillblock = lambda *args: _default_turtle().fillblock(*args)
-undo = lambda: _default_turtle().undo()
-position = pos
-setpos = goto
-setposition = goto
-sete = setelevation
-seth = setheading
-fd = forward
-bk = backward
-back = backward
-rt = right
-lt = left
-st = showturtle
-ht = hideturtle
-pd = pendown
-pu = penup
-where = lambda: _default_player().where()
-teleport = lambda x, y=None, z=None: _default_player().teleport(x, y, z)
-jump = lambda height=2: _default_player().jump(height)
-chat = lambda message: _default_screen().chat(message)
+def _method_to_func(name, method, factory):
+    """
+    Creates a procedural variant of *method* on the instance returned by
+    calling *factory*.
+    """
+    template = """\
+def {name}{defargs}:
+    return {factory}().{name}{callargs}"""
+    spec = inspect.getargspec(method)
+    defargs = inspect.formatargspec(spec.args[1:], spec.varargs, spec.keywords, spec.defaults)
+    callargs = inspect.formatargspec(spec.args[1:], spec.varargs, spec.keywords, ())
+    exec(template.format(
+        name=name,
+        defargs=defargs,
+        callargs=callargs,
+        factory=factory.__name__,
+        ), globals())
+    # If the method has a doc-string, copy it to the new function ... but only
+    # when the method isn't an alias (name==method.__name__) or we're not
+    # building the picraft docs (in which we don't want to repeat all the docs
+    # for the aliases)
+    if method.__doc__ is not None:
+        if not 'PICRAFTDOCS' in os.environ or name == method.__name__:
+            # Replace "turtle." in all the examples with a blank string
+            globals()[name].__doc__ = re.sub(
+                r'^( *(?:>>>|\.\.\.).*)turtle\.', r'\1',
+                method.__doc__, flags=re.MULTILINE)
+
+def _classes_to_funcs():
+    """
+    Uses :func:`_method_to_func` to construct procedural variants of the
+    :class:`Turtle`, :class:`TurtleScreen`, and :class:`TurtlePlayer` class'
+    methods.
+    """
+    for method in dir(Turtle):
+        if not method.startswith('_'):
+            _method_to_func(method, getattr(Turtle, method), _default_turtle)
+    for method in dir(TurtlePlayer):
+        if not method.startswith('_'):
+            _method_to_func(method, getattr(TurtlePlayer, method), _default_player)
+    _method_to_func('chat', TurtleScreen.chat, _default_screen)
+
+_classes_to_funcs()
