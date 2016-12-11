@@ -27,7 +27,7 @@ This tells us that our character is standing at the 3-dimensional coordinates
 -2.49, 18.0, -4.22 (approximately). In the Minecraft world, the X and Z
 coordinates (the first and last) form the "ground plane".
 
-.. image:: block_faces.*
+.. image:: images/block_faces.*
     :align: center
 
 In other words you, can think of X as going left to right, and Z as going
@@ -208,7 +208,7 @@ the :attr:`~picraft.world.World.checkpoint` object::
 In order to understand vectors, it can help to visualize them. Pick a
 relatively open area in the game world.
 
-.. image:: quick1.png
+.. image:: images/quick1.png
     :align: center
 
 We'll save the vector of your player's position as ``p`` then add 3 to it. This
@@ -219,7 +219,7 @@ at ``p`` into stone::
     >>> p = p + 3
     >>> world.blocks[p] = Block('stone')
 
-.. image:: quick2.png
+.. image:: images/quick2.png
     :align: center
 
 Now we'll explore vector slices a bit by making a line along X+5 into stone.
@@ -228,7 +228,7 @@ Remember that slices (and ranges) are `half-open`_ so we need to add an extra
 
     >>> world.blocks[p:p + Vector(x=5) + 1] = Block('stone')
 
-.. image:: quick3.png
+.. image:: images/quick3.png
     :align: center
 
 In order to visualize the three different axes of vectors we'll now draw them
@@ -239,7 +239,7 @@ constructor to create a block with a particular color::
     >>> world.blocks[p:p + (5*Y) + 1] = Block('#00ff00')
     >>> world.blocks[p:p + (5*Z) + 1] = Block('#0000ff')
 
-.. image:: quick4.png
+.. image:: images/quick4.png
     :align: center
 
 Finally, we can use a vector range to demonstrate patterns. Firstly we wipe
@@ -259,7 +259,7 @@ Once again, we can make use of a batch to speed this up::
     ...     for rv in r:
     ...         world.blocks[rv] = Block('diamond_block')
 
-.. image:: quick5.png
+.. image:: images/quick5.png
     :align: center
 
 

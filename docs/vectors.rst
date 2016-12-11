@@ -25,7 +25,7 @@ system.
 
 The following illustration shows the directions of each of the axes:
 
-.. image:: block_faces.*
+.. image:: images/block_faces.*
     :align: center
 
 Positive rotation in Minecraft also follows the `right-hand rule`_. For
@@ -50,7 +50,7 @@ its ``y`` attribute set to ``A.y + B.y`` and so on::
     >>> Vector(1, 1, 0) + Vector(1, 0, 1)
     Vector(x=2, y=1, z=1)
 
-.. image:: vector1.*
+.. image:: images/vector1.*
     :align: center
 
 Likewise for subtraction, multiplication, etc.::
@@ -64,7 +64,7 @@ Likewise for subtraction, multiplication, etc.::
     >>> p % q
     Vector(x=1, y=0, z=0)
 
-.. image:: vector2.*
+.. image:: images/vector2.*
     :align: center
 
 Vector-scalar operations
@@ -82,7 +82,7 @@ vector with every element of the original multiplied by 2::
     >>> p // 2
     Vector(x=0, y=1, z=1)
 
-.. image:: vector3.*
+.. image:: images/vector3.*
     :align: center
 
 Miscellaneous function support
@@ -112,7 +112,7 @@ named methods are provided::
     >>> p.floor()
     Vector(x=1, y=2, z=3)
 
-.. image:: vector4.*
+.. image:: images/vector4.*
     :align: center
 
 .. hint::
@@ -140,7 +140,7 @@ to simplify many vector-related operations::
     >>> p + 2 * Y
     Vector(x=1, y=6, z=3)
 
-.. image:: vector5.*
+.. image:: images/vector5.*
     :align: center
 
 Rotation
@@ -163,7 +163,7 @@ specified as a keyword argument for code clarity). For example::
     >>> p.rotate(180, about=Y).round()
     Vector(x=-1.0, y=2.0, z=-3.0)
 
-.. image:: vector6.*
+.. image:: images/vector6.*
     :align: center
 
 ::
@@ -171,7 +171,7 @@ specified as a keyword argument for code clarity). For example::
     >>> X.rotate(180, about=X + Y).round()
     Vector(x=-0.0, y=1.0, z=-0.0)
 
-.. image:: vector7.*
+.. image:: images/vector7.*
     :align: center
 
 A third optional argument to rotate, *origin*, permits rotation about an
@@ -184,7 +184,7 @@ specified by *origin* and runs in the direction of the axis specified by
     >>> O.rotate(90, about=Y, origin=X).round()
     Vector(x=1.0, y=0.0, z=1.0)
 
-.. image:: vector8.*
+.. image:: images/vector8.*
     :align: center
 
 To aid in certain kinds of rotation, the
@@ -197,7 +197,7 @@ the angle between two vectors (in the plane common to both)::
     >>> X.angle_between(p)
     74.498640433063
 
-.. image:: vector9.*
+.. image:: images/vector9.*
     :align: center
 
 Magnitudes
@@ -222,7 +222,7 @@ the vector obtained by subtracting one vector from the other)::
     >>> p.distance_to(q)
     3.0
 
-.. image:: vector10.*
+.. image:: images/vector10.*
     :align: center
 
 Dot and cross products
@@ -247,7 +247,7 @@ defined by three vectors, via the `triple product`_::
     >>> area_of_pqr
     4
 
-.. image:: vector11.*
+.. image:: images/vector11.*
     :align: center
 
 Projection
@@ -269,7 +269,7 @@ in the direction of another (unit) vector::
     >>> r.round(4)
     Vector(x=2.0, y=0.0, z=2.0)
 
-.. image:: vector12.*
+.. image:: images/vector12.*
     :align: center
 
 Immutability
@@ -320,7 +320,7 @@ and in one but not the other::
     Vector(x=1, y=0, z=5), Vector(x=0, y=0, z=5), Vector(x=0, y=0, z=4),
     Vector(x=2, y=0, z=3), Vector(x=2, y=0, z=5), Vector(x=0, y=0, z=3)])
 
-.. image:: regions1.*
+.. image:: images/regions1.*
     :align: center
 
 We could use a dict to store the state of the world for one of the ranges::

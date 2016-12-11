@@ -6,11 +6,11 @@ SPHINXOPTS    =
 SPHINXBUILD   = sphinx-build
 PAPER         =
 BUILDDIR      = _build
-DOT_DIAGRAMS  := $(wildcard *.dot)
-MSC_DIAGRAMS  := $(wildcard *.mscgen)
-GPI_DIAGRAMS  := $(wildcard *.gpi)
-SVG_IMAGES    := $(wildcard *.svg) $(DOT_DIAGRAMS:%.dot=%.svg) $(MSC_DIAGRAMS:%.mscgen=%.svg)
-PNG_IMAGES    := $(wildcard *.png) $(GPI_DIAGRAMS:%.gpi=%.png) $(SVG_IMAGES:%.svg=%.png)
+DOT_DIAGRAMS  := $(wildcard images/*.dot)
+MSC_DIAGRAMS  := $(wildcard images/*.mscgen)
+GPI_DIAGRAMS  := $(wildcard images/*.gpi)
+SVG_IMAGES    := $(wildcard images/*.svg) $(DOT_DIAGRAMS:%.dot=%.svg) $(MSC_DIAGRAMS:%.mscgen=%.svg)
+PNG_IMAGES    := $(wildcard images/*.png) $(GPI_DIAGRAMS:%.gpi=%.png) $(SVG_IMAGES:%.svg=%.png)
 PDF_IMAGES    := $(SVG_IMAGES:%.svg=%.pdf) $(GPI_DIAGRAMS:%.gpi=%.pdf) $(DOT_DIAGRAMS:%.dot=%.pdf) $(MSC_DIAGRAMS:%.mscgen=%.pdf)
 
 # User-friendly check for sphinx-build

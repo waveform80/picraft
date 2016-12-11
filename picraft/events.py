@@ -127,7 +127,7 @@ class BlockHitEvent(namedtuple('BlockHitEvent', ('pos', 'face', 'player'))):
         of six values: 'x+', 'x-', 'y+', 'y-', 'z+', or 'z-'. The value
         indicates the axis, and direction along that axis, that the side faces:
 
-        .. image:: block_faces.*
+        .. image:: images/block_faces.*
 
     .. attribute:: player
 

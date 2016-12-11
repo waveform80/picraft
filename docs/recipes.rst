@@ -39,7 +39,7 @@ If you want the player position to the nearest block use the
     >>> world.player.tile_pos
     Vector(x=2, y=1, z=-1)
 
-.. image:: dont_look_down.png
+.. image:: images/dont_look_down.png
     :align: center
 
 
@@ -71,7 +71,7 @@ immediately surrounding blocks to stone::
     >>> p -= Y
     >>> world.blocks[p - (X + Z):p + (X + Z) + 1] = Block('stone')
 
-.. image:: blocks.png
+.. image:: images/blocks.png
     :align: center
 
 .. _half-open: http://python-history.blogspot.co.uk/2013/10/why-python-uses-0-based-indexing.html
@@ -103,7 +103,7 @@ The script uses a list to keep track of the blocks which are present in the
 bridge, popping off old blocks when the bridge has more than 10 blocks in it.
 This list is also used to "clean up" the bridge when the script exits.
 
-.. image:: bridge.png
+.. image:: images/bridge.png
     :align: center
 
 
@@ -159,7 +159,7 @@ Now you should find that the rain all falls simultaneously (more or less, given
 the constraints of the Pi's bandwidth!) when you hit the white block multiple
 times.
 
-.. image:: rain.png
+.. image:: images/rain.png
     :align: center
 
 You should also be aware that the picraft library supports a larger range of
@@ -200,7 +200,7 @@ polygon in turn, wiping it before displaying the next one:
 .. literalinclude:: examples/shapes2.py
     :caption: shapes2.py
 
-.. image:: shapes.png
+.. image:: images/shapes.png
     :align: center
 
 
@@ -227,7 +227,7 @@ We can render this model with the following simple code:
 .. literalinclude:: examples/house.py
     :caption: house.py
 
-.. image:: house.png
+.. image:: images/house.png
     :align: center
 
 By default, the picraft renderer assumes that the material names are Minecraft
@@ -239,7 +239,7 @@ materials map can be as simple as a :class:`dict` mapping material names to
 .. literalinclude:: examples/materials.py
     :caption: materials.py
 
-.. image:: airboat.png
+.. image:: images/airboat.png
     :align: center
 
 To find out what materials are defined on a model, you can query the
@@ -325,7 +325,7 @@ you should see a similar result on the in-game display.
 The script includes the ability to position and size the TV as you like, and
 you may like to experiment with adding new controls to it!
 
-.. image:: tv.png
+.. image:: images/tv.png
     :align: center
 
 .. _Martin O'Hanlon's excellent site: http://www.stuffaboutcode.com/
