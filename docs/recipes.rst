@@ -89,12 +89,19 @@ The script tracks the position and likely future position of the player as
 they walk through the world. If the script detects the player is about to walk
 onto air it changes the block to diamond:
 
-.. literalinclude:: bridge.py
-    :caption: bridge.py
+.. literalinclude:: bridge1.py
+    :caption: bridge1.py
 
-Note that the script uses a list to keep track of the blocks which are present
-in the bridge, popping off old blocks when the bridge has more than 10 blocks
-in it. This list is also used to "clean up" the bridge when the script exits.
+Nice, but we can do better. The following script enhances the recipe so that
+only blocks which are air are changed to diamond, and the bridge "cleans up"
+after itself:
+
+.. literalinclude:: bridge2.py
+    :caption: bridge2.py
+
+The script uses a list to keep track of the blocks which are present in the
+bridge, popping off old blocks when the bridge has more than 10 blocks in it.
+This list is also used to "clean up" the bridge when the script exits.
 
 .. image:: bridge.png
     :align: center

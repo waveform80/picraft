@@ -101,8 +101,8 @@ We can query the state of many blocks surrounding us by providing a vector
 slice to the :attr:`~picraft.world.World.blocks` attribute. To make things
 a little easier we'll store the base position first::
 
-    >>> v = world.player.tile_pos - Y
-    >>> world.blocks[v - Vector(1, 0, 1):v + Vector(2, 1, 2)]
+    >>> p = world.player.tile_pos - Y
+    >>> world.blocks[p - Vector(1, 0, 1):p + Vector(2, 1, 2)]
     [<Block "grass" id=2 data=0>,
      <Block "grass" id=2 data=0>,
      <Block "grass" id=2 data=0>,
@@ -118,9 +118,9 @@ which is to say that the lower end of the range is *inclusive* while the upper
 end is *exclusive*. You can see this explicitly with the
 :func:`~picraft.vector.vector_range` function::
 
-    >>> v
+    >>> p
     Vector(x=-2, y=14, z=3)
-    >>> list(vector_range(v - Vector(1, 0, 1), v + Vector(2, 1, 2)))
+    >>> list(vector_range(p - Vector(1, 0, 1), p + Vector(2, 1, 2)))
     [Vector(x=-3, y=14, z=2),
      Vector(x=-3, y=14, z=3),
      Vector(x=-3, y=14, z=4),
@@ -132,8 +132,8 @@ end is *exclusive*. You can see this explicitly with the
      Vector(x=-1, y=14, z=4)]
 
 This may seem a clunky way of specifying a range and, in the manner shown above
-it is. However, most standard infix arithmetic operations applied to a vector
-are applied to *all* its elements::
+it is. However, most standard arithmetic operations applied to a vector are
+applied to *all* its elements::
 
     >>> Vector()
     Vector(x=0, y=0, z=0)
@@ -144,12 +144,12 @@ are applied to *all* its elements::
 
 This makes construction of such ranges or slices considerably easier. For
 example, to construct a vertical range of vectors from the origin (0, 0, 0) to
-(0, 10, 0) we first assign the origin to ``v`` which we use for the start of
+(0, 10, 0) we first assign the origin to ``p`` which we use for the start of
 the range, then add ``10*Y`` to it, and finally add one to compensate
 for the half-open nature of the range::
 
-    >>> v = Vector()
-    >>> list(vector_range(v, v + (10*Y) + 1))
+    >>> p = Vector()
+    >>> list(vector_range(p, p + (10*Y) + 1))
     [Vector(x=0, y=0, z=0),
      Vector(x=0, y=1, z=0),
      Vector(x=0, y=2, z=0),
@@ -165,8 +165,8 @@ for the half-open nature of the range::
 We can also re-write the example before this (the blocks surrounding the one
 the player is standing on) in several different ways::
 
-    >>> v = world.player.tile_pos
-    >>> list(vector_range(v - 1, v + 2 - (2*Y)))
+    >>> p = world.player.tile_pos
+    >>> list(vector_range(p - 1, p + 2 - (2*Y)))
     [Vector(x=-3, y=14, z=2),
      Vector(x=-3, y=14, z=3),
      Vector(x=-3, y=14, z=4),
@@ -180,29 +180,29 @@ the player is standing on) in several different ways::
 We can change the state of many blocks at once similarly by assigning a new
 :class:`~picraft.block.Block` object to a slice of blocks::
 
-    >>> v = world.player.tile_pos
-    >>> world.blocks[v - 1:v + 2 - (2*Y)] = Block('stone')
+    >>> p = world.player.tile_pos
+    >>> world.blocks[p - 1:p + 2 - (2*Y)] = Block('stone')
 
 This is a relatively quick operation, as it only involves a single network
 call. However, re-writing the state of multiple blocks with different values
 is more time consuming::
 
-    >>> world.blocks[v - 1:v + 2 - (2*Y)] = [
+    >>> world.blocks[p - 1:p + 2 - (2*Y)] = [
     ...     Block('wool', data=i) for i in range(9)]
 
 You should notice that the example above takes longer to process. This can be
 accomplished considerably more quickly by batching multiple requests together::
 
-    >>> world.blocks[v - 1:v + 2 - (2*Y)] = Block('stone')
+    >>> world.blocks[p - 1:p + 2 - (2*Y)] = Block('stone')
     >>> with world.connection.batch_start():
-    ...     world.blocks[v - 1:v + 2 - (2*Y)] = [
+    ...     world.blocks[p - 1:p + 2 - (2*Y)] = [
     ...         Block('wool', data=i) for i in range(9)]
 
 Finally, the state of the Minecraft world can be saved and restored easily with
 the :attr:`~picraft.world.World.checkpoint` object::
 
     >>> world.checkpoint.save()
-    >>> world.blocks[v - 1:v + 2 - (2*Y)] = Block('stone')
+    >>> world.blocks[p - 1:p + 2 - (2*Y)] = Block('stone')
     >>> world.checkpoint.restore()
 
 In order to understand vectors, it can help to visualize them. Pick a
@@ -211,13 +211,13 @@ relatively open area in the game world.
 .. image:: quick1.png
     :align: center
 
-We'll save the vector of your player's position as ``v`` then add 3 to it. This
+We'll save the vector of your player's position as ``p`` then add 3 to it. This
 moves the vector 3 along each axis (X, Y, and Z).  Next, we'll make the block
-at ``v`` into stone::
+at ``p`` into stone::
 
-    >>> v = world.player.tile_pos
-    >>> v = v + 3
-    >>> world.blocks[v] = Block('stone')
+    >>> p = world.player.tile_pos
+    >>> p = p + 3
+    >>> world.blocks[p] = Block('stone')
 
 .. image:: quick2.png
     :align: center
@@ -226,7 +226,7 @@ Now we'll explore vector slices a bit by making a line along X+5 into stone.
 Remember that slices (and ranges) are `half-open`_ so we need to add an extra
 1 to the end of the slice::
 
-    >>> world.blocks[v:v + Vector(x=5) + 1] = Block('stone')
+    >>> world.blocks[p:p + Vector(x=5) + 1] = Block('stone')
 
 .. image:: quick3.png
     :align: center
@@ -235,9 +235,9 @@ In order to visualize the three different axes of vectors we'll now draw them
 each. Here we also use a capability of the :class:`~picraft.block.Block`
 constructor to create a block with a particular color::
 
-    >>> world.blocks[v:v + (5*X) + 1] = Block('#ff0000')
-    >>> world.blocks[v:v + (5*Y) + 1] = Block('#00ff00')
-    >>> world.blocks[v:v + (5*Z) + 1] = Block('#0000ff')
+    >>> world.blocks[p:p + (5*X) + 1] = Block('#ff0000')
+    >>> world.blocks[p:p + (5*Y) + 1] = Block('#00ff00')
+    >>> world.blocks[p:p + (5*Z) + 1] = Block('#0000ff')
 
 .. image:: quick4.png
     :align: center
@@ -247,14 +247,14 @@ out our axes by setting the entire block to "air". Then we define a vector
 range over the same block with a step of 2, and iterate over each vector within
 setting it to diamond::
 
-    >>> world.blocks[v:v + 6] = Block('air')
-    >>> r = vector_range(v, v + 6, Vector() + 2)
+    >>> world.blocks[p:p + 6] = Block('air')
+    >>> r = vector_range(p, p + 6, Vector() + 2)
     >>> for rv in r:
     ...     world.blocks[rv] = Block('diamond_block')
 
 Once again, we can make use of a batch to speed this up::
 
-    >>> world.blocks[v:v + 6] = Block('air')
+    >>> world.blocks[p:p + 6] = Block('air')
     >>> with world.connection.batch_start():
     ...     for rv in r:
     ...         world.blocks[rv] = Block('diamond_block')
