@@ -46,6 +46,19 @@ Turtle motion
         | :func:`towards`
         | :func:`heading`
         | :func:`elevation`
+        | :func:`xcor`
+        | :func:`ycor`
+        | :func:`zcor`
+        | :func:`distance`
+
+Pen control
+    Drawing state
+        | :func:`pendown` | :func:`pd`
+        | :func:`penup` | :func:`pu`
+        | :func:`isdown`
+
+    Block control
+        | :func:`penblock`
 
 
 Methods of Turtle and corresponding functions
@@ -103,3 +116,30 @@ Tell Turtle's state
 .. autofunction:: heading
 
 .. autofunction:: elevation
+
+.. autofunction:: xcor
+
+.. autofunction:: ycor
+
+.. autofunction:: zcor
+
+.. autofunction:: distance
+
+Pen control
+===========
+
+Drawing state
+-------------
+
+.. autofunction:: pd
+.. autofunction:: pendown
+
+.. autofunction:: pu
+.. autofunction:: penup
+
+.. autofunction:: isdown
+
+Block control
+-------------
+
+.. autofunction:: penblock

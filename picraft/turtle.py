@@ -318,12 +318,44 @@ class Turtle(object):
         return self._state.position
 
     def xcor(self):
+        """
+        Return the turtle's x coordinate::
+
+            >>> turtle.home()
+            >>> turtle.xcor()
+            0
+            >>> turtle.left(90)
+            >>> turtle.forward(2)
+            >>> turtle.xcor()
+            2
+        """
         return self._state.position.x
 
     def ycor(self):
+        """
+        Return the turtle's y coordinate::
+
+            >>> turtle.home()
+            >>> turtle.ycor()
+            -1
+            >>> turtle.up(90)
+            >>> turtle.forward(2)
+            >>> turtle.ycor()
+            1
+        """
         return self._state.position.y
 
     def zcor(self):
+        """
+        Return the turtle's z coordinate::
+
+            >>> turtle.home()
+            >>> turtle.zcor()
+            0
+            >>> turtle.forward(2)
+            >>> turtle.zcor()
+            2
+        """
         return self._state.position.z
 
     def towards(self, x, y=None, z=None):
@@ -334,16 +366,16 @@ class Turtle(object):
         :param float z: the target z coordinate or ``None``
 
         Return the angle between the line from the turtle's position to the
-        position specified within the plane common to both::
+        position specified within the ground plane (X-Z)::
 
             >>> turtle.home()
             >>> turtle.forward(5)
             >>> turtle.towards(0, 0, 0)
-            180.0
+            -180.0
             >>> turtle.left(90)
             >>> turtle.forward(5)
             >>> turtle.towards(0, 0, 0)
-            225.0
+            135.0
 
         If *y* and *z* are ``None``, *x* must be a triple of coordinates, a
         :class:`~picraft.vector.Vector`, or another Turtle.
@@ -443,6 +475,22 @@ class Turtle(object):
         self.goto(pos().replace(z=z))
 
     def distance(self, x, y=None, z=None):
+        """
+        :param float x: the target x coordinate or a turtle / triple /
+                        :class:`~picraft.vector.Vector` of numbers
+        :param float y: the target y coordinate or ``None``
+        :param float z: the target z coordinate or ``None``
+
+        Return the distance from the turtle to (x, y, z), the given vector, or
+        the given other turtle, in blocks::
+
+            >>> turtle.home()
+            >>> turtle.distance((0, -1, 5))
+            5.0
+            >>> turtle.forward(2)
+            >>> turtle.distance(0, -1, 5)
+            3.0
+        """
         if isinstance(x, Turtle):
             other = x.pos()
         else:
@@ -636,13 +684,22 @@ class Turtle(object):
         self._update()
 
     def isdown(self):
+        """
+        Returns ``True`` if the pen is down, ``False`` if it's up.
+        """
         return self._state.pendown
 
     def pendown(self):
+        """
+        Put the "pen" down; the turtle draws new blocks when it moves.
+        """
         self._state = self._state._replace(pendown=True)
         self._update()
 
     def penup(self):
+        """
+        Put the "pen" up; movement doesn't draw new blocks.
+        """
         self._state = self._state._replace(pendown=False)
         self._update()
 
@@ -665,20 +722,51 @@ class Turtle(object):
             self.fillblock(*args)
 
     def penblock(self, *args):
+        """
+        Return or set the block that the turtle draws when it moves. Several
+        input formats are allowed:
+
+        ``penblock()``
+            Return the current pen block. May be used as input to another
+            penblock or fillblock call.
+
+        ``penblock(Block('grass'))``
+            Set the pen block to the specified :class:`~picraft.block.Block`
+            instance.
+
+        ``penblock('grass')``
+            Implicitly make a :class:`~picraft.block.Block` from the given
+            arguments and set that as the pen block.
+
+        ::
+
+            >>> turtle.penblock()
+            <Block "stone" id=1 data=0>
+            >>> turtle.penblock('diamond_block')
+            >>> turtle.penblock()
+            <Block "diamond_block" id=57 data=0>
+            >>> turtle.penblock(1, 0)
+            >>> turtle.penblock()
+            <Block "stone" id=1 data=0>
+        """
         if not args:
             return self._state.penblock
-        elif isinstance(args[0], Block):
-            self._state.penblock = Block
         else:
-            self._state.penblock = Block(*args)
+            if isinstance(args[0], Block):
+                self._state = self._state._replace(penblock=args[0])
+            else:
+                self._state = self._state._replace(penblock=Block(*args))
+            self._update()
 
     def fillblock(self, *args):
         if not args:
             return self._state.fillblock
-        elif isinstance(args[0], Block):
-            self._state.fillblock = Block
         else:
-            self._state.fillblock = Block(*args)
+            if isinstance(args[0], Block):
+                self._state = self._state._replace(fillblock=args[0])
+            else:
+                self._state = self._state._replace(fillblock=Block(*args))
+            self._update()
 
     position = pos
     setpos = goto
