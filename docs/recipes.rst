@@ -89,14 +89,14 @@ The script tracks the position and likely future position of the player as
 they walk through the world. If the script detects the player is about to walk
 onto air it changes the block to diamond:
 
-.. literalinclude:: bridge1.py
+.. literalinclude:: examples/bridge1.py
     :caption: bridge1.py
 
 Nice, but we can do better. The following script enhances the recipe so that
 only blocks which are air are changed to diamond, and the bridge "cleans up"
 after itself:
 
-.. literalinclude:: bridge2.py
+.. literalinclude:: examples/bridge2.py
     :caption: bridge2.py
 
 The script uses a list to keep track of the blocks which are present in the
@@ -123,7 +123,7 @@ of all events that occurred since the last time your script polled the server.
 For example, the following script prints a message to the console when you hit
 a block, detailing the block's coordinates and the face that you hit:
 
-.. literalinclude:: poll.py
+.. literalinclude:: examples/poll.py
     :caption: poll.py
 
 This is similar to the method used by the official mcpi library. It's fine for
@@ -133,7 +133,7 @@ statements which look a bit ugly in code. The following script creates a couple
 of blocks near the player on startup: a black block (which ends the script when
 hit), and a white block (which makes multi-colored blocks fall from the sky):
 
-.. literalinclude:: rain1.py
+.. literalinclude:: examples/rain1.py
     :caption: rain1.py
 
 The alternate method of event handling in picraft is to rely on picraft's
@@ -143,7 +143,7 @@ running the :meth:`~picraft.events.Events.main_loop` method. This causes
 picraft to continually poll the server and call the tagged functions when their
 criteria are matched by a block-hit event:
 
-.. literalinclude:: rain2.py
+.. literalinclude:: examples/rain2.py
     :caption: rain2.py
     :emphasize-lines: 14,18
 
@@ -151,7 +151,7 @@ One advantage of this method (other than slightly cleaner code) is that event
 handlers can easily be made multi-threaded (to run in parallel with each other)
 simply by modifying the decorator used:
 
-.. literalinclude:: rain3.py
+.. literalinclude:: examples/rain3.py
     :caption: rain3.py
     :emphasize-lines: 18
 
@@ -189,7 +189,7 @@ degrees so the angle to turn each time is 180 divided by the number of sides.
 Given an origin and a side-length it's a simple matter to iterate over each
 side generating the necessary point:
 
-.. literalinclude:: shapes1.py
+.. literalinclude:: examples/shapes1.py
     :caption: shapes1.py
 
 Next we need a function which will iterate over the number of sides for each
@@ -197,7 +197,7 @@ required polygon, using the :func:`~picraft.vector.lines` function to generate
 the points required to draw the shape. Then it's a simple matter to draw each
 polygon in turn, wiping it before displaying the next one:
 
-.. literalinclude:: shapes2.py
+.. literalinclude:: examples/shapes2.py
     :caption: shapes2.py
 
 .. image:: shapes.png
@@ -219,12 +219,12 @@ can be used to render such models as blocks in the Minecraft world.
 Below is an example object file, which defines the walls and ceiling of a
 house.
 
-.. literalinclude:: house.obj
+.. literalinclude:: examples/house.obj
     :caption: house.obj
 
 We can render this model with the following simple code:
 
-.. literalinclude:: house.py
+.. literalinclude:: examples/house.py
     :caption: house.py
 
 .. image:: house.png
@@ -236,7 +236,7 @@ case, requiring you to "map" the material names to block types yourself. A
 materials map can be as simple as a :class:`dict` mapping material names to
 :class:`~picraft.block.Block` instances. For example:
 
-.. literalinclude:: materials.py
+.. literalinclude:: examples/materials.py
     :caption: materials.py
 
 .. image:: airboat.png
@@ -253,7 +253,7 @@ rendered and must return a :class:`~picraft.block.Block` instance or ``None``
 quickly previewing a shape without performing any material mapping; simply
 provide a function which always returns the same block type:
 
-.. literalinclude:: preview.py
+.. literalinclude:: examples/preview.py
     :caption: preview.py
 
 .. _object files: https://en.wikipedia.org/wiki/Wavefront_.obj_file
@@ -270,7 +270,7 @@ cube which rotates about the X axis somewhere in the air. Our first script uses
 within the cube, then uses the :meth:`~picraft.vector.Vector.rotate` method to
 rotate them about the X axis:
 
-.. literalinclude:: anim1.py
+.. literalinclude:: examples/anim1.py
     :caption: anim1.py
 
 As you can see in the script above we draw the first frame, wait for a bit,
@@ -287,7 +287,7 @@ We represent the state of a frame of our animation as a dict which maps
 coordinates (in the form of :class:`~picraft.vector.Vector` instances) to
 :class:`~picraft.block.Block` instances:
 
-.. literalinclude:: anim2.py
+.. literalinclude:: examples/anim2.py
     :caption: anim2.py
 
 That's more like it, but the updates aren't terribly fast despite using the
@@ -295,7 +295,7 @@ batch functionality. In order to improve this we should only update those
 blocks which have actually changed between each frame. Thankfully, because
 we're storing the state of each as a dict, this is quite easy:
 
-.. literalinclude:: anim3.py
+.. literalinclude:: examples/anim3.py
     :caption: anim3.py
 
 Note: this still isn't perfect. Ideally, we would identify contiguous blocks of
@@ -314,7 +314,7 @@ class which will accept JPEGs from the camera's MJPEG stream, and render them
 as blocks in the Minecraft world. Then we need a class to construct the TV
 model itself and enable interaction with it:
 
-.. literalinclude:: tv.py
+.. literalinclude:: examples/tv.py
     :caption: tv.py
 
 Don't expect to be able to recognize much in the Minecraft TV; the resolution
