@@ -59,9 +59,15 @@ DIST_DEB=dist/python-$(NAME)_$(VER)$(DEB_SUFFIX)_all.deb \
 	dist/python3-$(NAME)_$(VER)$(DEB_SUFFIX)_all.deb \
 	dist/python-$(NAME)-docs_$(VER)$(DEB_SUFFIX)_all.deb \
 	dist/$(NAME)_$(VER)$(DEB_SUFFIX)_$(DEB_ARCH).changes
+ifeq ($(shell lsb_release -si),Ubuntu)
+DIST_DSC=dist/$(NAME)_$(VER)$(DEB_SUFFIX).tar.xz \
+	dist/$(NAME)_$(VER)$(DEB_SUFFIX).dsc \
+	dist/$(NAME)_$(VER)$(DEB_SUFFIX)_source.changes
+else
 DIST_DSC=dist/$(NAME)_$(VER)$(DEB_SUFFIX).tar.gz \
 	dist/$(NAME)_$(VER)$(DEB_SUFFIX).dsc \
 	dist/$(NAME)_$(VER)$(DEB_SUFFIX)_source.changes
+endif
 MAN_PAGES=
 
 
