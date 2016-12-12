@@ -628,8 +628,7 @@ class Model(object):
             w = World()
             m = Model('airboat.obj').render(scale=2.0)
             with w.connection.batch_start():
-                for v, b in m.items():
-                    w.blocks[v] = b
+                w.blocks[m.keys()] = m.values()
 
         Of course, you may choose to further transform the result first. This
         can be accomplished by modifying the vectors as you set them::

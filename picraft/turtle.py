@@ -40,11 +40,12 @@ import re
 import os
 import math
 import inspect
+import weakref
 from threading import Lock, local
 from collections import namedtuple
 
 from .world import World
-from .vector import Vector, O, X, Y, Z, vector_range, line
+from .vector import Vector, O, X, Y, Z, vector_range, line, filled
 from .block import Block
 
 
@@ -148,20 +149,16 @@ TurtleState = namedtuple('TurtleState', (
     'penblock',  # Block
     'fillblock', # Block
     'changed',   # Vector->Block map
-    'action',    # home/move/line/turtle
+    'action',    # home/move/draw/begin_fill/end_fill/turtle
     ))
 
 clamp = lambda value, min_value, max_value: min(max_value, max(min_value, value))
 
 
-class Turtle(object):
-    def __init__(self, screen=None, pos=None):
-        if screen is None:
-            screen = _default_screen()
-        if pos is None:
-            pos = screen.world.player.tile_pos - Y
-        self._screen = screen
-        self._state = TurtleState(
+class TurtleSprite(object):
+    def __init__(self, screen, pos):
+        self.screen = screen
+        self.state = TurtleState(
             position=pos,
             heading=Z,
             elevation=0.0,
@@ -172,80 +169,95 @@ class Turtle(object):
             changed={},
             action='home',
             )
-        self._last_position = self._state.position
-        self._history = [self._state] # undo buffer
-        self._draw_turtle()
+        self.last_position = self.state.position
+        self.history = [self.state] # undo buffer
+        self.draw()
 
-    def _commit(self, changes, action):
+    def draw_vectors(self):
+        """
+        Calculates and returns the arm and head unit vectors based on the
+        current heading and elevation.
+        """
+        arm_v = self.state.heading.cross(Y).unit
+        if arm_v == O:
+            arm_v = X
+        head_v = self.state.heading.rotate(self.state.elevation, about=arm_v)
+        return arm_v, head_v
+
+    def draw(self):
+        """
+        Draw the turtle's head and arms, and the pen block, committing the
+        resulting changes as an undo history entry with the action "turtle".
+        """
+        arm_v, head_v = self.draw_vectors()
+        head = (self.state.position + head_v).round()
+        left_arm = (self.state.position + arm_v).round()
+        right_arm = (self.state.position - arm_v).round()
+        state = {
+            v: Block('wool', 15)
+            for v in (head, left_arm, right_arm)
+            }
+        if self.state.pendown:
+            state[self.state.position] = self.state.penblock
+        self.commit(state, 'turtle')
+
+    def undraw(self):
+        """
+        If the last action in the undo history is "turtle" (indicating that the
+        last action taken was to draw the turtle), remove it and revert the
+        affected blocks to their prior state.
+        """
+        with self.screen.blocks:
+            while self.history and self.history[-1].action == 'turtle':
+                self.screen.draw(self.history.pop().changed)
+
+    def commit(self, changes, action):
         """
         Given *changes*, a mapping of vectors to blocks, and *action*, a string
         describing the change, append a new state to the undo history with the
         original state of the affected blocks, and draw the changes to the
         screen.
         """
-        self._history.append(self._state._replace(
-            changed=self._screen.blocks[changes.keys()], # reverse diff
+        self.history.append(self.state._replace(
+            changed=self.screen.blocks[changes.keys()], # reverse diff
             action=action
             ))
         if changes:
-            self._screen.draw(changes)
+            self.screen.draw(changes)
 
-    def _draw_vectors(self):
+    def update(self):
         """
-        Calculates and returns the arm and head unit vectors based on the
-        current heading and elevation.
+        Commit the difference between the ephemeral :attr:`state` and the last
+        recorded position to the undo history as a line (if the pen is down) or
+        a move (if it's not).
         """
-        arm_v = self._state.heading.cross(Y).unit
-        if arm_v == O:
-            arm_v = X
-        head_v = self._state.heading.rotate(self._state.elevation, about=arm_v)
-        return arm_v, head_v
-
-    def _draw_turtle(self):
-        """
-        Draw the turtle's head and arms, and the pen block, committing the
-        resulting changes as an undo history entry with the action "turtle".
-        """
-        arm_v, head_v = self._draw_vectors()
-        head = (self._state.position + head_v).round()
-        left_arm = (self._state.position + arm_v).round()
-        right_arm = (self._state.position - arm_v).round()
-        state = {
-            v: Block('wool', 15)
-            for v in (head, left_arm, right_arm)
-            }
-        if self._state.pendown:
-            state[self._state.position] = self._state.penblock
-        self._commit(state, 'turtle')
-
-    def _undraw_turtle(self):
-        """
-        If the last action in the undo history is "turtle" (indicating that the
-        last action taken was to draw the turtle), remove it and revert the
-        affected blocks to their prior state.
-        """
-        with self._screen.blocks:
-            while self._history and self._history[-1].action == 'turtle':
-                self._screen.draw(self._history.pop().changed)
-
-    def _update(self):
-        """
-        Commit the difference between the ephemeral state (``_state``) and the
-        last recorded position to the undo history as a line (if the pen is
-        down) or a move (if it's not).
-        """
-        with self._screen.blocks:
-            self._undraw_turtle()
-            if self._state.pendown and self._state.position != self._last_position:
-                self._commit({
-                    v: self._state.penblock
-                    for v in line(self._last_position, self._state.position)
-                    }, 'line')
+        with self.screen.blocks, self:
+            if self.state.pendown and self.state.position != self.last_position:
+                self.commit({
+                    v: self.state.penblock
+                    for v in line(self.last_position, self.state.position)
+                    }, 'draw')
             else:
-                self._commit({}, 'move')
-            if self._state.visible:
-                self._draw_turtle()
-            self._last_position = self._state.position
+                self.commit({}, 'move')
+        self.last_position = self.state.position
+
+    def __enter__(self):
+        self.undraw()
+        return self
+
+    def __exit__(self, exc_type, exc_value, exc_tb):
+        if self.state.visible:
+            self.draw()
+
+
+class Turtle(object):
+    def __init__(self, screen=None, pos=None):
+        if screen is None:
+            screen = _default_screen()
+        if pos is None:
+            pos = screen.world.player.tile_pos - Y
+        self._screen = screen
+        self._sprite = TurtleSprite(screen, pos)
 
     def undo(self):
         """
@@ -258,14 +270,11 @@ class Turtle(object):
             >>> for i in range(8):
             ...     turtle.undo()
         """
-        with self._screen.blocks:
-            self._undraw_turtle()
-            if self._history[-1].action != 'home':
-                self._screen.draw(self._history.pop().changed)
-                self._state = self._history[-1]
-                self._last_position = self._state.position
-            if self._state.visible:
-                self._draw_turtle()
+        with self._screen.blocks, self._sprite:
+            if self._sprite.history[-1].action != 'home':
+                self._screen.draw(self._sprite.history.pop().changed)
+                self._sprite.state = self._sprite.history[-1]
+                self._sprite.last_position = self._sprite.state.position
 
     def home(self):
         """
@@ -288,23 +297,23 @@ class Turtle(object):
             >>> turtle.elevation()
             0.0
         """
-        self._state = self._state._replace(
-            position=self._history[0].position,
+        self._sprite.state = self._sprite.state._replace(
+            position=self._sprite.history[0].position,
             heading=Z,
             elevation=0.0,
             )
-        self._update()
+        self._sprite.update()
 
     def clear(self):
         with self._screen.blocks:
-            while self._history[-1].action != 'home':
-                self._screen.draw(self._history.pop().changed)
-            self._update()
+            while self._sprite.history[-1].action != 'home':
+                self._screen.draw(self._sprite.history.pop().changed)
+            self._sprite.update()
 
     def reset(self):
         with self._screen.blocks:
             self.clear()
-            self._last_position = self._history[0].position
+            self._sprite.last_position = self._sprite.history[0].position
             self.home()
 
     def pos(self):
@@ -315,7 +324,7 @@ class Turtle(object):
             >>> turtle.pos()
             Vector(x=2, y=-1, z=18)
         """
-        return self._state.position
+        return self._sprite.state.position
 
     def xcor(self):
         """
@@ -329,7 +338,7 @@ class Turtle(object):
             >>> turtle.xcor()
             2
         """
-        return self._state.position.x
+        return self._sprite.state.position.x
 
     def ycor(self):
         """
@@ -343,7 +352,7 @@ class Turtle(object):
             >>> turtle.ycor()
             1
         """
-        return self._state.position.y
+        return self._sprite.state.position.y
 
     def zcor(self):
         """
@@ -356,7 +365,7 @@ class Turtle(object):
             >>> turtle.zcor()
             2
         """
-        return self._state.position.z
+        return self._sprite.state.position.z
 
     def towards(self, x, y=None, z=None):
         """
@@ -388,7 +397,7 @@ class Turtle(object):
             except (TypeError, ValueError) as exc:
                 pass
             other = Vector(x, y, z)
-        v = (other - self._state.position).replace(y=0).unit
+        v = (other - self._sprite.state.position).replace(y=0).unit
         return math.degrees(math.atan2(-v.x, v.z))
 
     def goto(self, x, y=None, z=None):
@@ -426,8 +435,8 @@ class Turtle(object):
             except (TypeError, ValueError) as exc:
                 pass
             other = Vector(x, y, z)
-        self._state = self._state._replace(position=other)
-        self._update()
+        self._sprite.state = self._sprite.state._replace(position=other)
+        self._sprite.update()
 
     def setx(self, x):
         """
@@ -499,7 +508,7 @@ class Turtle(object):
             except (TypeError, ValueError) as exc:
                 pass
             other = Vector(x, y, z)
-        return self._state.position.distance_to(other)
+        return self._sprite.state.position.distance_to(other)
 
     def elevation(self):
         """
@@ -511,7 +520,7 @@ class Turtle(object):
             >>> turtle.elevation()
             90.0
         """
-        return self._state.elevation
+        return self._sprite.state.elevation
 
     def heading(self):
         """
@@ -523,8 +532,8 @@ class Turtle(object):
             >>> turtle.heading()
             90.0
         """
-        result = self._state.heading.angle_between(Z)
-        if self._state.heading.cross(Z).y < 0:
+        result = self._sprite.state.heading.angle_between(Z)
+        if self._sprite.state.heading.cross(Z).y < 0:
             result += 180
         return result
 
@@ -541,8 +550,8 @@ class Turtle(object):
             >>> turtle.elevation()
             90.0
         """
-        self._state = self._state._replace(elevation=clamp(to_angle, -90, 90))
-        self._update()
+        self._sprite.state = self._sprite.state._replace(elevation=clamp(to_angle, -90, 90))
+        self._sprite.update()
 
     def setheading(self, to_angle):
         """
@@ -567,8 +576,8 @@ class Turtle(object):
             >>> turtle.heading()
             90.0
         """
-        self._state = self._state._replace(heading=Z.rotate(to_angle, about=Y))
-        self._update()
+        self._sprite.state = self._sprite.state._replace(heading=Z.rotate(to_angle, about=Y))
+        self._sprite.update()
 
     def forward(self, distance):
         """
@@ -586,11 +595,11 @@ class Turtle(object):
             >>> turtle.position()
             Vector(x=2, y=-1, z=16)
         """
-        arm_v, head_v = self._draw_vectors()
-        self._state = self._state._replace(
-            position=(self._state.position + distance * head_v).round()
+        arm_v, head_v = self._sprite.draw_vectors()
+        self._sprite.state = self._sprite.state._replace(
+            position=(self._sprite.state.position + distance * head_v).round()
             )
-        self._update()
+        self._sprite.update()
 
     def backward(self, distance):
         """
@@ -609,11 +618,11 @@ class Turtle(object):
             >>> turtle.heading()
             0.0
         """
-        arm_v, head_v = self._draw_vectors()
-        self._state = self._state._replace(
-            position=(self._state.position - distance * head_v).round()
+        arm_v, head_v = self._sprite.draw_vectors()
+        self._sprite.state = self._sprite.state._replace(
+            position=(self._sprite.state.position - distance * head_v).round()
             )
-        self._update()
+        self._sprite.update()
 
     def right(self, angle):
         """
@@ -627,10 +636,10 @@ class Turtle(object):
             >>> turtle.heading()
             90.0
         """
-        self._state = self._state._replace(
-            heading=self._state.heading.rotate(-angle, about=Y)
+        self._sprite.state = self._sprite.state._replace(
+            heading=self._sprite.state.heading.rotate(-angle, about=Y)
             )
-        self._update()
+        self._sprite.update()
 
     def left(self, angle):
         """
@@ -644,10 +653,10 @@ class Turtle(object):
             >>> turtle.heading()
             0.0
         """
-        self._state = self._state._replace(
-            heading=self._state.heading.rotate(angle, about=Y)
+        self._sprite.state = self._sprite.state._replace(
+            heading=self._sprite.state.heading.rotate(angle, about=Y)
             )
-        self._update()
+        self._sprite.update()
 
     def down(self, angle):
         """
@@ -661,10 +670,10 @@ class Turtle(object):
             >>> turtle.elevation()
             -45.0
         """
-        self._state = self._state._replace(
-            elevation=clamp(self._state.elevation - angle, -90, 90)
+        self._sprite.state = self._sprite.state._replace(
+            elevation=clamp(self._sprite.state.elevation - angle, -90, 90)
             )
-        self._update()
+        self._sprite.update()
 
     def up(self, angle):
         """
@@ -678,48 +687,61 @@ class Turtle(object):
             >>> turtle.elevation()
             0.0
         """
-        self._state = self._state._replace(
-            elevation=clamp(self._state.elevation + angle, -90, 90)
+        self._sprite.state = self._sprite.state._replace(
+            elevation=clamp(self._sprite.state.elevation + angle, -90, 90)
             )
-        self._update()
+        self._sprite.update()
 
     def isdown(self):
         """
         Returns ``True`` if the pen is down, ``False`` if it's up.
         """
-        return self._state.pendown
+        return self._sprite.state.pendown
 
     def pendown(self):
         """
         Put the "pen" down; the turtle draws new blocks when it moves.
         """
-        self._state = self._state._replace(pendown=True)
-        self._update()
+        self._sprite.state = self._sprite.state._replace(pendown=True)
+        self._sprite.update()
 
     def penup(self):
         """
         Put the "pen" up; movement doesn't draw new blocks.
         """
-        self._state = self._state._replace(pendown=False)
-        self._update()
+        self._sprite.state = self._sprite.state._replace(pendown=False)
+        self._sprite.update()
 
     def isvisible(self):
-        return self._state.visible
+        """
+        Return ``True`` if the turtle is shown, ``False`` if it's hidden::
+
+            >>> turtle.hideturtle()
+            >>> turtle.isvisible()
+            False
+            >>> turtle.showturtle()
+            >>> turtle.isvisible()
+            True
+        """
+        return self._sprite.state.visible
 
     def showturtle(self):
-        self._state = self._state._replace(visible=True)
-        self._update()
+        """
+        Make the turtle visible::
+
+            >>> turtle.showturtle()
+        """
+        self._sprite.state = self._sprite.state._replace(visible=True)
+        self._sprite.update()
 
     def hideturtle(self):
-        self._state = self._state._replace(visible=False)
-        self._update()
+        """
+        Make the turtle invisible::
 
-    def block(self, *args):
-        if not args:
-            return self.penblock(), self.fillblock()
-        else:
-            self.penblock(*args)
-            self.fillblock(*args)
+            >>> turtle.hideturtle()
+        """
+        self._sprite.state = self._sprite.state._replace(visible=False)
+        self._sprite.update()
 
     def penblock(self, *args):
         """
@@ -750,23 +772,98 @@ class Turtle(object):
             <Block "stone" id=1 data=0>
         """
         if not args:
-            return self._state.penblock
+            return self._sprite.state.penblock
         else:
             if isinstance(args[0], Block):
-                self._state = self._state._replace(penblock=args[0])
+                self._sprite.state = self._sprite.state._replace(penblock=args[0])
             else:
-                self._state = self._state._replace(penblock=Block(*args))
-            self._update()
+                self._sprite.state = self._sprite.state._replace(penblock=Block(*args))
+            self._sprite.update()
 
     def fillblock(self, *args):
+        """
+        Return or set the block that the turtle fills shapes with. Several
+        input formats are allowed:
+
+        ``fillblock()``
+            Return the current fill block. May be used as input to another
+            penblock or fillblock call.
+
+        ``fillblock(Block('grass'))``
+            Set the fill block to the specified :class:`~picraft.block.Block`
+            instance.
+
+        ``fillblock('grass')``
+            Implicitly make a :class:`~picraft.block.Block` from the given
+            arguments and set that as the fill block.
+
+        ::
+
+            >>> turtle.fillblock()
+            <Block "stone" id=1 data=0>
+            >>> turtle.fillblock('diamond_block')
+            >>> turtle.fillblock()
+            <Block "diamond_block" id=57 data=0>
+            >>> turtle.fillblock(1, 0)
+            >>> turtle.fillblock()
+            <Block "stone" id=1 data=0>
+        """
         if not args:
-            return self._state.fillblock
+            return self._sprite.state.fillblock
         else:
             if isinstance(args[0], Block):
-                self._state = self._state._replace(fillblock=args[0])
+                self._sprite.state = self._sprite.state._replace(fillblock=args[0])
             else:
-                self._state = self._state._replace(fillblock=Block(*args))
-            self._update()
+                self._sprite.state = self._sprite.state._replace(fillblock=Block(*args))
+            self._sprite.update()
+
+    def fill(self, flag=None):
+        """
+        :param bool flag: True if beginning a fill, False if ending a fill.
+
+        Call ``fill(True)`` before drawing the shape you want to fill, and
+        ``fill(False)`` when done. When used without argument: return the
+        fill state (``True`` if filling, ``False`` otherwise).
+        """
+        if flag is None:
+            for state in reversed(self._sprite.history):
+                if state.action == 'end-fill':
+                    return False
+                elif state.action == 'begin-fill':
+                    return True
+            return False
+        elif flag:
+            self.begin_fill()
+        else:
+            self.end_fill()
+
+    def begin_fill(self):
+        """
+        Call just before drawing a shape to be filled. Equivalent to
+        ``fill(True)``.
+        """
+        with self._screen.blocks, self._sprite:
+            self._sprite.commit({}, 'begin-fill')
+
+    def end_fill(self):
+        """
+        Fill the shape drawn after the last call to :meth:`begin_fill`.
+        Equivalent to ``fill(False)``.
+        """
+        with self._screen.blocks, self._sprite:
+            fill_nodes = set()
+            for state in reversed(self._sprite.history):
+                if state.action == 'begin-fill':
+                    break
+                elif state.action == 'end-fill':
+                    # ending fill before starting one
+                    return
+                elif state.action == 'draw':
+                    fill_nodes |= state.changed.keys()
+            self._sprite.commit({
+                v: self._sprite.state.fillblock
+                for v in set(filled(fill_nodes)) - fill_nodes
+                }, 'end_fill')
 
     position = pos
     setpos = goto

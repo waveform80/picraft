@@ -59,6 +59,18 @@ Pen control
 
     Block control
         | :func:`penblock`
+        | :func:`fillblock`
+
+    Filling
+        | :func:`fill`
+        | :func:`begin_fill`
+        | :func:`end_fill`
+
+Turtle state
+    Visibility
+        | :func:`showturtle` | :func:`st`
+        | :func:`hideturtle` | :func:`ht`
+        | :func:`isvisible`
 
 
 Methods of Turtle and corresponding functions
@@ -143,3 +155,28 @@ Block control
 -------------
 
 .. autofunction:: penblock
+
+.. autofunction:: fillblock
+
+Filling
+-------
+
+.. autofunction:: fill
+
+.. autofunction:: begin_fill
+
+.. autofunction:: end_fill
+
+Turtle state
+============
+
+Visibility
+----------
+
+.. autofunction:: st
+.. autofunction:: showturtle
+
+.. autofunction:: ht
+.. autofunction:: hideturtle
+
+.. autofunction:: isvisible
