@@ -60,7 +60,7 @@ __url__          = 'http://picraft.readthedocs.io/'
 __platforms__    = 'ALL'
 
 __classifiers__ = [
-    'Development Status :: 5 - Stable',
+    'Development Status :: 5 - Production/Stable',
     'Environment :: Console',
     'Environment :: X11 Applications',
     'Intended Audience :: Developers',
