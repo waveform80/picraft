@@ -860,6 +860,9 @@ class Turtle(object):
                     return
                 elif state.action == 'draw':
                     fill_nodes |= state.changed.keys()
+            # fill in the last edge if the begin and end positions differ
+            if state.position != self._sprite.state.position:
+                fill_nodes |= set(line(self._sprite.state.position, state.position))
             self._sprite.commit({
                 v: self._sprite.state.fillblock
                 for v in set(filled(fill_nodes)) - fill_nodes
