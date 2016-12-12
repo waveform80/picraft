@@ -5,6 +5,26 @@ Change log
 ==========
 
 
+Release 1.0 (2016-12-12)
+========================
+
+The major news in 1.0 is that the API is now considered stable (so I won't make
+backwards incompatible changes from here on without lots of warning,
+deprecation, etc.)
+
+The new features in 1.0 are:
+
+* The new :mod:`~picraft.turtle` module implements a classic logo-like turtle
+  in the Minecraft world
+* A rudimentary :attr:`~picraft.player.Player.direction` attribute is now
+  available in Minecraft Pi (`#20`_)
+
+The docs have also undergone some re-organization and expansion to make them
+a bit more friendly.
+
+.. _#20: https://github.com/waveform80/picraft/issues/20
+
+
 Release 0.6 (2016-01-21)
 ========================
 
