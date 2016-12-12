@@ -24,7 +24,7 @@ Links
 .. _Raspberry Pi: http://www.raspberrypi.org/
 .. _Raspberry Juice: http://www.stuffaboutcode.com/2014/10/minecraft-raspberryjuice-and-canarymod.html
 .. _PyPI: http://pypi.python.org/pypi/picraft/
-.. _documentation: http://picraft.readthedocs.org/
+.. _documentation: http://picraft.readthedocs.io/
 .. _source code: https://github.com/waveform80/picraft
 .. _bug tracker: https://github.com/waveform80/picraft/issues
 .. _BSD license: http://opensource.org/licenses/BSD-3-Clause

@@ -43,7 +43,7 @@ source_suffix = '.rst'
 #source_encoding = 'utf-8-sig'
 master_doc = 'index'
 project = _setup.__project__.title()
-copyright = '2015 %s' % _setup.__author__
+copyright = '2015-2016 %s' % _setup.__author__
 version = _setup.__version__
 release = _setup.__version__
 #language = None
@@ -64,8 +64,8 @@ autodoc_member_order = 'groupwise'
 # -- Intersphinx configuration --------------------------------------------
 
 intersphinx_mapping = {
-    'python': ('http://docs.python.org/3.4', None),
-    'numpy':  ('http://docs.scipy.org/doc/numpy/', None),
+    'python': ('https://docs.python.org/3.4', None),
+    'numpy':  ('https://docs.scipy.org/doc/numpy/', None),
     }
 
 # -- Options for HTML output ----------------------------------------------

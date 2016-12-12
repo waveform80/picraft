@@ -30,6 +30,7 @@
 
 """An alternate Python interface for Minecraft."""
 
+import io
 import os
 import sys
 from setuptools import setup, find_packages
@@ -52,14 +53,14 @@ except ImportError:
     pass
 
 __project__      = 'picraft'
-__version__      = '0.6'
+__version__      = '1.0'
 __author__       = 'Dave Jones'
 __author_email__ = 'dave@waveform.org.uk'
-__url__          = 'http://picraft.readthedocs.org/'
+__url__          = 'http://picraft.readthedocs.io/'
 __platforms__    = 'ALL'
 
 __classifiers__ = [
-    'Development Status :: 4 - Beta',
+    'Development Status :: 5 - Stable',
     'Environment :: Console',
     'Environment :: X11 Applications',
     'Intended Audience :: Developers',
@@ -70,6 +71,7 @@ __classifiers__ = [
     'Programming Language :: Python :: 3.2',
     'Programming Language :: Python :: 3.3',
     'Programming Language :: Python :: 3.4',
+    'Programming Language :: Python :: 3.5',
     'Topic :: Games/Entertainment',
     ]
 
@@ -99,7 +101,6 @@ __entry_points__ = {
 
 
 def main():
-    import io
     with io.open(os.path.join(HERE, 'README.rst'), 'r') as readme:
         setup(
             name                 = __project__,
