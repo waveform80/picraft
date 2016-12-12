@@ -136,9 +136,6 @@ class TurtleScreen(object):
     def draw(self, state):
         self.blocks[state.keys()] = state.values()
 
-    def chat(self, message):
-        self._world.say(message)
-
 
 TurtleState = namedtuple('TurtleState', (
     'position',  # Vector
@@ -258,6 +255,38 @@ class Turtle(object):
             pos = screen.world.player.tile_pos - Y
         self._screen = screen
         self._sprite = TurtleSprite(screen, pos)
+
+    def getturtle(self):
+        """
+        Return the :class:`Turtle` object itself. Only reasonable use: as a function to
+        return the "anonymous" turtle::
+
+            >>> pet = getturtle()
+            >>> pet.fd(50)
+            >>> pet
+            <picraft.turtle.Turtle object at 0x...>
+        """
+        return self
+
+    def getscreen(self):
+        """
+        Return the :class:`TurtleScreen` object the turtle is drawing on::
+
+            >>> ts = turtle.getscreen()
+            >>> ts
+            <picraft.turtle.TurtleScreen object at 0x...>
+            >>> ts.world.say("Hello world!")
+        """
+        return self._screen
+
+    def undobufferentries(self):
+        """
+        Return number of entries in the undobuffer::
+
+            >>> while turtle.undobufferentries():
+            ...     turtle.undo()
+        """
+        return len(self._sprite.history) - 1 # ignore "home" action
 
     def undo(self):
         """
@@ -883,6 +912,7 @@ class Turtle(object):
     ht = hideturtle
     pd = pendown
     pu = penup
+    getpen = getturtle
 
 
 class TurtlePlayer(object):
@@ -984,6 +1014,5 @@ def _classes_to_funcs():
     for method in dir(TurtlePlayer):
         if not method.startswith('_'):
             _method_to_func(method, getattr(TurtlePlayer, method), _default_player)
-    _method_to_func('chat', TurtleScreen.chat, _default_screen)
 
 _classes_to_funcs()

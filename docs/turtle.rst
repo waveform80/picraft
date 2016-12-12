@@ -19,6 +19,43 @@ graphical window, its canvas is the Minecraft world. The module provides an
 object-oriented interface for advanced users that want to control multiple
 turtles and a simpler procedural interface for newer programmers.
 
+When the turtle is initially created or shown, its default position is beneath
+the player's feet::
+
+    >>> showturtle()
+
+.. image:: images/turtle1.png
+    :align: center
+
+The turtle's shape indicates its "forward" direction. Various simple commands
+can be used to control its orientation and motion::
+
+    >>> right(180)
+    >>> forward(5)
+
+.. image:: images/turtle2.png
+    :align: center
+
+Every operation can be undone, and commands can be built up to construct
+whole shapes::
+
+    >>> undo()
+    >>> penup()
+    >>> forward(5)
+    >>> left(90)
+    >>> pendown()
+    >>> fillblock('diamond_block')
+    >>> fill(True)
+    >>> forward(3)
+    >>> left(90)
+    >>> forward(4)
+    >>> left(135)
+    >>> forward(4)
+    >>> fill(False)
+
+.. image:: images/turtle3.png
+    :align: center
+
 Overview of available Turtle and TurtleScreen methods
 =====================================================
 
@@ -66,11 +103,20 @@ Pen control
         | :func:`begin_fill`
         | :func:`end_fill`
 
+    More drawing control
+        | :func:`reset`
+        | :func:`clear`
+
 Turtle state
     Visibility
         | :func:`showturtle` | :func:`st`
         | :func:`hideturtle` | :func:`ht`
         | :func:`isvisible`
+
+Special Turtle methods
+    | :func:`undobufferentries`
+    | :func:`getturtle` | :func:`getpen`
+    | :func:`getscreen`
 
 
 Methods of Turtle and corresponding functions
@@ -167,6 +213,13 @@ Filling
 
 .. autofunction:: end_fill
 
+More drawing control
+--------------------
+
+.. autofunction:: reset
+
+.. autofunction:: clear
+
 Turtle state
 ============
 
@@ -180,3 +233,14 @@ Visibility
 .. autofunction:: hideturtle
 
 .. autofunction:: isvisible
+
+Special Turtle methods
+======================
+
+.. autofunction:: undobufferentries
+
+.. autofunction:: getpen
+.. autofunction:: getturtle
+
+.. autofunction:: getscreen
+
