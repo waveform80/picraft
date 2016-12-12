@@ -1,3 +1,11 @@
+picraft (1.0) stable; urgency=low
+
+  * The new "turtle" module implements a classic logo-like turtle in the
+    Minecraft world
+  * A rudimentary "direction" attribute is now available in Minecraft Pi (#20)
+
+ -- Dave Jones <dave@waveform.org.uk>  Mon, 12 Dec 2016 22:10:00 +0000
+
 picraft (0.6-1ubuntu1) trusty; urgency=medium
 
   * Ubuntu release of 0.6
