@@ -40,12 +40,11 @@ import re
 import os
 import math
 import inspect
-import weakref
 from threading import Lock, local
 from collections import namedtuple
 
 from .world import World
-from .vector import Vector, O, X, Y, Z, vector_range, line, filled
+from .vector import Vector, O, X, Y, Z, line, filled
 from .block import Block
 
 
@@ -480,7 +479,7 @@ class Turtle(object):
             >>> turtle.position()
             Vector(x=5, y=-1, z=16)
         """
-        self.goto(pos().replace(x=x))
+        self.goto(self.pos().replace(x=x))
 
     def sety(self, y):
         """
@@ -495,7 +494,7 @@ class Turtle(object):
             >>> turtle.position()
             Vector(x=2, y=5, z=16)
         """
-        self.goto(pos().replace(y=y))
+        self.goto(self.pos().replace(y=y))
 
     def setz(self, z):
         """
@@ -510,7 +509,7 @@ class Turtle(object):
             >>> turtle.position()
             Vector(x=2, y=-1, z=5)
         """
-        self.goto(pos().replace(z=z))
+        self.goto(self.pos().replace(z=z))
 
     def distance(self, x, y=None, z=None):
         """
@@ -996,7 +995,7 @@ def {name}{defargs}:
     # building the picraft docs (in which we don't want to repeat all the docs
     # for the aliases)
     if method.__doc__ is not None:
-        if not 'PICRAFTDOCS' in os.environ or name == method.__name__:
+        if 'PICRAFTDOCS' not in os.environ or name == method.__name__:
             # Replace "turtle." in all the examples with a blank string
             globals()[name].__doc__ = re.sub(
                 r'^( *(?:>>>|\.\.\.).*)turtle\.', r'\1',
