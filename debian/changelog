@@ -1,3 +1,9 @@
+picraft (1.0ubuntu1) trusty; urgency=medium
+
+  * Ubuntu release of 1.0
+
+ -- Dave Jones <dave@waveform.org.uk>  Mon, 12 Dec 2016 22:21:10 +0000
+
 picraft (1.0) stable; urgency=low
 
   * The new "turtle" module implements a classic logo-like turtle in the
