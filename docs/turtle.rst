@@ -22,6 +22,7 @@ turtles and a simpler procedural interface for newer programmers.
 When the turtle is initially created or shown, its default position is beneath
 the player's feet::
 
+    >>> from picraft.turtle import *
     >>> showturtle()
 
 .. image:: images/turtle1.png

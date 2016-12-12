@@ -159,9 +159,10 @@ class BasePlayer(object):
         The precise position of the player within the world.
 
         This property returns the position of the selected player within the
-        Minecraft world, as a :class:`Vector` instance. This is the *precise*
-        position of the player including decimal places (representing portions
-        of a tile). You can assign to this property to reposition the player.
+        Minecraft world, as a :class:`~picraft.vector.Vector` instance. This is
+        the *precise* position of the player including decimal places
+        (representing portions of a tile). You can assign to this property to
+        reposition the player.
         """)
 
     def _get_tile_pos(self):
@@ -174,8 +175,9 @@ class BasePlayer(object):
         The position of the player within the world to the nearest block.
 
         This property returns the position of the selected player in the
-        Minecraft world to the nearest block, as a :class:`Vector` instance.
-        You can assign to this property to reposition the player.
+        Minecraft world to the nearest block, as a
+        :class:`~picraft.vector.Vector` instance.  You can assign to this
+        property to reposition the player.
         """)
 
     @property
