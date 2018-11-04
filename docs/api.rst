@@ -5,4 +5,3 @@ API Reference
 =============
 
 .. automodule:: picraft
-

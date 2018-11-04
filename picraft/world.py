@@ -226,7 +226,8 @@ class World(object):
     @property
     def blocks(self):
         """
-        Represents the state of blocks in the Minecraft world.
+        Represents the state of blocks in the Minecraft world as a
+        dictionary-like object.
 
         This property can be queried to determine the type of a block in the
         world, or can be set to alter the type of a block. The property can be

@@ -106,12 +106,13 @@ str = type('')
 
 import io
 import warnings
+import threading
 from math import sqrt
 from collections import namedtuple
 from itertools import cycle
 
 from pkg_resources import resource_stream
-from .exc import EmptySliceWarning
+from .exc import EmptySliceWarning, BatchNotStarted
 from .vector import Vector, vector_range
 
 
@@ -457,9 +458,21 @@ class Block(namedtuple('Block', ('id', 'data'))):
 class Blocks(object):
     """
     This class implements the :attr:`~picraft.world.World.blocks` attribute.
+    This is a dictionary-like object which provides the ability to query and
+    manipulate the blocks in the Minecraft world.
+
+    At a basic level it acts like a dictionary mapping :class:`Vector` to
+    :class:`Block`. However, it provides some enhanced capabilities, such as
+    the ability to query (and set) a *slice* of vectors (returning an iterable
+    of blocks).
+
+    Additional methods are provided to :meth:`update` blocks en-masse from
+    an existing mapping of vectors to blocks, and :meth:
     """
     def __init__(self, connection):
         self._connection = connection
+        self._local = threading.local()
+        self._cache = {}
 
     def __repr__(self):
         return '<Blocks>'
@@ -571,6 +584,51 @@ class Blocks(object):
                     self._connection.send(
                         'world.setBlock(%d,%d,%d,%d,%d)' % (
                             index.x, index.y, index.z, value.id, value.data))
+
+    def update(self, other):
+        """
+        Merges changes from *other*, which must be a mapping of :class:`Vector`
+        to :class:`Block` objects, into the world. For example::
+
+            from picraft import *
+
+            w = World()
+            b = {v: Block('stone') for v in circle(O, 5*X)}
+            w.blocks.update(b)
+        """
+        self.__setitem__(other.keys(), other.values())
+
+    def batch(self):
+        try:
+            self._local.batch
+        except AttributeError:
+            self._local.batch = {}
+            self._local.cache = {}
+            return self
+        else:
+            raise BatchStarted('batch already started')
+
+    def send(self):
+        try:
+            self._local.batch
+        except AttributeError:
+            raise BatchNotStarted('no batch in progress')
+        try:
+            with self._connection.batch():
+                self.update({
+                    v: b for (v, b) in self._local.batch.items()
+                    if b != self._local.cache.get(v)
+                    })
+        finally:
+            del self._local.batch
+            del self._local.cache
+
+    def forget(self):
+        try:
+            del self._local.batch
+            del self._local.cache
+        except AttributeError:
+            raise BatchNotStarted('no batch in progress')
 
 
 AIR                 = Block(0)
