@@ -388,39 +388,63 @@ def test_vector_lines():
         list(lines([]))
 
 def test_vector_circle():
-    assert set(circle(O, X)) == {-X, Y, X, -Y}
-    assert set(circle(X, X)) == {O, X+Y, 2*X, X-Y}
-    assert set(circle(O, 2*X)) == {-2*X, -X+Y, 2*Y, X+Y, 2*X, X-Y, -2*Y, -X-Y}
-    assert set(circle(O, 2*X, X+Y)) == {-2*X, -X+Y, 2*Y, X+Y, 2*X, X-Y, -2*Y, -X-Y}
+    assert set(circle(O, X)) == {X, Y, -X, -Y, X+Y, X-Y, Y-X, -X-Y}
+    assert set(circle(X, X)) == {X+Y, X-Y, 2*X, 2*X+Y, 2*X-Y, O, -Y, Y}
+    assert set(circle(O, 2*X)) == {
+        X+Y, X-Y, Y-X, -X-Y, 2*X, -2*X, 2*Y, -2*Y, 2*X+Y, 2*X-Y,
+        Y-2*X, -Y-2*X, 2*Y+X, 2*Y-X, -2*Y+X, -2*Y-X}
+    assert set(circle(O, 2*X, X+Y)) == {
+        -2*X-Y, -2*X, -2*X+Y,
+        -X-2*Y, -X-Y, -X+Y, -X+2*Y,
+        -2*Y, 2*Y,
+        X-2*Y, X-Y, X+Y, X+2*Y,
+        2*X-Y, 2*X, 2*X+Y}
     with pytest.raises(ValueError):
         set(circle(O, 2))
 
 def test_vector_sphere():
-    assert set(sphere(O, 1)) == {-X, X, -Y, Y, -Z, Z}
+    assert set(sphere(O, 1)) == {
+        -X-Y, -X-Z, -X, -X+Z, -X+Y,
+        -Y-Z, -Y, -Y+Z,
+        -Z, Z,
+        Y-Z, Y, Y+Z,
+        X-Y, X-Z, X, X+Z, X+Y
+    }
     # Yeah, it's a pre-calculated test ... oh well
     assert set(sphere(O, 2)) == {
-        V(-2 , -1 , 0)  , V(-2 , 0  , -1) , V(-2 , 0  , 0)  ,
-        V(-2 , 0  , 1)  , V(-2 , 1  , 0)  , V(-1 , -2 , 0)  ,
-        V(-1 , -1 , -1) , V(-1 , -1 , 0)  , V(-1 , -1 , 1)  ,
-        V(-1 , 0  , -2) , V(-1 , 0  , -1) , V(-1 , 0  , 1)  ,
-        V(-1 , 0  , 2)  , V(-1 , 1  , -1) , V(-1 , 1  , 0)  ,
-        V(-1 , 1  , 1)  , V(-1 , 2  , 0)  , V(0  , -2 , -1) ,
-        V(0  , -2 , 0)  , V(0  , -2 , 1)  , V(0  , -1 , -2) ,
-        V(0  , -1 , -1) , V(0  , -1 , 1)  , V(0  , -1 , 2)  ,
-        V(0  , 0  , -2) , V(0  , 0  , 2)  , V(0  , 1  , -2) ,
-        V(0  , 1  , -1) , V(0  , 1  , 1)  , V(0  , 1  , 2)  ,
-        V(0  , 2  , -1) , V(0  , 2  , 0)  , V(0  , 2  , 1)  ,
-        V(1  , -2 , 0)  , V(1  , -1 , -1) , V(1  , -1 , 0)  ,
-        V(1  , -1 , 1)  , V(1  , 0  , -2) , V(1  , 0  , -1) ,
-        V(1  , 0  , 1)  , V(1  , 0  , 2)  , V(1  , 1  , -1) ,
-        V(1  , 1  , 0)  , V(1  , 1  , 1)  , V(1  , 2  , 0)  ,
-        V(2  , -1 , 0)  , V(2  , 0  , -1) , V(2  , 0  , 0)  ,
-        V(2  , 0  , 1)  , V(2  , 1  , 0)}
+        -2*X-Y-Z, -2*X-Y, -2*X-Y+Z,
+        -2*X-Z, -2*X, -2*X+Z,
+        -2*X+Y-Z, -2*X+Y, -2*X+Y+Z,
+        -X-2*Y-Z, -X-2*Y, -X-2*Y+Z,
+        -X-Y-2*Z, -X-Y-Z, -X-Y, -X-Y+Z, -X-Y+2*Z,
+        -X-2*Z, -X-Z, -X+Z, -X+2*Z,
+        -X+Y-2*Z, -X+Y-Z, -X+Y, -X+Y+Z, -X+Y+2*Z,
+        -X+2*Y-Z, -X+2*Y, -X+2*Y+Z,
+        -2*Y-Z, -2*Y, -2*Y+Z,
+        -Y-2*Z, -Y-Z, -Y+Z, -Y+2*Z,
+        -2*Z, 2*Z,
+        Y-2*Z, Y-Z, Y+Z, Y+2*Z,
+        2*Y-Z, 2*Y, 2*Y+Z,
+        X-2*Y-Z, X-2*Y, X-2*Y+Z,
+        X-Y-2*Z, X-Y-Z, X-Y, X-Y+Z, X-Y+2*Z,
+        X-2*Z, X-Z, X+Z, X+2*Z,
+        X+Y-2*Z, X+Y-Z, X+Y, X+Y+Z, X+Y+2*Z,
+        X+2*Y-Z, X+2*Y, X+2*Y+Z,
+        2*X-Y-Z, 2*X-Y, 2*X-Y+Z,
+        2*X-Z, 2*X, 2*X+Z,
+        2*X+Y-Z, 2*X+Y, 2*X+Y+Z,
+    }
 
 def test_vector_filled_poly():
     assert set(filled(lines([O, 2*X, 2*Y]))) == {O, X, 2*X, Y, X+Y, 2*Y}
 
 def test_vector_filled_circle():
-    assert set(filled(circle(O, X))) == {-X, Y, X, -Y, O}
-    assert set(filled(circle(X, X))) == {O, X+Y, X, 2*X, X-Y}
-    assert set(filled(circle(O, 2*X))) == {-2*X, -X+Y, 2*Y, X+Y, 2*X, X-Y, -2*Y, -X-Y, -X, Y, X, -Y, O}
+    assert set(filled(circle(O, X))) == {-X-Y, -X, -X+Y, -Y, O, Y, X-Y, X, X+Y}
+    assert set(filled(circle(X, X))) == {-Y, O, Y, X-Y, X, X+Y, 2*X-Y, 2*X, 2*X+Y}
+    assert set(filled(circle(O, 2*X))) == {
+        -2*X-Y, -2*X, -2*X+Y,
+        -X-2*Y, -X-Y, -X, -X+Y, -X+2*Y,
+        -2*Y, -Y, O, Y, 2*Y,
+        X-2*Y, X-Y, X, X+Y, X+2*Y,
+        2*X-Y, 2*X, 2*X+Y
+    }
