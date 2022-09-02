@@ -466,9 +466,9 @@ class Blocks(object):
 
     def _get_blocks(self, vrange):
         return [
-            Block.from_string('%d,0' % int(i))
+            Block.from_string(i.replace("|", ",", 1)+",0"*("|" not in i))
             for i in self._connection.transact(
-                'world.getBlocks(%d,%d,%d,%d,%d,%d)' % (
+                'world.getBlocksWithData(%d,%d,%d,%d,%d,%d)' % (
                 vrange.start.x, vrange.start.y, vrange.start.z,
                 vrange.stop.x - vrange.step.x,
                 vrange.stop.y - vrange.step.y,
