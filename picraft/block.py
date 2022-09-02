@@ -466,14 +466,14 @@ class Blocks(object):
 
     def _get_blocks(self, vrange):
         return [
-            Block.from_string(i.replace("|", ",", 1)+",0"*("|" not in i))
+            Block.from_string(i)
             for i in self._connection.transact(
                 'world.getBlocksWithData(%d,%d,%d,%d,%d,%d)' % (
                 vrange.start.x, vrange.start.y, vrange.start.z,
                 vrange.stop.x - vrange.step.x,
                 vrange.stop.y - vrange.step.y,
                 vrange.stop.z - vrange.step.z)
-                ).split(',')
+                ).split('|')
             ]
 
     def _get_block_loop(self, vrange):
